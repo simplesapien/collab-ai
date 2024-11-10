@@ -1,0 +1,3 @@
+- the console is displaying two different summaries from the director.
+- Answers are unformatted and include the agent name at the beginning of each response.
+- Not sure if hte director is using the right model 
