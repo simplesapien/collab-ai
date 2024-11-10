@@ -10,17 +10,19 @@ export class Director extends BaseAgent {
 
     async orchestrateDiscussion(message, availableAgents) {
         try {
+            console.log('orchestrateDiscussion - starting with:', { message, agentCount: availableAgents.length });
+            
             // Create a mapping of agent roles to their IDs
             const agentMap = availableAgents.reduce((map, agent) => {
                 map[agent.role.toLowerCase()] = agent.id;
                 return map;
             }, {});
 
-            console.log('Available agents map:', agentMap);
+            console.log('orchestrateDiscussion - created agent map:', agentMap);
             
             // Handle message object or string
             const userPrompt = typeof message === 'object' ? message.content : message;
-            console.log('Processed user prompt:', userPrompt);
+            console.log('orchestrateDiscussion - processed user prompt:', userPrompt);
 
             const systemPrompt = `As the Director, analyze the following message and determine:
             1. Which of these available agents should participate: ${availableAgents.map(a => a.role).join(', ')}
@@ -43,28 +45,39 @@ export class Director extends BaseAgent {
                 ]
             }`;
 
+            console.log('orchestrateDiscussion - making LLM request...');
             const response = await this.llm.makeModelRequest({
                 systemPrompt: systemPrompt,
                 userPrompt: userPrompt,
-                context: [], // Initial orchestration doesn't need context
+                context: [], 
                 agentType: this.role
             });
-            console.log('Raw LLM response:', response);
+            console.log('orchestrateDiscussion - received LLM response:', response);
             
             // Parse and validate the response
             let plan;
             try {
                 plan = typeof response === 'string' ? JSON.parse(response) : response;
+                console.log('orchestrateDiscussion - parsed initial plan:', plan);
+                
+                if (!plan.participants || !Array.isArray(plan.participants)) {
+                    throw new Error('Invalid plan structure: missing or invalid participants array');
+                }
                 
                 // Ensure IDs match our system's IDs
-                plan.participants = plan.participants.map(participant => ({
-                    ...participant,
-                    id: agentMap[participant.role.toLowerCase()] || participant.id
-                }));
+                plan.participants = plan.participants.map(participant => {
+                    console.log('orchestrateDiscussion - mapping participant:', participant);
+                    return {
+                        ...participant,
+                        id: agentMap[participant.role.toLowerCase()] || participant.id
+                    };
+                });
 
-                console.log('Processed plan:', plan);
+                console.log('orchestrateDiscussion - final processed plan:', plan);
             } catch (e) {
-                Logger.error('Failed to parse LLM response:', e);
+                console.log('orchestrateDiscussion - ERROR processing plan:', e.message);
+                Logger.error('Failed to process orchestration plan:', { error: e, plan });
+                
                 // Fallback plan with default participant
                 plan = {
                     participants: [{
@@ -73,10 +86,12 @@ export class Director extends BaseAgent {
                         task: 'Analyze the user message and provide initial insights.'
                     }]
                 };
+                console.log('orchestrateDiscussion - using fallback plan:', plan);
             }
 
             return plan;
         } catch (error) {
+            console.log('orchestrateDiscussion - CRITICAL ERROR:', error);
             Logger.error('Error in orchestrateDiscussion:', error);
             throw error;
         }
@@ -99,62 +114,93 @@ export class Director extends BaseAgent {
 
     async facilitateCollaboration(messages, previousResponses) {
         try {
-        // Get the roles from the previous responses to know who has already participated
-        const participatedRoles = previousResponses.map(r => r.role);
-        
-        const systemPrompt = `As the Director, analyze the following conversation and determine the next most valuable interaction.
+            console.log('facilitateCollaboration - starting with:', {
+                messagesCount: messages.length,
+                previousResponsesCount: previousResponses.length
+            });
 
-        Previous responses in this conversation:
-        ${previousResponses.map(r => `${r.role}: ${r.response}`).join('\n')}
-
-        Available roles: Analyst, Critic, Expert
-        Roles who have already contributed: ${participatedRoles.join(', ')}
-
-        Determine the next interaction using ONLY the available roles listed above.
-        
-        Requirements:
-        1. nextAgent must be one of: Analyst, Critic, or Expert
-        2. respondTo must be one of the roles that already contributed
-        3. Task should encourage building upon or challenging previous points
-
-        Respond in strict JSON format:
-        {
-            "nextAgent": "one of: Analyst, Critic, or Expert",
-            "respondTo": ["role that already participated"],
-            "task": "specific instruction for the agent"
-        }`;
-
-        const response = await this.llm.makeModelRequest({
-            systemPrompt: systemPrompt,
-            userPrompt: "",
-            context: messages,
-            agentType: this.role
-        });
-        
-        let plan;
-        try {
-            plan = typeof response === 'string' ? JSON.parse(response) : response;
+            // Get the roles from the previous responses
+            const participatedRoles = previousResponses.map(r => r.role);
+            console.log('facilitateCollaboration - participated roles:', participatedRoles);
             
-            // Validate the nextAgent is one of our actual roles
-            const validRoles = ['Analyst', 'Critic', 'Expert'];
-            if (!validRoles.includes(plan.nextAgent)) {
-                Logger.error('Invalid agent role received from LLM:', plan.nextAgent);
+            const systemPrompt = `As the Director, analyze the following conversation and determine the next most valuable interaction.
+
+            Previous responses in this conversation:
+            ${previousResponses.map(r => `${r.role}: ${r.response}`).join('\n')}
+
+            Available roles: Analyst, Critic, Expert
+            Roles who have already contributed: ${participatedRoles.join(', ')}
+
+            Determine the next interaction using ONLY the available roles listed above.
+            
+            Requirements:
+            1. nextAgent must be one of: Analyst, Critic, or Expert
+            2. respondTo must be one of the roles that already contributed
+            3. Task should encourage building upon or challenging previous points
+
+            Respond in strict JSON format:
+            {
+                "nextAgent": "one of: Analyst, Critic, or Expert",
+                "respondTo": ["role that already participated"],
+                "task": "specific instruction for the agent"
+            }`;
+            console.log('facilitateCollaboration - constructed system prompt:', systemPrompt);
+
+            console.log('facilitateCollaboration - making LLM request...');
+            const response = await this.llm.makeModelRequest({
+                systemPrompt: systemPrompt,
+                userPrompt: "",
+                context: messages,
+                agentType: this.role
+            });
+            console.log('facilitateCollaboration - received LLM response:', response);
+            
+            let plan;
+            try {
+                console.log('Attempting to parse LLM response into JSON');
+                let jsonStr = response;
+                
+                // Handle various markdown code block formats
+                if (typeof response === 'string') {
+                    // Remove markdown code blocks if present (handles both ```json and ``` formats)
+                    const codeBlockMatch = response.match(/```(?:json\n|\n)?(.+?)```/s);
+                    if (codeBlockMatch) {
+                        jsonStr = codeBlockMatch[1].trim();
+                    }
+                }
+                
+                plan = typeof jsonStr === 'string' ? JSON.parse(jsonStr) : jsonStr;
+                
+                console.log('facilitateCollaboration - parsed plan:', plan);
+                
+                // Validate nextAgent
+                const validRoles = ['Analyst', 'Critic', 'Expert'];
+                console.log('facilitateCollaboration - validating nextAgent:', plan.nextAgent);
+                if (!validRoles.includes(plan.nextAgent)) {
+                    console.log('facilitateCollaboration - INVALID nextAgent:', plan.nextAgent);
+                    Logger.error('Invalid agent role received from LLM:', plan.nextAgent);
+                    return null;
+                }
+
+                // Validate respondTo
+                console.log('facilitateCollaboration - validating respondTo:', plan.respondTo);
+                if (!plan.respondTo.every(role => participatedRoles.includes(role))) {
+                    console.log('facilitateCollaboration - INVALID respondTo:', plan.respondTo);
+                    Logger.error('Invalid respondTo role received from LLM:', plan.respondTo);
+                    return null;
+                }
+                console.log('facilitateCollaboration - validation successful');
+
+            } catch (e) {
+                console.log('facilitateCollaboration - ERROR parsing plan:', plan);
+                Logger.error('Failed to parse collaboration plan:', e);
                 return null;
             }
 
-            // Validate respondTo references an existing participant
-            if (!plan.respondTo.every(role => participatedRoles.includes(role))) {
-                Logger.error('Invalid respondTo role received from LLM:', plan.respondTo);
-                return null;
-            }
-
-        } catch (e) {
-            Logger.error('Failed to parse collaboration plan:', e);
-            return null;
-        }
-
+            console.log('facilitateCollaboration - returning final plan:', plan);
             return plan;
         } catch (error) {
+            console.log('facilitateCollaboration - CRITICAL ERROR:', error);
             Logger.error('Error in facilitateCollaboration:', error);
             return null;
         }
