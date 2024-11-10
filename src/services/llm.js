@@ -1,16 +1,16 @@
 // src/services/llm.js
 import { Logger } from '../utils/logger.js';
+import { RateLimiter } from './rateLimiter.js';
+import { MessageFormatter } from './messageFormatter.js';
 
 export class LLMService {
     constructor(config = { maxRetries: 3, timeout: 10000 }) {
         this.config = config;
         this.requestQueue = [];
-        this.rateLimit = {
-            requests: 0,
-            lastReset: Date.now(),
-            limit: 50, // requests per minute
-            interval: 60000 // 1 minute
-        };
+        this.rateLimiter = new RateLimiter({
+            limit: config.rateLimit?.limit || 50,
+            interval: config.rateLimit?.interval || 60000
+        });
     }
 
     async makeModelRequest(params) {
@@ -18,57 +18,26 @@ export class LLMService {
         
         while (attempts < this.config.maxRetries) {
             try {
-                await this._checkRateLimit();
+                console.log('makeModelRequest params:', params);
+
+                await this.rateLimiter.checkLimit();
+
                 
-                const { 
-                    systemPrompt, 
-                    userPrompt, 
-                    context = [], 
-                    agentType = null 
-                } = params;
-                
-                console.log('makeModelRequest params:', {
-                    systemPrompt,
-                    userPrompt,
-                    context,
-                    agentType
+                // Format messages using MessageFormatter
+                const formattedData = MessageFormatter.formatMessages({
+                    ...params,
+                    modelConfig: {
+                        modelsByAgent: this.config.modelsByAgent,
+                        defaultModel: this.config.defaultModel
+                    }
                 });
-                
-                if (!systemPrompt) {
-                    throw new Error('System prompt is required');
-                }
-                
-                const sanitizedUserPrompt = userPrompt || '';
-                const model = this._getModelForAgent(agentType);
-                
-                const sanitizedContext = context.map(msg => ({
-                    ...msg,
-                    content: msg.content || '',
-                    agentId: msg.agentId || 'assistant'
-                }));
-
-                console.log('Sanitized context:', sanitizedContext);
-                
-                const messages = [
-                    { role: "system", content: systemPrompt },
-                    ...sanitizedContext.map(msg => ({
-                        role: msg.agentId === "user" ? "user" : "assistant",
-                        content: msg.content
-                    })),
-                    { role: "user", content: sanitizedUserPrompt }
-                ].filter(msg => msg.content && msg.content.trim() !== '');
-
-                console.log('Final messages array:', messages);
 
                 const response = await fetch('/api/chat', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ 
-                        systemPrompt, 
-                        userPrompt: sanitizedUserPrompt, 
-                        context: sanitizedContext,
-                        temperature: this.config.temperature,
-                        model
+                        ...formattedData,
+                        temperature: this.config.temperature
                     })
                 });
 
@@ -76,7 +45,7 @@ export class LLMService {
 
                 if (!response.ok) {
                     const errorText = await response.text();
-                    console.error('❌ LLM API Error:', {
+                    Logger.error('❌ LLM API Error:', {
                         status: response.status,
                         error: errorText
                     });
@@ -84,21 +53,7 @@ export class LLMService {
                 }
 
                 const data = await response.json();
-                console.log('📦 LLM API Response Data:', data);
-                
-                if (typeof data.content === 'string' && 
-                    (data.content.trim().startsWith('{') || data.content.trim().startsWith('['))) {
-                    try {
-                        const parsedContent = JSON.parse(data.content);
-                        console.log('Parsed JSON content:', parsedContent);
-                        return parsedContent;
-                    } catch (error) {
-                        console.warn('Failed to parse content as JSON, returning raw content');
-                        return data.content;
-                    }
-                }
-                
-                return data.content;
+                return MessageFormatter.parseResponse(data.content);
 
             } catch (error) {
                 attempts++;
@@ -113,25 +68,6 @@ export class LLMService {
 
     _validateResponse(data) {
         return data && typeof data.content === 'string' && data.content.length > 0;
-    }
-
-    async _checkRateLimit() {
-        if (Date.now() - this.rateLimit.lastReset > this.rateLimit.interval) {
-            this.rateLimit.requests = 0;
-            this.rateLimit.lastReset = Date.now();
-        }
-
-        if (this.rateLimit.requests >= this.rateLimit.limit) {
-            const waitTime = this.rateLimit.interval - (Date.now() - this.rateLimit.lastReset);
-            Logger.warn(`Rate limit exceeded, waiting ${waitTime}ms`);
-            await new Promise(resolve => setTimeout(resolve, waitTime));
-            this.rateLimit.requests = 0;
-            this.rateLimit.lastReset = Date.now();
-        }
-    }
-
-    _updateRateLimit() {
-        this.rateLimit.requests++;
     }
 
     _getModelForAgent(agentType) {
