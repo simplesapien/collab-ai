@@ -18,7 +18,7 @@ export class LLMService {
         
         while (attempts < this.config.maxRetries) {
             try {
-                console.log('makeModelRequest params:', params);
+                Logger.debug('[LLMService] makeModelRequest params:', params);
 
                 await this.rateLimiter.checkLimit();
 
@@ -41,11 +41,11 @@ export class LLMService {
                     })
                 });
 
-                console.log('📥 LLM API Response Status:', response.status);
+                Logger.debug('[LLMService] API Response Status:', response.status);
 
                 if (!response.ok) {
                     const errorText = await response.text();
-                    Logger.error('❌ LLM API Error:', {
+                    Logger.error('[LLMService] API Error:', {
                         status: response.status,
                         error: errorText
                     });
@@ -57,7 +57,7 @@ export class LLMService {
 
             } catch (error) {
                 attempts++;
-                Logger.warn(`LLM request failed (attempt ${attempts}):`, error);
+                Logger.warn(`[LLMService] Request failed (attempt ${attempts}):`, error);
                 if (attempts === this.config.maxRetries) {
                     throw error;
                 }
@@ -71,26 +71,26 @@ export class LLMService {
     }
 
     _getModelForAgent(agentType) {
-        console.log('_getModelForAgent called with:', {
+        Logger.debug('[LLMService] Getting model for agent:', {
             agentType,
             availableModels: this.config.modelsByAgent,
             defaultModel: this.config.defaultModel
         });
 
         if (!agentType) {
-            console.log('No agent type provided, using default model:', this.config.defaultModel);
+            Logger.debug('[LLMService] No agent type provided, using default model:', this.config.defaultModel);
             return this.config.defaultModel;
         }
         
         const agentKey = agentType.toLowerCase();
-        console.log('Looking up model for agent type:', {
+        Logger.debug('[LLMService] Looking up model for agent type:', {
             agentKey,
             modelMapping: this.config.modelsByAgent,
             selectedModel: this.config.modelsByAgent?.[agentKey]
         });
         
         const model = this.config.modelsByAgent?.[agentKey] || this.config.defaultModel;
-        console.log(`Final model selection for ${agentKey}:`, model);
+        Logger.debug(`[LLMService] Final model selection for ${agentKey}:`, model);
         
         return model;
     }

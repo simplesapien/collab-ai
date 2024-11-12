@@ -11,11 +11,11 @@ export class Expert extends BaseAgent {
 
     async provideExpertise(context, query) {
         try {
-            console.log(`${this.role} providing expertise for query:`, query);
-            console.log('Incoming context:', context);
+            Logger.debug(`${this.role} providing expertise for query:`, query);
+            Logger.debug('Incoming context:', context);
             
             const validatedContext = this.validateContext(context);
-            console.log('Validated context:', validatedContext);
+            Logger.debug('Validated context:', validatedContext);
 
             const systemPrompt = `As ${this.name}, provide expert insight on the following query:
             Draw from your expertise in: ${this.expertise.join(', ')}.

@@ -1,3 +1,7 @@
+import { marked } from 'https://cdn.jsdelivr.net/npm/marked/lib/marked.esm.js';
+import DOMPurify from 'https://cdn.jsdelivr.net/npm/dompurify/dist/purify.es.js';
+import { Logger } from '../utils/logger.js';
+
 export class ChatInterface {
     constructor(app) {
         this.app = app;
@@ -16,7 +20,7 @@ export class ChatInterface {
     }
 
     initialize() {
-        console.log('Initializing ChatInterface...');
+        Logger.info('[ChatInterface] Initializing ChatInterface...');
         try {
             // Initialize DOM elements
             this.chatMessages = document.getElementById('chat-messages');
@@ -29,9 +33,9 @@ export class ChatInterface {
 
             this.setupEventListeners();
             this.setupResponseListener();
-            console.log('ChatInterface initialized successfully');
+            Logger.info('[ChatInterface] ChatInterface initialized successfully');
         } catch (error) {
-            console.error('Failed to initialize ChatInterface:', error);
+            Logger.error('[ChatInterface] Failed to initialize ChatInterface:', error);
             throw error;
         }
     }
@@ -50,21 +54,21 @@ export class ChatInterface {
     }
 
     setupResponseListener() {
-        console.log('🎧 Setting up response listener');
+        Logger.debug('[ChatInterface] Setting up response listener');
         this.app.onResponse((response) => {
-            console.log('📨 Received real-time response in UI:', response);
+            Logger.debug('[ChatInterface] Received real-time response in UI:', response);
             
             // Remove loading message if it exists
             if (this.loadingMessage && this.loadingMessage.parentNode) {
-                console.log('🗑️ Removing loading message');
+                Logger.debug('[ChatInterface] Removing loading message');
                 this.loadingMessage.remove();
                 this.loadingMessage = null;
             }
 
             // Add response to UI
-            console.log('➕ Adding message to UI');
+            Logger.debug('[ChatInterface] Adding message to UI');
             const messageElement = this.appendMessage(response.agentId, response.content);
-            console.log('✅ Message added to UI:', messageElement);
+            Logger.debug('[ChatInterface] Message added to UI:', messageElement);
         });
     }
 
@@ -73,7 +77,7 @@ export class ChatInterface {
         if (!content) return;
 
         try {
-            console.log('🔘 Send button clicked, content:', content);
+            Logger.debug('[ChatInterface] Send button clicked, content:', content);
 
             // Disable input during processing
             this.userInput.disabled = true;
@@ -84,15 +88,15 @@ export class ChatInterface {
             this.userInput.value = '';
 
             // Add loading indicator
-            console.log('⏳ Adding loading message');
+            Logger.debug('[ChatInterface] Adding loading message');
             this.loadingMessage = this.appendMessage('system', 'Processing...');
 
-            console.log('🚀 Calling processUserMessage...');
+            Logger.debug('[ChatInterface] Calling processUserMessage...');
             const result = await this.app.processUserMessage(
                 { content },
                 this.currentConversationId
             );
-            console.log('✨ Received final result:', result);
+            Logger.debug('[ChatInterface] Received final result:', result);
 
             // Update conversation ID if new
             this.currentConversationId = result.conversationId;
@@ -109,12 +113,12 @@ export class ChatInterface {
 
             // Add summary if it exists
             if (result.summary) {
-                console.log('📋 Adding summary message');
+                Logger.debug('[ChatInterface] Adding summary message');
                 this.appendSummaryMessage(result.summary);
             }
 
         } catch (error) {
-            console.error('❌ Error processing message:', error);
+            Logger.error('[ChatInterface] Error processing message:', error);
             this.appendErrorMessage('Failed to process message. Please try again.');
             if (this.loadingMessage && this.loadingMessage.parentNode) {
                 this.loadingMessage.remove();
@@ -127,7 +131,7 @@ export class ChatInterface {
     }
 
     appendMessage(type, content) {
-        console.log('📝 Appending message:', { type, content });
+        Logger.debug('[ChatInterface] Appending message:', { type, content });
         const chatMessages = document.getElementById('chat-messages');
         const messageDiv = document.createElement('div');
         
@@ -187,7 +191,7 @@ export class ChatInterface {
         
         chatMessages.appendChild(messageDiv);
         chatMessages.scrollTop = chatMessages.scrollHeight;
-        console.log('✅ Message appended successfully');
+        Logger.debug('[ChatInterface] Message appended successfully');
         return messageDiv;
     }
 
@@ -196,10 +200,11 @@ export class ChatInterface {
         messageDiv.className = 'message error-message';
         messageDiv.textContent = content;
         document.getElementById('chat-messages').appendChild(messageDiv);
+        Logger.warn('[ChatInterface] Error message appended:', content);
     }
 
     handleError(error) {
-        Logger.error('Application error:', error);
+        Logger.error('[ChatInterface] Application error:', error);
         this.appendErrorMessage('An error occurred. Please refresh the page and try again.');
     }
 
@@ -214,15 +219,16 @@ export class ChatInterface {
         headerDiv.className = 'summary-header';
         headerDiv.textContent = '🔍 Conversation Summary';
         
-        // Create content div
+        // Create content div and render markdown
         const contentDiv = document.createElement('div');
         contentDiv.className = 'summary-content';
-        contentDiv.textContent = content;
+        contentDiv.innerHTML = DOMPurify.sanitize(marked.parse(content)); // Convert markdown to HTML and sanitize
         
         messageDiv.appendChild(headerDiv);
         messageDiv.appendChild(contentDiv);
         chatMessages.appendChild(messageDiv);
         chatMessages.scrollTop = chatMessages.scrollHeight;
+        Logger.debug('[ChatInterface] Summary message appended');
         return messageDiv;
     }
 } 

@@ -41,7 +41,7 @@ export class SystemCoordinator {
 
     async orchestrateDiscussion(conversationId, message) {
         try {
-            console.log('Starting orchestration for conversation:', conversationId);
+            Logger.info(`[SystemCoordinator] Starting orchestration for conversation: ${conversationId}`);
             
             // Get or create conversation
             let conversation = this.conversationManager.getConversation(conversationId) || 
@@ -50,8 +50,7 @@ export class SystemCoordinator {
                     messages: []
                 });
 
-            // Log the user message
-            console.log('Logging user message:', message);
+            Logger.debug('[SystemCoordinator] Logging user message:', message);
             this.conversationManager.logMessage(conversationId, {
                 agentId: 'user',
                 content: message.content,
@@ -60,20 +59,24 @@ export class SystemCoordinator {
 
             // Get director and validate
             const director = this.agents.get('director-1');
-            if (!director) throw new Error('Director agent not found');
+            if (!director) {
+                Logger.error('[SystemCoordinator] Director agent not found');
+                throw new Error('Director agent not found');
+            }
 
             // Get available agents (excluding director)
             const availableAgents = Array.from(this.agents.values())
                 .filter(agent => agent.id !== director.id);
 
             if (availableAgents.length === 0) {
+                Logger.error('[SystemCoordinator] No available agents found for discussion');
                 throw new Error('No available agents found for discussion');
             }
 
             // Phase 1: Get initial discussion plan from director
-            console.log('Getting discussion plan from director...');
+            Logger.info('[SystemCoordinator] Getting discussion plan from director...');
             const plan = await director.orchestrateDiscussion(message.content, availableAgents);
-            console.log('Received initial plan from director:', plan);
+            Logger.debug('[SystemCoordinator] Received initial plan from director:', plan);
 
             // Add emission for director's plan
             for (const participant of plan.participants) {
@@ -97,20 +100,20 @@ export class SystemCoordinator {
             }
 
             // Execute each participant's initial task
-            console.log('Executing initial discussion plan...');
+            Logger.info('[SystemCoordinator] Executing initial discussion plan...');
             for (const participant of plan.participants) {
-                console.log(`Processing participant: ${participant.id} - ${participant.role}`);
+                Logger.debug(`[SystemCoordinator] Processing participant: ${participant.id} - ${participant.role}`);
                 
                 // Get the agent instance
                 let agent = this.agents.get(participant.id) || 
                            this.agents.get(participant.id.toLowerCase());
                 
                 if (!agent) {
-                    console.warn(`Agent not found for participant:`, participant);
+                    Logger.warn(`[SystemCoordinator] Agent not found for participant:`, participant);
                     continue;
                 }
 
-                console.log(`Found agent:`, {
+                Logger.debug(`[SystemCoordinator] Found agent:`, {
                     id: agent.id,
                     role: agent.role
                 });
@@ -132,7 +135,7 @@ export class SystemCoordinator {
                             response = await agent.generateResponse([message], participant.task);
                     }
 
-                    console.log(`Initial response from ${participant.role}:`, response);
+                    Logger.debug(`[SystemCoordinator] Initial response from ${participant.role}:`, response);
 
                     // Add emission for agent response
                     const agentResponse = {
@@ -163,7 +166,7 @@ export class SystemCoordinator {
                     });
 
                 } catch (error) {
-                    console.error(`Error processing participant ${participant.id}:`, error);
+                    Logger.error(`[SystemCoordinator] Error processing participant ${participant.id}:`, error);
                 }
             }
 
@@ -180,7 +183,7 @@ export class SystemCoordinator {
                     );
 
                     if (!collaborationPlan || !collaborationPlan.nextAgent) {
-                        console.log('No further collaboration needed');
+                        Logger.info('[SystemCoordinator] No further collaboration needed');
                         break;
                     }
 
@@ -193,7 +196,7 @@ export class SystemCoordinator {
                     );
 
                     if (!nextAgent || !previousResponse) {
-                        console.log('Could not find required agent or response');
+                        Logger.error('[SystemCoordinator] Could not find required agent or response');
                         break;
                     }
 
@@ -226,15 +229,15 @@ export class SystemCoordinator {
                 }
 
             } catch (error) {
-                Logger.error('Error in collaboration phase:', error);
+                Logger.error('[SystemCoordinator] Error in collaboration phase:', error);
                 // Continue with the responses we have so far
             }
 
-            console.log('Discussion execution completed. Total responses:', agentResponses.length);
+            Logger.info('[SystemCoordinator] Discussion execution completed. Total responses:', agentResponses.length);
             
             // Generate summary once and store it
             const finalSummary = await director.synthesizeDiscussion(conversation.messages);
-            console.log('Final agent summary:', finalSummary);
+            Logger.debug('[SystemCoordinator] Final agent summary:', finalSummary);
             
             return {
                 plan: plan.participants,
@@ -243,7 +246,7 @@ export class SystemCoordinator {
             };
 
         } catch (error) {
-            Logger.error('Error orchestrating discussion:', error);
+            Logger.error('[SystemCoordinator] Error orchestrating discussion:', error);
             throw error;
         }
     }

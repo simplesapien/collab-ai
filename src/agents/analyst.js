@@ -10,17 +10,17 @@ export class Analyst extends BaseAgent {
 
     async analyzeInformation(message, context = []) {
         try {
-            console.log(`${this.role} analyzing message:`, message);
-            console.log('Incoming context:', context);
+            Logger.debug(`${this.role} analyzing message:`, message);
+            Logger.debug('Incoming context:', context);
             
             const validatedContext = this.validateContext(context);
-            console.log('Validated context:', validatedContext);
+            Logger.debug('Validated context:', validatedContext);
 
-            console.log('Raw incoming message:', message);
+            Logger.debug('Raw incoming message:', message);
             const userPrompt = typeof message === 'object' 
                 ? (message.content || message.text || JSON.stringify(message))
                 : message;
-            console.log('Processed user prompt:', userPrompt);
+            Logger.debug('Processed user prompt:', userPrompt);
 
             const systemPrompt = `You are ${this.name}, ${this.role}. ${this.personality}
             

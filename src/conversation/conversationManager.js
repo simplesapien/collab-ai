@@ -11,7 +11,10 @@ export class ConversationManager {
 
     logMessage(conversationId, message) {
         try {
+            Logger.debug(`[ConversationManager] Attempting to log message for conversation ${conversationId}`);
+            
             if (!Validators.isValidMessage(message)) {
+                Logger.error(`[ConversationManager] Invalid message format`, message);
                 throw new Error('Invalid message format');
             }
 
@@ -32,10 +35,13 @@ export class ConversationManager {
             this.updateMetadata(conversationId);
             this.cleanup();
 
-            Logger.debug(`Message logged for conversation ${conversationId}`, enhancedMessage);
+            Logger.debug(`[ConversationManager] Successfully logged message for conversation ${conversationId}`, {
+                messageId: enhancedMessage.id,
+                timestamp: enhancedMessage.timestamp
+            });
             return enhancedMessage;
         } catch (error) {
-            Logger.error('Error in logMessage:', error);
+            Logger.error('[ConversationManager] Error in logMessage:', error);
             throw error;
         }
     }

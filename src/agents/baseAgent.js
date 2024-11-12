@@ -21,12 +21,12 @@ export class BaseAgent {
     async generateResponse(context, prompt) {
         try {
             const validatedContext = this.validateContext(context);
-            console.log(`${this.role} generating response with context:`, validatedContext);
+            Logger.debug(`${this.role} generating response with context:`, validatedContext);
             
             this.updateState(validatedContext, prompt);
             
             const systemPrompt = this.constructSystemPrompt();
-            console.log(`Generating response for ${this.role} using LLM service with role:`, this.role);
+            Logger.debug(`Generating response for ${this.role} using LLM service with role:`, this.role);
             
             const response = await this.llm.makeModelRequest({
                 systemPrompt: systemPrompt,
@@ -68,7 +68,7 @@ export class BaseAgent {
             Keep your response focused and under 3 sentences.
             Previous context: ${this.getRelevantHistory()}`;
     
-            console.log(`Generating agent response for ${this.role} using LLM service`);
+            Logger.debug(`Generating agent response for ${this.role} using LLM service`);
             
             const response = await this.llm.makeModelRequest({
                 systemPrompt: systemPrompt,
@@ -132,22 +132,19 @@ export class BaseAgent {
     }
 
     validateContext(context) {
-        console.log('Validating context:', context);
+        Logger.debug('Validating context:', context);
         
-        // If undefined or null, return empty array
         if (!context) {
-            console.log('Context was null/undefined, using empty array');
+            Logger.debug('Context was null/undefined, using empty array');
             return [];
         }
         
-        // If already an array, return as is
         if (Array.isArray(context)) {
-            console.log('Context is already an array');
+            Logger.debug('Context is already an array');
             return context;
         }
         
-        // If single message, wrap in array
-        console.log('Converting single message to array');
+        Logger.debug('Converting single message to array');
         return [context];
     }
 }
