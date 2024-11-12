@@ -74,27 +74,31 @@ export class SystemCoordinator {
             const plan = await director.orchestrateDiscussion(message.content, availableAgents);
             Logger.debug('[SystemCoordinator] Received initial plan from director:', plan);
 
-            // Add emission for director's plan
+            // Emit director's plan assignments in real-time
             for (const participant of plan.participants) {
                 const directorResponse = {
                     agentId: 'director-1',
+                    role: 'Director',
                     content: `Director assigns ${participant.role}: ${participant.task}`,
                     timestamp: Date.now()
                 };
+                
                 // Emit through the app's notification system
                 if (this.notifyResponse) {
                     this.notifyResponse(directorResponse);
                 }
+
+                // Log to conversation manager
+                this.conversationManager.logMessage(conversationId, {
+                    agentId: 'director-1',
+                    content: directorResponse.content,
+                    timestamp: Date.now()
+                });
             }
 
             // Phase 2: Execute the initial discussion plan
             const agentResponses = [];
             
-            // Validate plan structure
-            if (!plan || !plan.participants || !Array.isArray(plan.participants)) {
-                throw new Error('Invalid discussion plan received from Director');
-            }
-
             // Execute each participant's initial task
             Logger.info('[SystemCoordinator] Executing initial discussion plan...');
             for (const participant of plan.participants) {
@@ -109,132 +113,128 @@ export class SystemCoordinator {
                     continue;
                 }
 
-                Logger.debug(`[SystemCoordinator] Found agent:`, {
-                    id: agent.id,
-                    role: agent.role
+                // Before generating responses, add this debug log
+                Logger.debug(`[SystemCoordinator] Generating response for ${participant.role}:`, {
+                    id: participant.id,
+                    task: participant.task
                 });
 
                 try {
-                    // Generate initial response based on agent type
-                    let response;
-                    switch (agent.constructor.name) {
-                        case 'Analyst':
-                            response = await agent.analyzeInformation([message], participant.task);
-                            break;
-                        case 'Critic':
-                            response = await agent.evaluateProposal([message], participant.task);
-                            break;
-                        case 'Expert':
-                            response = await agent.provideExpertise([message], participant.task);
-                            break;
-                        default:
-                            response = await agent.generateResponse([message], participant.task);
-                    }
+                    const response = await agent.generateResponse(
+                        conversation.messages,
+                        participant.task
+                    );
 
-                    Logger.debug(`[SystemCoordinator] Initial response from ${participant.role}:`, response);
-
-                    // Add emission for agent response
+                    // Format the agent response properly
                     const agentResponse = {
                         agentId: participant.id,
                         role: participant.role,
-                        task: participant.task,
-                        response: response,
+                        content: `${participant.role}: ${response}`,
                         timestamp: Date.now()
                     };
 
-                    // Emit through the app's notification system
+                    // Only emit through the notification system
                     if (this.notifyResponse) {
-                        this.notifyResponse({
-                            agentId: participant.id,
-                            content: `${participant.role}: ${response}`,
-                            timestamp: Date.now()
-                        });
+                        this.notifyResponse(agentResponse);
                     }
 
                     // Add response to the collection
-                    agentResponses.push(agentResponse);
+                    agentResponses.push({
+                        ...agentResponse,
+                        response: response
+                    });
 
-                    // Log the message to conversation
+                    // Only log to conversation manager (don't emit)
                     this.conversationManager.logMessage(conversationId, {
                         agentId: participant.id,
-                        content: `${participant.role}: ${response}`,
+                        content: agentResponse.content,
                         timestamp: Date.now()
                     });
 
+                    Logger.debug(`[SystemCoordinator] Generated response for ${participant.role}:`, {
+                        content: agentResponse.content
+                    });
                 } catch (error) {
                     Logger.error(`[SystemCoordinator] Error processing participant ${participant.id}:`, error);
                 }
             }
 
-            // Phase 3: Collaborative Discussion Phase
-            try {
-                let iterationCount = 0;
-                const maxIterations = 3;  // Adjustable based on needs
+            // Phase 3: Collaboration Phase
+            Logger.info('[SystemCoordinator] Starting collaboration phase...');
+            const maxCollaborationRounds = 15;
+            let currentRound = 0;
+            
+            while (currentRound < maxCollaborationRounds) {
+                Logger.debug(`[SystemCoordinator] Starting collaboration round ${currentRound + 1}`);
+                
+                // Get next collaboration plan from director
+                const collaborationPlan = await director.facilitateCollaboration(
+                    conversation.messages,
+                    agentResponses
+                );
 
-                while (iterationCount < maxIterations) {
-                    // Get next interaction plan from director
-                    const collaborationPlan = await director.facilitateCollaboration(
-                        conversation.messages,
-                        agentResponses
-                    );
-
-                    if (!collaborationPlan || !collaborationPlan.nextAgent) {
-                        Logger.info('[SystemCoordinator] No further collaboration needed');
-                        break;
-                    }
-
-                    // Find the agent and the response they should build upon
-                    const nextAgent = Array.from(this.agents.values())
-                        .find(agent => agent.role === collaborationPlan.nextAgent);
-                        
-                    const previousResponse = agentResponses.find(
-                        r => r.role === collaborationPlan.respondTo[0]
-                    );
-
-                    if (!nextAgent || !previousResponse) {
-                        Logger.error('[SystemCoordinator] Could not find required agent or response');
-                        break;
-                    }
-
-                    // Generate collaborative response
-                    const response = await nextAgent.respondToAgent(
-                        previousResponse,
-                        collaborationPlan.task
-                    );
-
-                    // Format and log the collaborative response
-                    const collaborativeResponse = {
-                        agentId: nextAgent.id,
-                        role: nextAgent.role,
-                        task: collaborationPlan.task,
-                        response: response,
-                        timestamp: Date.now(),
-                        inResponseTo: previousResponse.agentId
-                    };
-
-                    agentResponses.push(collaborativeResponse);
-
-                    // Log to conversation manager
-                    this.conversationManager.logMessage(conversationId, {
-                        agentId: nextAgent.id,
-                        content: `${nextAgent.role} (responding to ${previousResponse.role}): ${response}`,
-                        timestamp: Date.now()
-                    });
-
-                    iterationCount++;
+                if (!collaborationPlan || !collaborationPlan.nextAgent) {
+                    Logger.debug('[SystemCoordinator] No more collaboration needed');
+                    break;
                 }
 
-            } catch (error) {
-                Logger.error('[SystemCoordinator] Error in collaboration phase:', error);
-                // Continue with the responses we have so far
+                // Get the next agent to respond
+                const nextAgentId = `${collaborationPlan.nextAgent.toLowerCase()}-1`;
+                const nextAgent = this.agents.get(nextAgentId);
+                
+                if (!nextAgent) {
+                    Logger.error(`[SystemCoordinator] Next agent not found: ${nextAgentId}`);
+                    break;
+                }
+
+                try {
+                    const task = `Respond to ${collaborationPlan.respondTo.join(' and ')}'s points: ${collaborationPlan.task}`;
+                    const response = await nextAgent.generateResponse(
+                        conversation.messages,
+                        task
+                    );
+
+                    const collaborativeResponse = {
+                        agentId: nextAgent.id,
+                        role: collaborationPlan.nextAgent,
+                        content: `${collaborationPlan.nextAgent}: ${response}`,
+                        response: response,
+                        timestamp: Date.now()
+                    };
+
+                    // Only emit through notification system
+                    if (this.notifyResponse) {
+                        this.notifyResponse(collaborativeResponse);
+                    }
+
+                    // Only log to conversation manager (don't emit)
+                    this.conversationManager.logMessage(conversationId, {
+                        agentId: nextAgent.id,
+                        content: collaborativeResponse.content,
+                        timestamp: Date.now()
+                    });
+                    
+                    // Add to responses collection
+                    agentResponses.push(collaborativeResponse);
+                } catch (error) {
+                    Logger.error('[SystemCoordinator] Error in collaboration round:', error);
+                    break;
+                }
+
+                currentRound++;
             }
 
-            Logger.info('[SystemCoordinator] Discussion execution completed. Total responses:', agentResponses.length);
-            
-            // Generate summary once and store it
+            // Phase 4: Final Summary (only after collaboration)
             const finalSummary = await director.synthesizeDiscussion(conversation.messages);
-            Logger.debug('[SystemCoordinator] Final agent summary:', finalSummary);
-            
+            if (this.notifyResponse) {
+                this.notifyResponse({
+                    agentId: 'director-1',
+                    role: 'Summary',
+                    content: finalSummary,
+                    timestamp: Date.now()
+                });
+            }
+
             return {
                 plan: plan.participants,
                 responses: agentResponses,
@@ -291,14 +291,6 @@ export class SystemCoordinator {
             Logger.error(`Error handling message for conversation ${conversationId}:`, error);
             throw error;
         }
-    }
-
-    async getConversationSummary(conversationId) {
-        const conversation = this.conversationManager.getConversation(conversationId);
-        if (!conversation) return null;
-
-        const director = this.agents.get('director-1');
-        return await director.synthesizeDiscussion(conversation.messages);
     }
 
     getAgentStatus(agentId) {

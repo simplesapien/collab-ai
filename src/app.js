@@ -50,7 +50,6 @@ export class Application {
                 });
             }
 
-            // Enhance message with metadata
             const enhancedMessage = {
                 agentId: 'user',
                 content: message.content,
@@ -58,47 +57,16 @@ export class Application {
             };
 
             Logger.info(`Processing user message for conversation ${conversationId}`);
-
-            // Add logging to debug the discussion responses
-            Logger.debug('Calling orchestrateDiscussion...');
+            
+            // Get discussion results - responses will be emitted in real-time by SystemCoordinator
             const discussionResults = await this.systemCoordinator.orchestrateDiscussion(
                 conversationId,
                 enhancedMessage
             );
-            Logger.debug('Raw discussion responses:', discussionResults);
-
-            // Format both plan and responses
-            let formattedResponses = [];
-
-            // First, add the director's plan for each agent
-            Logger.debug('📝 Processing director plan responses');
-            discussionResults.plan.forEach(participant => {
-                const directorResponse = {
-                    agentId: 'director-1',
-                    content: `Director assigns ${participant.role}: ${participant.task}`,
-                    role: 'Director'
-                };
-                Logger.debug('🎯 Emitting director response:', directorResponse);
-                this.notifyResponseListeners(directorResponse);
-            });
-
-            // Then add each agent's response
-            Logger.debug('🤖 Processing agent responses');
-            for (const response of discussionResults.responses) {
-                const formattedResponse = {
-                    agentId: response.agentId,
-                    content: `${response.role}: ${response.response}`,
-                    role: response.role
-                };
-                Logger.debug('🎯 Emitting agent response:', formattedResponse);
-                this.notifyResponseListeners(formattedResponse);
-            }
-
-            Logger.debug('Formatted responses:', formattedResponses);
 
             return {
                 conversationId,
-                responses: formattedResponses,
+                responses: discussionResults.responses,
                 summary: discussionResults.summary
             };
 
@@ -114,10 +82,6 @@ export class Application {
                 summary: null
             };
         }
-    }
-
-    async getConversationSummary(conversationId) {
-        return await this.systemCoordinator.getConversationSummary(conversationId);
     }
 
     getSystemStatus() {

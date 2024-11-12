@@ -1,0 +1,44 @@
+Iterative Spiral Structure:
+
+START -> User Query
+↓
+Iteration 1: Initial Understanding
+- Surface-level comprehension
+- Key question/problem identification 
+- Initial scope definition
+↓
+Iteration 2: First Analysis Layer
+- Basic analysis from each relevant agent
+- Identify areas needing deeper exploration
+- Pattern/opportunity recognition
+↓
+Iteration 3: Deeper Exploration
+- Focus on most promising/critical aspects
+- Challenge assumptions from previous iterations
+- Build on validated insights
+↓
+Iteration N: Until reaching either:
+A) Satisfactory depth of understanding
+B) Actionable recommendations
+C) Maximum iteration limit
+
+
+
+Key Aspects to Consider:
+
+Iteration Control
+How do we determine when to move to next iteration?
+What triggers a deeper dive vs moving to conclusions?
+How do we prevent circular discussions?
+
+
+Agent Role Evolution
+How do agent responsibilities shift in each iteration?
+When should certain agents step back or become more prominent?
+How do we maintain coherent progression between iterations?
+
+
+Knowledge Accumulation
+What insights do we carry forward?
+How do we prevent repetition while building depth?
+How do we track the evolution of understanding?
