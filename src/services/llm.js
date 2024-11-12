@@ -2,6 +2,7 @@
 import { Logger } from '../utils/logger.js';
 import { RateLimiter } from './rateLimiter.js';
 import { MessageFormatter } from './messageFormatter.js';
+import { CostTracker } from './costTracker.js';
 
 export class LLMService {
     constructor(config = { maxRetries: 3, timeout: 10000 }) {
@@ -11,6 +12,7 @@ export class LLMService {
             limit: config.rateLimit?.limit || 50,
             interval: config.rateLimit?.interval || 60000
         });
+        this.costTracker = new CostTracker();
     }
 
     async makeModelRequest(params) {
@@ -53,6 +55,17 @@ export class LLMService {
                 }
 
                 const data = await response.json();
+
+                // Track costs if token counts are available in the response
+                if (data.usage) {
+                    this.costTracker.trackRequest(
+                        data.usage.prompt_tokens,
+                        data.usage.completion_tokens
+                    );
+                }
+
+                Logger.debug('[LLMService] API Response Data:', data);
+
                 return MessageFormatter.parseResponse(data.content);
 
             } catch (error) {
@@ -64,6 +77,14 @@ export class LLMService {
                 await new Promise(resolve => setTimeout(resolve, Math.pow(2, attempts) * 1000));
             }
         }
+    }
+
+    getCostSummary() {
+        return this.costTracker.getCostSummary();
+    }
+
+    resetCosts() {
+        this.costTracker.reset();
     }
 
     _validateResponse(data) {

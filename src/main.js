@@ -3,11 +3,13 @@ import { Application } from './app.js';
 import { Logger } from './utils/logger.js';
 import { config } from './config/config.js';
 import { ChatInterface } from './ui/chatInterface.js';
+import { CostDisplay } from './ui/costDisplay.js';
 
 class Main {
     constructor() {
         this.app = new Application();
         this.ui = null;
+        this.costDisplay = null;
     }
 
     async initialize() {
@@ -18,6 +20,7 @@ class Main {
             
             // Initialize UI after app is ready
             this.ui = new ChatInterface(this.app);
+            this.costDisplay = new CostDisplay(this.app);
             
             Logger.info('Main application initialized successfully');
         } catch (error) {

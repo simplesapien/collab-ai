@@ -127,4 +127,25 @@ export class Application {
             uptime: process.uptime()
         };
     }
+
+    async getCostSummary() {
+        try {
+            const costs = this.systemCoordinator.getLLMService().getCostSummary();
+            Logger.info('[Application] Current cost summary:', costs);
+            return costs;
+        } catch (error) {
+            Logger.error('[Application] Error getting cost summary:', error);
+            throw error;
+        }
+    }
+
+    async resetCosts() {
+        try {
+            this.systemCoordinator.getLLMService().resetCosts();
+            Logger.info('[Application] Cost tracking reset');
+        } catch (error) {
+            Logger.error('[Application] Error resetting costs:', error);
+            throw error;
+        }
+    }
 }
