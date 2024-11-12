@@ -10,7 +10,10 @@ export class Director extends BaseAgent {
 
     async orchestrateDiscussion(message, availableAgents) {
         try {
-            console.log('orchestrateDiscussion - starting with:', { message, agentCount: availableAgents.length });
+            Logger.debug('[Director] orchestrateDiscussion - starting with:', { 
+                message, 
+                agentCount: availableAgents.length 
+            });
             
             // Create a mapping of agent roles to their IDs
             const agentMap = availableAgents.reduce((map, agent) => {
@@ -18,11 +21,11 @@ export class Director extends BaseAgent {
                 return map;
             }, {});
 
-            console.log('orchestrateDiscussion - created agent map:', agentMap);
+            Logger.debug('[Director] orchestrateDiscussion - created agent map:', agentMap);
             
             // Handle message object or string
             const userPrompt = typeof message === 'object' ? message.content : message;
-            console.log('orchestrateDiscussion - processed user prompt:', userPrompt);
+            Logger.debug('[Director] orchestrateDiscussion - processed user prompt:', userPrompt);
 
             const systemPrompt = `As the Director, analyze the following message and determine:
             1. Which of these available agents should participate: ${availableAgents.map(a => a.role).join(', ')}
@@ -45,20 +48,20 @@ export class Director extends BaseAgent {
                 ]
             }`;
 
-            console.log('orchestrateDiscussion - making LLM request...');
+            Logger.debug('[Director] orchestrateDiscussion - making LLM request...');
             const response = await this.llm.makeModelRequest({
                 systemPrompt: systemPrompt,
                 userPrompt: userPrompt,
                 context: [], 
                 agentType: this.role
             });
-            console.log('orchestrateDiscussion - received LLM response:', response);
+            Logger.debug('[Director] orchestrateDiscussion - received LLM response:', response);
             
             // Parse and validate the response
             let plan;
             try {
                 plan = typeof response === 'string' ? JSON.parse(response) : response;
-                console.log('orchestrateDiscussion - parsed initial plan:', plan);
+                Logger.debug('[Director] orchestrateDiscussion - parsed initial plan:', plan);
                 
                 if (!plan.participants || !Array.isArray(plan.participants)) {
                     throw new Error('Invalid plan structure: missing or invalid participants array');
@@ -66,17 +69,17 @@ export class Director extends BaseAgent {
                 
                 // Ensure IDs match our system's IDs
                 plan.participants = plan.participants.map(participant => {
-                    console.log('orchestrateDiscussion - mapping participant:', participant);
+                    Logger.debug('[Director] orchestrateDiscussion - mapping participant:', participant);
                     return {
                         ...participant,
                         id: agentMap[participant.role.toLowerCase()] || participant.id
                     };
                 });
 
-                console.log('orchestrateDiscussion - final processed plan:', plan);
+                Logger.debug('[Director] orchestrateDiscussion - final processed plan:', plan);
             } catch (e) {
-                console.log('orchestrateDiscussion - ERROR processing plan:', e.message);
-                Logger.error('Failed to process orchestration plan:', { error: e, plan });
+                Logger.error('[Director] orchestrateDiscussion - Error processing plan:', e.message);
+                Logger.error('[Director] Failed to process orchestration plan:', { error: e, plan });
                 
                 // Fallback plan with default participant
                 plan = {
@@ -86,13 +89,12 @@ export class Director extends BaseAgent {
                         task: 'Analyze the user message and provide initial insights.'
                     }]
                 };
-                console.log('orchestrateDiscussion - using fallback plan:', plan);
+                Logger.warn('[Director] orchestrateDiscussion - using fallback plan:', plan);
             }
 
             return plan;
         } catch (error) {
-            console.log('orchestrateDiscussion - CRITICAL ERROR:', error);
-            Logger.error('Error in orchestrateDiscussion:', error);
+            Logger.error('[Director] orchestrateDiscussion - CRITICAL ERROR:', error);
             throw error;
         }
     }
@@ -114,14 +116,14 @@ export class Director extends BaseAgent {
 
     async facilitateCollaboration(messages, previousResponses) {
         try {
-            console.log('facilitateCollaboration - starting with:', {
+            Logger.debug('[Director] facilitateCollaboration - starting with:', {
                 messagesCount: messages.length,
                 previousResponsesCount: previousResponses.length
             });
 
             // Get the roles from the previous responses
             const participatedRoles = previousResponses.map(r => r.role);
-            console.log('facilitateCollaboration - participated roles:', participatedRoles);
+            Logger.debug('[Director] facilitateCollaboration - participated roles:', participatedRoles);
             
             const systemPrompt = `As the Director, analyze the following conversation and determine the next most valuable interaction.
 
@@ -144,25 +146,24 @@ export class Director extends BaseAgent {
                 "respondTo": ["role that already participated"],
                 "task": "specific instruction for the agent"
             }`;
-            console.log('facilitateCollaboration - constructed system prompt:', systemPrompt);
+            Logger.debug('[Director] facilitateCollaboration - constructed system prompt:', systemPrompt);
 
-            console.log('facilitateCollaboration - making LLM request...');
+            Logger.debug('[Director] facilitateCollaboration - making LLM request...');
             const response = await this.llm.makeModelRequest({
                 systemPrompt: systemPrompt,
                 userPrompt: "",
                 context: messages,
                 agentType: this.role
             });
-            console.log('facilitateCollaboration - received LLM response:', response);
+            Logger.debug('[Director] facilitateCollaboration - received LLM response:', response);
             
             let plan;
             try {
-                console.log('Attempting to parse LLM response into JSON');
+                Logger.debug('[Director] Attempting to parse LLM response into JSON');
                 let jsonStr = response;
                 
                 // Handle various markdown code block formats
                 if (typeof response === 'string') {
-                    // Remove markdown code blocks if present (handles both ```json and ``` formats)
                     const codeBlockMatch = response.match(/```(?:json\n|\n)?(.+?)```/s);
                     if (codeBlockMatch) {
                         jsonStr = codeBlockMatch[1].trim();
@@ -171,37 +172,33 @@ export class Director extends BaseAgent {
                 
                 plan = typeof jsonStr === 'string' ? JSON.parse(jsonStr) : jsonStr;
                 
-                console.log('facilitateCollaboration - parsed plan:', plan);
+                Logger.debug('[Director] facilitateCollaboration - parsed plan:', plan);
                 
                 // Validate nextAgent
                 const validRoles = ['Analyst', 'Critic', 'Expert'];
-                console.log('facilitateCollaboration - validating nextAgent:', plan.nextAgent);
+                Logger.debug('[Director] facilitateCollaboration - validating nextAgent:', plan.nextAgent);
                 if (!validRoles.includes(plan.nextAgent)) {
-                    console.log('facilitateCollaboration - INVALID nextAgent:', plan.nextAgent);
-                    Logger.error('Invalid agent role received from LLM:', plan.nextAgent);
+                    Logger.error('[Director] Invalid agent role received from LLM:', plan.nextAgent);
                     return null;
                 }
 
                 // Validate respondTo
-                console.log('facilitateCollaboration - validating respondTo:', plan.respondTo);
+                Logger.debug('[Director] facilitateCollaboration - validating respondTo:', plan.respondTo);
                 if (!plan.respondTo.every(role => participatedRoles.includes(role))) {
-                    console.log('facilitateCollaboration - INVALID respondTo:', plan.respondTo);
-                    Logger.error('Invalid respondTo role received from LLM:', plan.respondTo);
+                    Logger.error('[Director] Invalid respondTo role received from LLM:', plan.respondTo);
                     return null;
                 }
-                console.log('facilitateCollaboration - validation successful');
+                Logger.debug('[Director] facilitateCollaboration - validation successful');
 
             } catch (e) {
-                console.log('facilitateCollaboration - ERROR parsing plan:', plan);
-                Logger.error('Failed to parse collaboration plan:', e);
+                Logger.error('[Director] facilitateCollaboration - Error parsing plan:', e);
                 return null;
             }
 
-            console.log('facilitateCollaboration - returning final plan:', plan);
+            Logger.debug('[Director] facilitateCollaboration - returning final plan:', plan);
             return plan;
         } catch (error) {
-            console.log('facilitateCollaboration - CRITICAL ERROR:', error);
-            Logger.error('Error in facilitateCollaboration:', error);
+            Logger.error('[Director] facilitateCollaboration - CRITICAL ERROR:', error);
             return null;
         }
     }
@@ -209,23 +206,23 @@ export class Director extends BaseAgent {
     async synthesizeDiscussion(context) {
         try {
             const startTime = Date.now();
-            console.log(`[${startTime}] synthesizeDiscussion started with:`, {
+            Logger.debug(`[Director] synthesizeDiscussion started with:`, {
                 contextLength: context?.length,
                 messages: context
             });
 
             const validatedContext = this.validateContext(context);
-            console.log('Validated context:', validatedContext);
+            Logger.debug('[Director] Validated context:', validatedContext);
 
-            const systemPrompt = `As the Director, synthesize the key points of this conversation into a clear, actionable summary.
-            
-            Requirements:
-            1. Include the initial question/topic
-            2. Summarize the main points from each agent
-            3. Highlight areas of agreement
-            4. List concrete next steps
-            
-            Important: Ensure the summary reflects the ENTIRE conversation history.`;
+            const systemPrompt = `As the Director, provide a concise synthesis of this conversation.
+
+            Create a brief summary that includes:
+            1. The core discussion topic
+            2. Key insights and notable points raised
+            3. Important patterns or themes that emerged
+            4. Essential conclusions reached
+
+            Keep the summary clear and focused. Prioritize meaningful insights over comprehensive coverage.`;
             
             const response = await this.llm.makeModelRequest({
                 systemPrompt: systemPrompt,
@@ -234,10 +231,10 @@ export class Director extends BaseAgent {
                 agentType: this.role
             });
 
-            console.log(`[${startTime}] Generated summary:`, response);
+            Logger.debug(`[Director] Generated summary:`, response);
             return response;
         } catch (error) {
-            Logger.error('Error in Director.synthesizeDiscussion:', error);
+            Logger.error('[Director] Error in synthesizeDiscussion:', error);
             throw error;
         }
     }
@@ -261,7 +258,7 @@ export class Director extends BaseAgent {
 
     updateParticipants(participants) {
         if (!Array.isArray(participants)) {
-            Logger.error('Invalid participants data:', participants);
+            Logger.error('[Director] Invalid participants data:', participants);
             participants = []; // Set empty array as fallback
         }
         
@@ -271,6 +268,7 @@ export class Director extends BaseAgent {
                 .map(p => p.id)
         );
         this.state.currentTask = 'guiding_discussion';
+        Logger.debug('[Director] Updated active participants:', Array.from(this.activeParticipants));
     }
 
     getActiveParticipants() {

@@ -30,4 +30,12 @@ export class Validators {
             && typeof response.content === 'string'
             && response.content.trim().length > 0;
     }
+
+    static isValidParticipant(participant) {
+        return participant 
+            && typeof participant === 'object'
+            && typeof participant.id === 'string'
+            && typeof participant.role === 'string'
+            && typeof participant.task === 'string';
+    }
 }

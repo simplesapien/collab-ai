@@ -10,11 +10,11 @@ export class Critic extends BaseAgent {
 
     async evaluateProposal(context, proposal) {
         try {
-            console.log(`${this.role} evaluating proposal:`, proposal);
-            console.log('Incoming context:', context);
+            Logger.debug(`${this.role} evaluating proposal:`, proposal);
+            Logger.debug('Incoming context:', context);
             
             const validatedContext = this.validateContext(context);
-            console.log('Validated context:', validatedContext);
+            Logger.debug('Validated context:', validatedContext);
 
             const systemPrompt = `As ${this.name}, evaluate the following proposal:
             Consider: feasibility, potential risks, and areas for improvement.

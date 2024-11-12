@@ -17,12 +17,12 @@ export class Application {
     }
 
     notifyResponseListeners(response) {
-        console.log('🔔 Notifying listeners of response:', response);
+        Logger.debug('🔔 Notifying listeners of response:', response);
         this.responseCallbacks.forEach(callback => {
             try {
                 callback(response);
             } catch (error) {
-                console.error('Error in response callback:', error);
+                Logger.error('Error in response callback:', error);
             }
         });
     }
@@ -39,7 +39,7 @@ export class Application {
 
     async processUserMessage(message, conversationId = null) {
         try {
-            console.log('Processing message in app.js:', message);
+            Logger.debug('Processing message in app.js:', message);
 
             // Create new conversation if none exists
             if (!conversationId) {
@@ -60,41 +60,41 @@ export class Application {
             Logger.info(`Processing user message for conversation ${conversationId}`);
 
             // Add logging to debug the discussion responses
-            console.log('Calling orchestrateDiscussion...');
+            Logger.debug('Calling orchestrateDiscussion...');
             const discussionResults = await this.systemCoordinator.orchestrateDiscussion(
                 conversationId,
                 enhancedMessage
             );
-            console.log('Raw discussion responses:', discussionResults);
+            Logger.debug('Raw discussion responses:', discussionResults);
 
             // Format both plan and responses
             let formattedResponses = [];
 
             // First, add the director's plan for each agent
-            console.log('📝 Processing director plan responses');
+            Logger.debug('📝 Processing director plan responses');
             discussionResults.plan.forEach(participant => {
                 const directorResponse = {
                     agentId: 'director-1',
                     content: `Director assigns ${participant.role}: ${participant.task}`,
                     role: 'Director'
                 };
-                console.log('🎯 Emitting director response:', directorResponse);
+                Logger.debug('🎯 Emitting director response:', directorResponse);
                 this.notifyResponseListeners(directorResponse);
             });
 
             // Then add each agent's response
-            console.log('🤖 Processing agent responses');
+            Logger.debug('🤖 Processing agent responses');
             for (const response of discussionResults.responses) {
                 const formattedResponse = {
                     agentId: response.agentId,
                     content: `${response.role}: ${response.response}`,
                     role: response.role
                 };
-                console.log('🎯 Emitting agent response:', formattedResponse);
+                Logger.debug('🎯 Emitting agent response:', formattedResponse);
                 this.notifyResponseListeners(formattedResponse);
             }
 
-            console.log('Formatted responses:', formattedResponses);
+            Logger.debug('Formatted responses:', formattedResponses);
 
             return {
                 conversationId,
