@@ -1,0 +1,35 @@
+.cost-display {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    background: #f5f5f5;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    padding: 15px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    font-size: 14px;
+    z-index: 1000;
+}
+
+.cost-display h3 {
+    margin: 0 0 10px 0;
+    font-size: 16px;
+}
+
+.cost-details p {
+    margin: 5px 0;
+}
+
+#reset-costs {
+    margin-top: 10px;
+    padding: 5px 10px;
+    background: #007bff;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+#reset-costs:hover {
+    background: #0056b3;
+} 

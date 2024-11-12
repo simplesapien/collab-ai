@@ -64,7 +64,7 @@ class Server {
                 });
 
                 Logger.debug('OpenAI API response:', completion.choices[0].message);
-                res.json({ content: completion.choices[0].message.content });
+                res.json({ content: completion.choices[0].message.content, usage: {completion_tokens: completion.usage.completion_tokens, prompt_tokens: completion.usage.prompt_tokens} });
 
             } catch (error) {
                 Logger.error('OpenAI API Error:', error);

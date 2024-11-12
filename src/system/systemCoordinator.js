@@ -2,10 +2,6 @@
 import { ConversationManager } from '../conversation/conversationManager.js';
 import { LLMService } from '../services/llm.js';
 import { Logger } from '../utils/logger.js';
-import { Director } from '../agents/director.js';
-import { Analyst } from '../agents/analyst.js';
-import { Critic } from '../agents/critic.js';
-import { Expert } from '../agents/expert.js';
 import { config } from '../config/config.js';
 import { AgentFactory } from '../agents/agentFactory.js';
 
@@ -321,5 +317,9 @@ export class SystemCoordinator {
 
     getAllAgentStatuses() {
         return Array.from(this.agents.values()).map(agent => this.getAgentStatus(agent.id));
+    }
+
+    getLLMService() {
+        return this.llmService;
     }
 }
