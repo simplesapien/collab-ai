@@ -1,3 +1,5 @@
+import { Logger } from '../utils/logger.js';
+
 export class CostDisplay {
     constructor(app) {
         this.app = app;
@@ -27,23 +29,30 @@ export class CostDisplay {
         llmService.costTracker.onCostUpdate(costs => this.updateDisplay(costs));
         
         // Setup reset button
-        document.getElementById('reset-costs').addEventListener('click', () => {
-            this.app.resetCosts();
-            this.updateDisplay();
+        document.getElementById('reset-costs').addEventListener('click', async () => {
+            await this.app.resetCosts();
+            await this.updateDisplay();
         });
 
         // Initial update
-        this.updateDisplay();
+        await this.updateDisplay();
     }
 
-    // Modified to accept costs directly
-    updateDisplay(costs) {
+    async updateDisplay(costs) {
         try {
-            costs = costs || this.app.getCostSummary();
+            // Initialize with default values
+            const defaultCosts = {
+                inputTokens: 0,
+                outputTokens: 0,
+                totalCost: '0.000000'
+            };
             
-            document.getElementById('input-tokens').textContent = costs.inputTokens.toLocaleString();
-            document.getElementById('output-tokens').textContent = costs.outputTokens.toLocaleString();
-            document.getElementById('total-cost').textContent = parseFloat(costs.totalCost).toFixed(6);
+            // Use provided costs or try to get from app, fallback to defaults
+            const displayCosts = costs || (await this.app.getCostSummary()) || defaultCosts;
+            
+            document.getElementById('input-tokens').textContent = displayCosts.inputTokens.toLocaleString();
+            document.getElementById('output-tokens').textContent = displayCosts.outputTokens.toLocaleString();
+            document.getElementById('total-cost').textContent = parseFloat(displayCosts.totalCost).toFixed(6);
         } catch (error) {
             Logger.error('[CostDisplay] Error updating display:', error);
         }

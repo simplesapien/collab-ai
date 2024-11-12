@@ -55,20 +55,33 @@ export class BaseAgent {
 
     async respondToAgent(previousResponse, task) {
         try {
+            Logger.debug(`[${this.role}] Starting response to ${previousResponse.role}`, {
+                respondingTo: previousResponse.agentId,
+                task: task,
+                previousResponse: previousResponse.response
+            });
+
+            // Track interaction in state
+            this.state.currentTask = `responding_to_${previousResponse.role}`;
+            
             const systemPrompt = `You are ${this.name}, ${this.role}. ${this.personality}
             
-            Review this response from ${previousResponse.role}:
+            You are DIRECTLY responding to this message from ${previousResponse.role}:
             "${previousResponse.response}"
             
             Your task: ${task}
             
-            Build upon or respectfully challenge their points while adding your unique expertise 
-            from: ${this.knowledgeBase.join(', ')}.
+            Important Guidelines:
+            - Explicitly reference and build upon the points made by ${previousResponse.role}
+            - Apply your unique expertise: ${this.knowledgeBase.join(', ')}
+            - Start your response with "Responding to ${previousResponse.role}'s point about..."
+            - Keep your response focused and under 3 sentences
             
-            Keep your response focused and under 3 sentences.
             Previous context: ${this.getRelevantHistory()}`;
-    
-            Logger.debug(`Generating agent response for ${this.role} using LLM service`);
+
+            Logger.debug(`[${this.role}] Constructed system prompt for agent response`, {
+                systemPrompt: systemPrompt
+            });
             
             const response = await this.llm.makeModelRequest({
                 systemPrompt: systemPrompt,
@@ -77,10 +90,17 @@ export class BaseAgent {
                 agentType: this.role
             });
             
-            this.updateMemory(previousResponse.response, response);
+            // Track the interaction in memory
+            this.updateMemory(previousResponse.response, response, previousResponse.role);
+            
+            Logger.debug(`[${this.role}] Generated response to ${previousResponse.role}`, {
+                originalMessage: previousResponse.response,
+                generatedResponse: response
+            });
+
             return response;
         } catch (error) {
-            Logger.error(`Error generating response for agent ${this.id}:`, error);
+            Logger.error(`[${this.role}] Error responding to ${previousResponse.role}:`, error);
             throw error;
         }
     }
@@ -106,9 +126,14 @@ export class BaseAgent {
             .join('\n');
     }
 
-    updateMemory(prompt, response) {
+    updateMemory(prompt, response, respondingTo = null) {
         const key = Date.now();
-        this.memory.set(key, { prompt, response });
+        this.memory.set(key, { 
+            prompt, 
+            response,
+            respondingTo,
+            timestamp: key 
+        });
         
         // Cleanup old memories
         const keys = Array.from(this.memory.keys()).sort();

@@ -56,19 +56,20 @@ export class ChatInterface {
     setupResponseListener() {
         Logger.debug('[ChatInterface] Setting up response listener');
         this.app.onResponse((response) => {
-            Logger.debug('[ChatInterface] Received real-time response in UI:', response);
+            Logger.debug('[ChatInterface] Received response:', {
+                agentId: response.agentId,
+                role: response.role,
+                contentPreview: response.content.substring(0, 50)
+            });
             
             // Remove loading message if it exists
             if (this.loadingMessage && this.loadingMessage.parentNode) {
-                Logger.debug('[ChatInterface] Removing loading message');
                 this.loadingMessage.remove();
                 this.loadingMessage = null;
             }
 
             // Add response to UI
-            Logger.debug('[ChatInterface] Adding message to UI');
-            const messageElement = this.appendMessage(response.agentId, response.content);
-            Logger.debug('[ChatInterface] Message added to UI:', messageElement);
+            this.appendMessage(response.agentId, response.content);
         });
     }
 
@@ -101,20 +102,19 @@ export class ChatInterface {
             // Update conversation ID if new
             this.currentConversationId = result.conversationId;
 
+            // Only handle errors from the result
             if (result.responses && Array.isArray(result.responses)) {
                 result.responses.forEach(response => {
                     if (response.error) {
                         this.appendErrorMessage(response.content);
-                    } else {
-                        this.appendMessage(response.agentId, response.content);
                     }
                 });
             }
 
-            // Add summary if it exists
-            if (result.summary) {
-                Logger.debug('[ChatInterface] Adding summary message');
-                this.appendSummaryMessage(result.summary);
+            // Remove loading message if it still exists
+            if (this.loadingMessage && this.loadingMessage.parentNode) {
+                this.loadingMessage.remove();
+                this.loadingMessage = null;
             }
 
         } catch (error) {
@@ -219,15 +219,34 @@ export class ChatInterface {
         headerDiv.className = 'summary-header';
         headerDiv.textContent = '🔍 Conversation Summary';
         
+        // Configure marked options for better rendering
+        marked.setOptions({
+            breaks: true,
+            gfm: true,
+            headerIds: false
+        });
+        
         // Create content div and render markdown
         const contentDiv = document.createElement('div');
         contentDiv.className = 'summary-content';
-        contentDiv.innerHTML = DOMPurify.sanitize(marked.parse(content)); // Convert markdown to HTML and sanitize
+        
+        // Parse markdown and sanitize with specific configuration
+        const sanitizedHtml = DOMPurify.sanitize(marked.parse(content), {
+            ALLOWED_TAGS: [
+                'p', 'br', 'strong', 'em', 'h1', 'h2', 'h3', 'h4',
+                'ul', 'ol', 'li', 'blockquote', 'code', 'pre'
+            ],
+            ALLOWED_ATTR: ['class'],
+            KEEP_CONTENT: true
+        });
+        
+        contentDiv.innerHTML = sanitizedHtml;
         
         messageDiv.appendChild(headerDiv);
         messageDiv.appendChild(contentDiv);
         chatMessages.appendChild(messageDiv);
         chatMessages.scrollTop = chatMessages.scrollHeight;
+        
         Logger.debug('[ChatInterface] Summary message appended');
         return messageDiv;
     }

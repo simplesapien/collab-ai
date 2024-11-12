@@ -121,17 +121,19 @@ export class Director extends BaseAgent {
                 previousResponsesCount: previousResponses.length
             });
 
-            // Get the roles from the previous responses
-            const participatedRoles = previousResponses.map(r => r.role);
-            Logger.debug('[Director] facilitateCollaboration - participated roles:', participatedRoles);
-            
+            // Format previous responses for the prompt
+            const formattedResponses = previousResponses.map(r => ({
+                role: r.role || r.agentId.split('-')[0], // Fallback to agent ID if role is missing
+                response: r.response || r.content.split(': ')[1] // Handle both formats
+            }));
+
             const systemPrompt = `As the Director, analyze the following conversation and determine the next most valuable interaction.
 
             Previous responses in this conversation:
-            ${previousResponses.map(r => `${r.role}: ${r.response}`).join('\n')}
+            ${formattedResponses.map(r => `${r.role}: ${r.response}`).join('\n')}
 
             Available roles: Analyst, Critic, Expert
-            Roles who have already contributed: ${participatedRoles.join(', ')}
+            Roles who have already contributed: ${formattedResponses.map(r => r.role).join(', ')}
 
             Determine the next interaction using ONLY the available roles listed above.
             
@@ -146,6 +148,7 @@ export class Director extends BaseAgent {
                 "respondTo": ["role that already participated"],
                 "task": "specific instruction for the agent"
             }`;
+
             Logger.debug('[Director] facilitateCollaboration - constructed system prompt:', systemPrompt);
 
             Logger.debug('[Director] facilitateCollaboration - making LLM request...');
@@ -184,7 +187,7 @@ export class Director extends BaseAgent {
 
                 // Validate respondTo
                 Logger.debug('[Director] facilitateCollaboration - validating respondTo:', plan.respondTo);
-                if (!plan.respondTo.every(role => participatedRoles.includes(role))) {
+                if (!plan.respondTo.every(role => formattedResponses.map(r => r.role).includes(role))) {
                     Logger.error('[Director] Invalid respondTo role received from LLM:', plan.respondTo);
                     return null;
                 }
@@ -205,16 +208,40 @@ export class Director extends BaseAgent {
 
     async synthesizeDiscussion(context) {
         try {
-            const startTime = Date.now();
             Logger.debug(`[Director] synthesizeDiscussion started with:`, {
                 contextLength: context?.length,
                 messages: context
             });
 
-            const validatedContext = this.validateContext(context);
-            Logger.debug('[Director] Validated context:', validatedContext);
+            // Ensure context is valid and has the expected structure
+            const validatedContext = Array.isArray(context) ? context : [];
+            
+            // Filter out system messages and director assignments
+            const relevantMessages = validatedContext.filter(message => {
+                const isUserOrAgentMessage = message.agentId && message.content;
+                const isNotDirectorAssignment = !message.content.startsWith('Director assigns');
+                return isUserOrAgentMessage && isNotDirectorAssignment;
+            });
 
+            // Format messages for the LLM prompt
+            const formattedMessages = relevantMessages.map(message => {
+                // Extract the actual content if it follows the "Role: content" format
+                const content = message.content.includes(':') 
+                    ? message.content.split(':').slice(1).join(':').trim()
+                    : message.content;
+
+                return {
+                    agentId: message.agentId,
+                    content: content
+                };
+            });
+
+            Logger.debug('[Director] Synthesizing discussion with formatted messages:', formattedMessages);
+            
             const systemPrompt = `As the Director, provide a concise synthesis of this conversation.
+
+            Conversation messages:
+            ${formattedMessages.map(m => `- ${m.agentId}: ${m.content}`).join('\n')}
 
             Create a brief summary that includes:
             1. The core discussion topic
@@ -227,7 +254,7 @@ export class Director extends BaseAgent {
             const response = await this.llm.makeModelRequest({
                 systemPrompt: systemPrompt,
                 userPrompt: "Provide a comprehensive synthesis of the discussion.",
-                context: validatedContext,
+                context: [],
                 agentType: this.role
             });
 

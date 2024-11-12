@@ -44,7 +44,7 @@ class Server {
                     userPrompt, 
                     context = [], 
                     temperature = 0.7, // Default if not provided
-                    model = "gpt-3.5-turbo" // Default if not provided
+                    model = "gpt-4o-mini" // Default if not provided
                 } = req.body;
                 
                 // Ensure context is an array
