@@ -14,6 +14,7 @@ export class SystemCoordinator {
         // Track active conversations
         this.activeConversations = new Set();
         this.notifyResponse = null;
+        this.currentCollaborationRound = 0;
     }
 
     async initialize(agentConfigs, notifyCallback) {
@@ -162,10 +163,10 @@ export class SystemCoordinator {
             // Phase 3: Collaboration Phase
             Logger.info('[SystemCoordinator] Starting collaboration phase...');
             const maxCollaborationRounds = 15;
-            let currentRound = 0;
+            this.currentCollaborationRound = 0;
             
-            while (currentRound < maxCollaborationRounds) {
-                Logger.debug(`[SystemCoordinator] Starting collaboration round ${currentRound + 1}`);
+            while (this.currentCollaborationRound < maxCollaborationRounds) {
+                Logger.debug(`[SystemCoordinator] Starting collaboration round ${this.currentCollaborationRound + 1}`);
                 
                 // Get next collaboration plan from director
                 const collaborationPlan = await director.facilitateCollaboration(
@@ -221,7 +222,7 @@ export class SystemCoordinator {
                     break;
                 }
 
-                currentRound++;
+                this.currentCollaborationRound++;
             }
 
             // Phase 4: Final Summary (only after collaboration)
@@ -234,6 +235,9 @@ export class SystemCoordinator {
                     timestamp: Date.now()
                 });
             }
+
+            // Reset the collaboration round counter after synthesis
+            this.currentCollaborationRound = 0;
 
             return {
                 plan: plan.participants,

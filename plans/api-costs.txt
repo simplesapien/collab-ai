@@ -1,19 +1,18 @@
 WORKING MEMORY INTEGRATION
 Original Approach Problem: Could lead to redundant API calls to re-analyze or re-validate information
+
 Cost-Efficient Approach:
-
-
 Cache processed responses
 Store derived insights
 Maintain conversation embeddings for quick similarity checks
 Keep track of already-validated information to avoid re-validation
+Cut each context down to key points + questions when passing them around? 
 
 
 VALIDATION SYSTEM
 Original Approach Problem: Separate validation calls would multiply API costs
+
 Cost-Efficient Approach:
-
-
 Include validation requirements in the initial prompts
 Use batched validation (multiple checks in one API call)
 Implement local validation first (rule-based, consistency checks)
@@ -22,12 +21,11 @@ Only use API calls for critical validation points
 
 KNOWLEDGE GATHERING
 Original Approach Problem: Separate calls for gathering and analysis
+
 Cost-Efficient Approach:
-
-
 Combine gathering and initial analysis in the same prompt
-Use structured prompts that force the LLM to:
 
+Use structured prompts that force the LLM to:
 Extract key information
 Identify questions
 Flag potential issues
