@@ -11,13 +11,25 @@ export const config = {
     
     // LLM service configuration
     llm: {
-        maxRetries: 3,           // Maximum retry attempts for failed requests
-        timeout: 15000,          // Request timeout in milliseconds
-        defaultModel: "gpt-4o-mini",  // Default model for most agents
-        temperature: 0.7,         // Response randomness (0-1)
-        modelsByAgent: {                 // Specific models for different agents
-            director: "gpt-4o-mini"  // Use GPT-4 for director
+        maxRetries: 3,           
+        timeout: 15000,          
+        defaultModel: "gpt-4o-mini",  
+        temperature: 0.7,         
+        modelsByAgent: {                 
+            director: "gpt-4o-mini"  
         }
+    },
+    
+    // Add new collaboration settings
+    collaboration: {
+        maxCollaborationRounds: 15,    // Maximum number of back-and-forth exchanges
+        qualityThresholds: {
+            minRelevanceScore: 0.7,    // Minimum topic relevance score (0-1)
+            minCoherenceScore: 0.6,    // Minimum response coherence score (0-1)
+            maxTopicDrift: 0.3,        // Maximum allowed topic drift before termination
+        },
+        consensusThreshold: 0.8,       // Agreement level needed for consensus (0-1)
+        minResponseQuality: 0.65       // Minimum quality score for responses (0-1)
     },
     
     // Memory management settings
