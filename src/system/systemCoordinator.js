@@ -4,6 +4,7 @@ import { LLMService } from '../services/llm.js';
 import { Logger } from '../utils/logger.js';
 import { config } from '../config/config.js';
 import { AgentFactory } from '../agents/agentFactory.js';
+import { CollaborationQualityGate } from '../quality/CollaborationQualityGate.js';
 
 export class SystemCoordinator {
     constructor() {
@@ -14,7 +15,7 @@ export class SystemCoordinator {
         // Track active conversations
         this.activeConversations = new Set();
         this.notifyResponse = null;
-        this.currentCollaborationRound = 0;
+        this.qualityGate = new CollaborationQualityGate(config.collaboration);
     }
 
     async initialize(agentConfigs, notifyCallback) {
@@ -97,7 +98,7 @@ export class SystemCoordinator {
                 });
             }
 
-            // Phase 2: Execute the initial discussion plan
+            // Phase 2: Execute the initial agent responses to director's tasks
             const agentResponses = [];
             
             // Execute each participant's initial task
@@ -162,20 +163,32 @@ export class SystemCoordinator {
 
             // Phase 3: Collaboration Phase
             Logger.info('[SystemCoordinator] Starting collaboration phase...');
-            const maxCollaborationRounds = 15;
-            this.currentCollaborationRound = 0;
+            this.qualityGate.resetRoundCounter();
             
-            while (this.currentCollaborationRound < maxCollaborationRounds) {
-                Logger.debug(`[SystemCoordinator] Starting collaboration round ${this.currentCollaborationRound + 1}`);
+            while (true) {
+                Logger.debug(`[SystemCoordinator] Starting collaboration round ${this.qualityGate.currentRound + 1}`);
                 
+                // Check quality gates before continuing
+                const qualityCheck = await this.qualityGate.validateCollaborationContinuation(
+                    conversation,
+                    agentResponses
+                );
+
+                if (!qualityCheck.shouldContinue) {
+                    Logger.info(`[SystemCoordinator] Ending collaboration: ${qualityCheck.reason}`);
+                    break;
+                }
+
                 // Get next collaboration plan from director
                 const collaborationPlan = await director.facilitateCollaboration(
                     conversation.messages,
                     agentResponses
                 );
 
-                if (!collaborationPlan || !collaborationPlan.nextAgent) {
-                    Logger.debug('[SystemCoordinator] No more collaboration needed');
+                if (!collaborationPlan || 
+                    !collaborationPlan.nextAgent || 
+                    collaborationPlan.respondTo.includes(collaborationPlan.nextAgent)) {
+                    Logger.debug('[SystemCoordinator] Invalid collaboration plan - preventing self-response');
                     break;
                 }
 
@@ -185,6 +198,13 @@ export class SystemCoordinator {
                 
                 if (!nextAgent) {
                     Logger.error(`[SystemCoordinator] Next agent not found: ${nextAgentId}`);
+                    break;
+                }
+
+                // Add validation to ensure the next agent hasn't just responded
+                const lastResponse = agentResponses[agentResponses.length - 1];
+                if (lastResponse && lastResponse.agentId === nextAgentId) {
+                    Logger.debug('[SystemCoordinator] Preventing consecutive responses from same agent');
                     break;
                 }
 
@@ -222,7 +242,7 @@ export class SystemCoordinator {
                     break;
                 }
 
-                this.currentCollaborationRound++;
+                this.qualityGate.incrementRound();
             }
 
             // Phase 4: Final Summary (only after collaboration)
@@ -236,8 +256,8 @@ export class SystemCoordinator {
                 });
             }
 
-            // Reset the collaboration round counter after synthesis
-            this.currentCollaborationRound = 0;
+            // Reset is now handled by qualityGate
+            this.qualityGate.resetRoundCounter();
 
             return {
                 plan: plan.participants,

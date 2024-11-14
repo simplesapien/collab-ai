@@ -129,23 +129,24 @@ export class Director extends BaseAgent {
 
             const systemPrompt = `As the Director, analyze the following conversation and determine the next most valuable interaction.
 
-            Previous responses in this conversation:
-            ${formattedResponses.map(r => `${r.role}: ${r.response}`).join('\n')}
+            Last response in this conversation:
+            --${formattedResponses[formattedResponses.length - 1]?.response}--
 
             Available roles: Analyst, Critic, Expert
-            Roles who have already contributed: ${formattedResponses.map(r => r.role).join(', ')}
 
             Determine the next interaction using ONLY the available roles listed above.
             
             Requirements:
             1. nextAgent must be one of: Analyst, Critic, or Expert
             2. respondTo must be one of the roles that already contributed
-            3. Task should encourage building upon or challenging previous points
+            3. nextAgent CANNOT be the same as any role in respondTo
+            4. nextAgent CANNOT be the same as the last agent who spoke
+            5. Task should build upon the last response in the conversation
 
             Respond in strict JSON format:
             {
                 "nextAgent": "one of: Analyst, Critic, or Expert",
-                "respondTo": ["role that already participated"],
+                "respondTo": ["${formattedResponses[formattedResponses.length - 1]?.role}"],
                 "task": "specific instruction for the agent"
             }`;
 
@@ -192,6 +193,16 @@ export class Director extends BaseAgent {
                     return null;
                 }
                 Logger.debug('[Director] facilitateCollaboration - validation successful');
+
+                // Add additional validation before returning the plan
+                if (plan.nextAgent && plan.respondTo) {
+                    const lastResponse = formattedResponses[formattedResponses.length - 1];
+                    if (plan.nextAgent === lastResponse?.role || 
+                        plan.respondTo.includes(plan.nextAgent)) {
+                        Logger.warn('[Director] Invalid plan - agent would respond to self');
+                        return null;
+                    }
+                }
 
             } catch (e) {
                 Logger.error('[Director] facilitateCollaboration - Error parsing plan:', e);
