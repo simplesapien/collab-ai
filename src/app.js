@@ -9,6 +9,7 @@ export class Application {
         this.systemCoordinator = new SystemCoordinator();
         this.activeConversations = new Map();
         this.responseCallbacks = new Set();
+        this.notifyResponseListeners = this.notifyResponseListeners.bind(this);
     }
 
     onResponse(callback) {
@@ -17,7 +18,7 @@ export class Application {
     }
 
     notifyResponseListeners(response) {
-        Logger.debug('🔔 Notifying listeners of response:', response);
+        Logger.debug('🔔 Application notifying listeners of response:', response);
         this.responseCallbacks.forEach(callback => {
             try {
                 callback(response);
@@ -29,7 +30,11 @@ export class Application {
 
     async initialize() {
         try {
-            await this.systemCoordinator.initialize(agentConfigs, this.notifyResponseListeners.bind(this));
+            await this.systemCoordinator.initialize(
+                agentConfigs, 
+                this.notifyResponseListeners.bind(this)
+            );
+            
             Logger.info('Application initialized successfully');
         } catch (error) {
             Logger.error('Failed to initialize application:', error);
@@ -58,7 +63,8 @@ export class Application {
 
             Logger.info(`Processing user message for conversation ${conversationId}`);
             
-            // Get discussion results - responses will be emitted in real-time by SystemCoordinator
+            // Add debug log before orchestrating discussion
+            Logger.debug('Starting discussion orchestration with callback:', !!this.responseCallbacks.size);
             const discussionResults = await this.systemCoordinator.collaborationOrchestrator.orchestrateDiscussion(
                 conversationId,
                 enhancedMessage
@@ -114,6 +120,15 @@ export class Application {
     }
 
     async onAgentThinking(callback) {
-        this.systemCoordinator.onAgentThinking = (agentId, phase) => callback(agentId, phase);
+        Logger.debug('Setting up thinking callback');
+        this.thinkingCallback = callback;
+        if (this.systemCoordinator) {
+            this.systemCoordinator.onAgentThinking = (agentId, phase) => {
+                Logger.debug('Thinking callback triggered:', { agentId, phase });
+                if (this.thinkingCallback) {
+                    this.thinkingCallback(agentId, phase);
+                }
+            };
+        }
     }
 }

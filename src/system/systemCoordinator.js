@@ -23,21 +23,22 @@ export class SystemCoordinator {
     async initialize(agentConfigs, notifyCallback) {
         try {
             this.notifyResponse = notifyCallback;
+            
+            // Initialize the collaboration orchestrator with both callbacks
+            this.collaborationOrchestrator = new CollaborationOrchestrator(
+                this.conversationManager,
+                this.agents,
+                this.qualityGate,
+                this.notifyResponse,
+                (agentId, phase) => this.notifyAgentThinking(agentId, phase)  // Pass the thinking callback
+            );
+
             // Create and initialize each agent type
             for (const [type, config] of Object.entries(agentConfigs)) {
                 const agent = this.initializeAgent(config);
                 this.agents.set(agent.id, agent);
                 Logger.info(`Initialized ${type} agent: ${agent.id}`);
             }
-
-            // Initialize the collaboration orchestrator
-            this.collaborationOrchestrator = new CollaborationOrchestrator(
-                this.conversationManager,
-                this.agents,
-                this.qualityGate,
-                this.notifyResponse,
-                this.onAgentThinking.bind(this)
-            );
         } catch (error) {
             Logger.error('Error initializing SystemCoordinator:', error);
             throw error;
@@ -71,10 +72,7 @@ export class SystemCoordinator {
                 throw new Error(`Agent not found: ${message.targetAgentId}`);
             }
 
-            // Add this line before generating response
-            if (this.onAgentThinking) {
-                this.onAgentThinking(message.targetAgentId);
-            }
+            this.notifyAgentThinking(message.targetAgentId, 'thinking');
 
             // Generate response
             const response = await agent.generateResponse(
@@ -121,7 +119,9 @@ export class SystemCoordinator {
         return this.llmService;
     }
 
-    onAgentThinking(agentId) {
-        return agentId;
+    notifyAgentThinking(agentId, phase) {
+        if (this.onAgentThinking) {
+            this.onAgentThinking(agentId, phase);
+        }
     }
 }
