@@ -3,6 +3,10 @@ import { Logger } from '../utils/logger.js';
 import { RateLimiter } from './rateLimiter.js';
 import { MessageFormatter } from './messageFormatter.js';
 import { CostTracker } from './costTracker.js';
+import OpenAI from 'openai';
+import dotenv from 'dotenv';
+
+dotenv.config();
 
 export class LLMService {
     constructor(config = { maxRetries: 3, timeout: 10000 }) {
@@ -13,6 +17,11 @@ export class LLMService {
             interval: config.rateLimit?.interval || 60000
         });
         this.costTracker = new CostTracker();
+        
+        // Initialize OpenAI client
+        this.openai = new OpenAI({
+            apiKey: process.env.OPENAI_API_KEY
+        });
     }
 
     async makeModelRequest(params) {
@@ -21,10 +30,8 @@ export class LLMService {
         while (attempts < this.config.maxRetries) {
             try {
                 Logger.debug('[LLMService] makeModelRequest params:', params);
-
                 await this.rateLimiter.checkLimit();
 
-                
                 // Format messages using MessageFormatter
                 const formattedData = MessageFormatter.formatMessages({
                     ...params,
@@ -34,39 +41,24 @@ export class LLMService {
                     }
                 });
 
-                const response = await fetch('/api/chat', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ 
-                        ...formattedData,
-                        temperature: this.config.temperature
-                    })
+                // Make direct OpenAI API call
+                const response = await this.openai.chat.completions.create({
+                    model: formattedData.model || 'gpt-4o-mini',
+                    messages: formattedData.messages,
+                    temperature: this.config.temperature || 0.7
                 });
 
-                Logger.debug('[LLMService] API Response Status:', response.status);
-
-                if (!response.ok) {
-                    const errorText = await response.text();
-                    Logger.error('[LLMService] API Error:', {
-                        status: response.status,
-                        error: errorText
-                    });
-                    throw new Error(`API error ${response.status}: ${errorText}`);
-                }
-
-                const data = await response.json();
-
-                // Track costs if token counts are available in the response
-                if (data.usage) {
+                // Track costs
+                if (response.usage) {
                     this.costTracker.trackRequest(
-                        data.usage.prompt_tokens,
-                        data.usage.completion_tokens
+                        response.usage.prompt_tokens,
+                        response.usage.completion_tokens
                     );
                 }
 
-                Logger.debug('[LLMService] API Response Data:', data);
+                Logger.debug('[LLMService] API Response:', response);
 
-                return MessageFormatter.parseResponse(data.content);
+                return MessageFormatter.parseResponse(response.choices[0].message.content);
 
             } catch (error) {
                 attempts++;
