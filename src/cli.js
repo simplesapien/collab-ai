@@ -13,6 +13,7 @@ class CLI {
         this.app = new Application();
         this.currentConversationId = null;
         this.spinner = ora();
+        this.agentSpinners = {};
     }
 
     async initialize() {
@@ -41,7 +42,19 @@ class CLI {
             console.log(chalk.dim('2. Watch as the AI team collaborates to provide comprehensive insights'));
             console.log(chalk.dim('3. Press') + chalk.red(' Ctrl+C ') + chalk.dim('at any time to stop the current process\n'));
 
+            // Add debug logging for app initialization
+            Logger.debug('CLI: Initializing application');
             await this.app.initialize();
+            
+            // Verify response subscription is working
+            const testUnsubscribe = this.app.onResponse(() => {});
+            if (typeof testUnsubscribe === 'function') {
+                Logger.debug('CLI: Response subscription system verified');
+                testUnsubscribe();
+            } else {
+                Logger.warn('CLI: Response subscription system not working properly');
+            }
+
             console.log(chalk.green('✓ System initialized successfully\n'));
 
             console.log(chalk.yellow('Available commands:'));
@@ -51,6 +64,51 @@ class CLI {
             console.log(chalk.dim('/quit    - Exit the application'));
             console.log(chalk.dim('Ctrl+C   - Stop current process\n'));
             
+            // Set up thinking indicators for each agent
+            await this.app.onAgentThinking((agentId, phase) => {
+                Logger.debug(`CLI: Agent thinking update:`, { agentId, phase });
+                
+                // Stop existing spinner for this agent if it exists
+                if (this.agentSpinners[agentId]) {
+                    this.agentSpinners[agentId].stop();
+                }
+
+                const agentColors = {
+                    'director-1': chalk.blue,
+                    'analyst-1': chalk.green,
+                    'critic-1': chalk.yellow,
+                    'expert-1': chalk.magenta,
+                    'system': chalk.red
+                };
+
+                const agentMessages = {
+                    'director-1': {
+                        thinking: '🤔 Director is analyzing...',
+                        planning: '📋 Director is planning...',
+                        synthesizing: '🔄 Director is synthesizing...'
+                    },
+                    'analyst-1': '📊 Analyst is processing...',
+                    'critic-1': '🔍 Critic is evaluating...',
+                    'expert-1': '👨‍🔬 Expert is formulating...',
+                    'system': '⚙️ System is processing...'
+                };
+
+                let message;
+                if (typeof agentMessages[agentId] === 'string') {
+                    message = agentMessages[agentId];
+                } else if (agentMessages[agentId] && phase) {
+                    message = agentMessages[agentId][phase] || `${agentId} is ${phase}...`;
+                } else {
+                    message = `${agentId} is processing...`;
+                }
+
+                const color = agentColors[agentId] || chalk.white;
+                this.agentSpinners[agentId] = ora({
+                    text: color(message),
+                    spinner: 'dots'
+                }).start();
+            });
+
             // Start the interactive session
             await this.startInteractiveSession();
         } catch (error) {
@@ -112,7 +170,7 @@ class CLI {
 
     async handleInput(input) {
         const agentSpinners = {};
-        this.agentSpinners = agentSpinners; // Store reference for cleanup
+        this.agentSpinners = agentSpinners;
         
         try {
             if (input.startsWith('/')) {
@@ -120,44 +178,16 @@ class CLI {
                 return;
             }
 
+            // Add debug logging for subscription
+            Logger.debug('CLI: Setting up response subscription');
             const unsubscribe = this.app.onResponse(response => {
+                Logger.debug('CLI: Received response:', response);
                 // Stop the specific agent's spinner if it exists
                 if (agentSpinners[response.agentId]) {
                     agentSpinners[response.agentId].stop();
                     delete agentSpinners[response.agentId];
                 }
                 this.displayAgentResponse(response);
-            });
-
-            // Set up thinking indicators for each agent
-            this.app.onAgentThinking((agentId, phase) => {
-                Logger.debug(`[SystemCoordinator] Agent thinking: ${agentId} - ${phase}`);
-                const agentMessages = {
-                    'director-1': {
-                        thinking: 'Director is analyzing the conversation...',
-                        planning: 'Director is creating a discussion plan...',
-                        synthesizing: 'Director is synthesizing responses...'
-                    },
-                    'analyst-1': 'Analyst is processing...',
-                    'critic-1': 'Critic is evaluating...',
-                    'expert-1': 'Expert is formulating response...',
-                    'system': 'System is creating summary...'
-                };
-
-                let message;
-                if (typeof agentMessages[agentId] === 'string') {
-                    message = agentMessages[agentId];
-                } else if (agentMessages[agentId] && phase) {
-                    message = agentMessages[agentId][phase] || agentMessages[agentId].thinking;
-                } else {
-                    message = `${agentId} is processing...`;
-                }
-                
-                // Stop existing spinner for this agent if it exists
-                if (agentSpinners[agentId]) {
-                    agentSpinners[agentId].stop();
-                }
-                agentSpinners[agentId] = ora(message).start();
             });
 
             // Process the message
@@ -169,7 +199,8 @@ class CLI {
             // Update conversation ID if new
             this.currentConversationId = result.conversationId;
 
-            // Cleanup
+            // Add debug logging for cleanup
+            Logger.debug('CLI: Cleaning up response subscription');
             unsubscribe();
             // Stop any remaining spinners
             Object.values(agentSpinners).forEach(spinner => spinner.stop());
@@ -216,6 +247,7 @@ class CLI {
     }
 
     displayAgentResponse(response) {
+        Logger.debug('CLI: Displaying agent response:', response);
         const colors = {
             'director-1': chalk.blue,
             'analyst-1': chalk.green,
