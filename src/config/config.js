@@ -22,7 +22,7 @@ export const config = {
     
     // Add new collaboration settings
     collaboration: {
-        maxCollaborationRounds: 15,    // Maximum number of back-and-forth exchanges
+        maxCollaborationRounds: 5,    // Maximum number of back-and-forth exchanges
         qualityThresholds: {
             minRelevanceScore: 0.7,    // Minimum topic relevance score (0-1)
             minCoherenceScore: 0.6,    // Minimum response coherence score (0-1)

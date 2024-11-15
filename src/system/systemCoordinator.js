@@ -41,6 +41,9 @@ export class SystemCoordinator {
         try {
             Logger.info(`[SystemCoordinator] Starting orchestration for conversation: ${conversationId}`);
             
+            // Reset the round counter at the start of a new discussion
+            this.qualityGate.resetRoundCounter();
+            
             // Get or create conversation
             let conversation = this.conversationManager.getConversation(conversationId) || 
                 this.conversationManager.createConversation({
@@ -79,7 +82,7 @@ export class SystemCoordinator {
                 this.onAgentThinking('director-1', 'thinking');
             }
 
-            const plan = await director.orchestrateDiscussion(message.content, availableAgents);
+            const plan = await director.planInitialAgentTasks(message.content, availableAgents);
             Logger.debug('[SystemCoordinator] Received initial plan from director:', plan);
 
             // Emit director's plan assignments in real-time
@@ -184,7 +187,6 @@ export class SystemCoordinator {
 
             // Phase 3: Collaboration Phase
             Logger.info('[SystemCoordinator] Starting collaboration phase...');
-            this.qualityGate.resetRoundCounter();
             
             while (true) {
                 Logger.debug(`[SystemCoordinator] Starting collaboration round ${this.qualityGate.currentRound + 1}`);
@@ -207,7 +209,7 @@ export class SystemCoordinator {
                 // }
 
                 // Get next collaboration plan from director
-                const collaborationPlan = await director.facilitateCollaboration(
+                const collaborationPlan = await director.planNextAgentInteraction(
                     conversation.messages,
                     agentResponses
                 );
@@ -277,8 +279,7 @@ export class SystemCoordinator {
                 this.qualityGate.incrementRound();
             }
 
-            // Phase 4: Final Summary (only after collaboration)
-            // Show the thinking indicator for the director
+            // Phase 4: Final Summary
             if (this.onAgentThinking) {
                 this.onAgentThinking('director-1', 'synthesizing');
             }
@@ -292,9 +293,6 @@ export class SystemCoordinator {
                     timestamp: Date.now()
                 });
             }
-
-            // Reset is now handled by qualityGate
-            this.qualityGate.resetRoundCounter();
 
             return {
                 plan: plan.participants,

@@ -8,9 +8,9 @@ export class Director extends BaseAgent {
         this.activeParticipants = new Set();
     }
 
-    async orchestrateDiscussion(message, availableAgents) {
+    async planInitialAgentTasks(message, availableAgents) {
         try {
-            Logger.debug('[Director] orchestrateDiscussion - starting with:', { 
+            Logger.debug('[Director] planInitialAgentTasks - starting with:', { 
                 message, 
                 agentCount: availableAgents.length 
             });
@@ -21,11 +21,11 @@ export class Director extends BaseAgent {
                 return map;
             }, {});
 
-            Logger.debug('[Director] orchestrateDiscussion - created agent map:', agentMap);
+            Logger.debug('[Director] planInitialAgentTasks - created agent map:', agentMap);
             
             // Handle message object or string
             const userPrompt = typeof message === 'object' ? message.content : message;
-            Logger.debug('[Director] orchestrateDiscussion - processed user prompt:', userPrompt);
+            Logger.debug('[Director] planInitialAgentTasks - processed user prompt:', userPrompt);
 
             const systemPrompt = `As the Director, analyze the following message and determine:
             1. Which of these available agents should participate: ${availableAgents.map(a => a.role).join(', ')}
@@ -48,20 +48,20 @@ export class Director extends BaseAgent {
                 ]
             }`;
 
-            Logger.debug('[Director] orchestrateDiscussion - making LLM request...');
+            Logger.debug('[Director] planInitialAgentTasks - making LLM request...');
             const response = await this.llm.makeModelRequest({
                 systemPrompt: systemPrompt,
                 userPrompt: userPrompt,
                 context: [], 
                 agentType: this.role
             });
-            Logger.debug('[Director] orchestrateDiscussion - received LLM response:', response);
+            Logger.debug('[Director] planInitialAgentTasks - received LLM response:', response);
             
             // Parse and validate the response
             let plan;
             try {
                 plan = typeof response === 'string' ? JSON.parse(response) : response;
-                Logger.debug('[Director] orchestrateDiscussion - parsed initial plan:', plan);
+                Logger.debug('[Director] planInitialAgentTasks - parsed initial plan:', plan);
                 
                 if (!plan.participants || !Array.isArray(plan.participants)) {
                     throw new Error('Invalid plan structure: missing or invalid participants array');
@@ -69,16 +69,16 @@ export class Director extends BaseAgent {
                 
                 // Ensure IDs match our system's IDs
                 plan.participants = plan.participants.map(participant => {
-                    Logger.debug('[Director] orchestrateDiscussion - mapping participant:', participant);
+                    Logger.debug('[Director] planInitialAgentTasks - mapping participant:', participant);
                     return {
                         ...participant,
                         id: agentMap[participant.role.toLowerCase()] || participant.id
                     };
                 });
 
-                Logger.debug('[Director] orchestrateDiscussion - final processed plan:', plan);
+                Logger.debug('[Director] planInitialAgentTasks - final processed plan:', plan);
             } catch (e) {
-                Logger.error('[Director] orchestrateDiscussion - Error processing plan:', e.message);
+                Logger.error('[Director] planInitialAgentTasks - Error processing plan:', e.message);
                 Logger.error('[Director] Failed to process orchestration plan:', { error: e, plan });
                 
                 // Fallback plan with default participant
@@ -89,17 +89,17 @@ export class Director extends BaseAgent {
                         task: 'Analyze the user message and provide initial insights.'
                     }]
                 };
-                Logger.warn('[Director] orchestrateDiscussion - using fallback plan:', plan);
+                Logger.warn('[Director] planInitialAgentTasks - using fallback plan:', plan);
             }
 
             return plan;
         } catch (error) {
-            Logger.error('[Director] orchestrateDiscussion - CRITICAL ERROR:', error);
+            Logger.error('[Director] planInitialAgentTasks - CRITICAL ERROR:', error);
             throw error;
         }
     }
 
-    async guideDiscussion(context) {
+    async determineNextDiscussionStep(context) {
         const systemPrompt = `You are ${this.name}, the discussion Director. 
         Your role is to guide the ongoing discussion between: 
         ${Array.from(this.activeParticipants).join(', ')}
@@ -114,9 +114,9 @@ export class Director extends BaseAgent {
         return await this.llm.makeModelRequest(systemPrompt, "Guide the next step of the discussion", context);
     }
 
-    async facilitateCollaboration(messages, previousResponses) {
+    async planNextAgentInteraction(messages, previousResponses) {
         try {
-            Logger.debug('[Director] facilitateCollaboration - starting with:', {
+            Logger.debug('[Director] planNextAgentInteraction - starting with:', {
                 messagesCount: messages.length,
                 previousResponsesCount: previousResponses.length
             });
@@ -150,16 +150,16 @@ export class Director extends BaseAgent {
                 "task": "specific instruction for the agent"
             }`;
 
-            Logger.debug('[Director] facilitateCollaboration - constructed system prompt:', systemPrompt);
+            Logger.debug('[Director] planNextAgentInteraction - constructed system prompt:', systemPrompt);
 
-            Logger.debug('[Director] facilitateCollaboration - making LLM request...');
+            Logger.debug('[Director] planNextAgentInteraction - making LLM request...');
             const response = await this.llm.makeModelRequest({
                 systemPrompt: systemPrompt,
                 userPrompt: "",
                 context: messages,
                 agentType: this.role
             });
-            Logger.debug('[Director] facilitateCollaboration - received LLM response:', response);
+            Logger.debug('[Director] planNextAgentInteraction - received LLM response:', response);
             
             let plan;
             try {
@@ -176,23 +176,23 @@ export class Director extends BaseAgent {
                 
                 plan = typeof jsonStr === 'string' ? JSON.parse(jsonStr) : jsonStr;
                 
-                Logger.debug('[Director] facilitateCollaboration - parsed plan:', plan);
+                Logger.debug('[Director] planNextAgentInteraction - parsed plan:', plan);
                 
                 // Validate nextAgent
                 const validRoles = ['Analyst', 'Critic', 'Expert'];
-                Logger.debug('[Director] facilitateCollaboration - validating nextAgent:', plan.nextAgent);
+                Logger.debug('[Director] planNextAgentInteraction - validating nextAgent:', plan.nextAgent);
                 if (!validRoles.includes(plan.nextAgent)) {
                     Logger.error('[Director] Invalid agent role received from LLM:', plan.nextAgent);
                     return null;
                 }
 
                 // Validate respondTo
-                Logger.debug('[Director] facilitateCollaboration - validating respondTo:', plan.respondTo);
+                Logger.debug('[Director] planNextAgentInteraction - validating respondTo:', plan.respondTo);
                 if (!plan.respondTo.every(role => formattedResponses.map(r => r.role).includes(role))) {
                     Logger.error('[Director] Invalid respondTo role received from LLM:', plan.respondTo);
                     return null;
                 }
-                Logger.debug('[Director] facilitateCollaboration - validation successful');
+                Logger.debug('[Director] planNextAgentInteraction - validation successful');
 
                 // Add additional validation before returning the plan
                 if (plan.nextAgent && plan.respondTo) {
@@ -205,14 +205,14 @@ export class Director extends BaseAgent {
                 }
 
             } catch (e) {
-                Logger.error('[Director] facilitateCollaboration - Error parsing plan:', e);
+                Logger.error('[Director] planNextAgentInteraction - Error parsing plan:', e);
                 return null;
             }
 
-            Logger.debug('[Director] facilitateCollaboration - returning final plan:', plan);
+            Logger.debug('[Director] planNextAgentInteraction - returning final plan:', plan);
             return plan;
         } catch (error) {
-            Logger.error('[Director] facilitateCollaboration - CRITICAL ERROR:', error);
+            Logger.error('[Director] planNextAgentInteraction - CRITICAL ERROR:', error);
             return null;
         }
     }
