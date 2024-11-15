@@ -128,7 +128,6 @@ export class SystemCoordinator {
                 });
 
                 try {
-
                     // Show which agent's turn it is to think
                     if (this.onAgentThinking) {
                         this.onAgentThinking(participant.id);
@@ -139,11 +138,21 @@ export class SystemCoordinator {
                         participant.task
                     );
 
-                    // Format the agent response properly
+                    // Take the agent pre-fix out of the response
+                    const agentPrefixes = {
+                        'director-1': /^(?:Director:?\s*)/i,
+                        'analyst-1': /^(?:Analyst:?\s*)/i,
+                        'critic-1': /^(?:Critic:?\s*)/i,
+                        'expert-1': /^(?:Expert:?\s*)/i,
+                        'system': /^(?:System:?\s*)/i
+                    };
+
+                    const cleanedResponse = response.replace(agentPrefixes[participant.id.toLowerCase()], '').trim();
+                    
                     const agentResponse = {
                         agentId: participant.id,
                         role: participant.role,
-                        content: `${participant.role}: ${response}`,
+                        content: `${participant.role}: ${cleanedResponse}`,
                         timestamp: Date.now()
                     };
 

@@ -49,8 +49,13 @@ export class BaseAgent {
         
         Previous context: ${this.getRelevantHistory()}
         
-        Respond in character, considering your unique perspective and expertise.
-        Keep responses focused and under 3 sentences.`;
+        Core Guidelines:
+        - Respond in 1-2 sharp, specific sentences
+        - Build directly on the previous message's key point
+        - Focus on immediate, practical next steps
+        - Don't over abstract concepts. Focus on concrete, actionable guidance
+        - Stay strictly within your role's expertise
+        - Do not prefix your response with your role name`;
     }
 
     async respondToAgent(previousResponse, task) {
@@ -74,8 +79,8 @@ export class BaseAgent {
             Important Guidelines:
             - Explicitly reference and build upon the points made by ${previousResponse.role}
             - Apply your unique expertise: ${this.knowledgeBase.join(', ')}
-            - Start your response with "Responding to ${previousResponse.role}'s point about..."
-            - Keep your response focused and under 3 sentences
+            - Keep your response focused and in 2 sentences or less
+            - Do not prefix your response with your role name
             
             Previous context: ${this.getRelevantHistory()}`;
 
