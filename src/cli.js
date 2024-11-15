@@ -30,8 +30,28 @@ class CLI {
                 )
             );
 
+            // Add detailed welcome message and instructions
+            console.log(chalk.white('\nWelcome to Collab AI - Your Collaborative AI Assistant Team!\n'));
+            console.log(chalk.dim('This system provides you with a team of AI agents working together:'));
+            console.log(chalk.blue('👨‍💼 Director') + chalk.dim(' - Coordinates the discussion and assigns tasks'));
+            console.log(chalk.green('📊 Analyst') + chalk.dim(' - Provides data-driven insights and research'));
+            console.log(chalk.yellow('🔍 Critic') + chalk.dim(' - Evaluates ideas and identifies potential issues'));
+            console.log(chalk.magenta('👨‍🔬 Expert') + chalk.dim(' - Offers specialized knowledge and solutions\n'));
+
+            console.log(chalk.dim('How to use:'));
+            console.log(chalk.dim('1. Simply type your question or topic and press Enter'));
+            console.log(chalk.dim('2. Watch as the AI team collaborates to provide comprehensive insights'));
+            console.log(chalk.dim('3. Press') + chalk.red(' Ctrl+C ') + chalk.dim('at any time to stop the current process\n'));
+
             await this.app.initialize();
-            console.log(chalk.green('\n✓ System initialized successfully\n'));
+            console.log(chalk.green('✓ System initialized successfully\n'));
+
+            console.log(chalk.yellow('Available commands:'));
+            console.log(chalk.dim('/status  - Show system status'));
+            console.log(chalk.dim('/costs   - Show current costs'));
+            console.log(chalk.dim('/reset   - Reset cost tracking'));
+            console.log(chalk.dim('/quit    - Exit the application'));
+            console.log(chalk.dim('Ctrl+C   - Stop current process\n'));
             
             // Start the interactive session
             await this.startInteractiveSession();
@@ -42,32 +62,59 @@ class CLI {
     }
 
     async startInteractiveSession() {
-        console.log(chalk.yellow('Available commands:'));
-        console.log(chalk.dim('/status  - Show system status'));
-        console.log(chalk.dim('/costs   - Show current costs'));
-        console.log(chalk.dim('/reset   - Reset cost tracking'));
-        console.log(chalk.dim('/quit    - Exit the application\n'));
+        // Add interrupt handler
+        let currentProcess = null;
+        
+        process.on('SIGINT', async () => {
+            if (currentProcess) {
+                console.log(chalk.yellow('\n\nStopping current process...'));
+                // Clean up any spinners
+                Object.values(this.agentSpinners || {}).forEach(spinner => spinner.stop());
+                currentProcess = null;
+                // Add a small delay before showing the next prompt
+                setTimeout(() => {
+                    console.log(chalk.dim('\nReady for next input...'));
+                    this.promptUser();
+                }, 500);
+            } else {
+                console.log(chalk.yellow('\nUse /quit to exit the application'));
+                this.promptUser();
+            }
+        });
 
         while (true) {
-            const { input } = await inquirer.prompt([{
-                type: 'input',
-                name: 'input',
-                message: 'You:',
-                prefix: '🧑'
-            }]);
+            const { input } = await this.promptUser();
 
             if (input.toLowerCase() === '/quit') {
                 console.log(chalk.yellow('\nGoodbye! 👋\n'));
                 process.exit(0);
             }
 
-            await this.handleInput(input);
+            // Store the current process promise
+            currentProcess = this.handleInput(input);
+            try {
+                await currentProcess;
+            } catch (error) {
+                if (error.message !== 'Process interrupted') {
+                    this.handleError(error);
+                }
+            }
+            currentProcess = null;
         }
     }
 
+    promptUser() {
+        return inquirer.prompt([{
+            type: 'input',
+            name: 'input',
+            message: 'You:',
+            prefix: '🧑'
+        }]);
+    }
+
     async handleInput(input) {
-        // Define agentSpinners at the start of the function
         const agentSpinners = {};
+        this.agentSpinners = agentSpinners; // Store reference for cleanup
         
         try {
             if (input.startsWith('/')) {
@@ -132,6 +179,8 @@ class CLI {
             // Stop any remaining spinners
             Object.values(agentSpinners).forEach(spinner => spinner.stop());
             this.handleError(error);
+        } finally {
+            this.agentSpinners = null;
         }
     }
 
@@ -187,7 +236,17 @@ class CLI {
         const color = colors[response.agentId] || chalk.white;
         const icon = icons[response.agentId] || '🤖';
         
-        console.log(`\n${icon} ${color(response.content)}\n`);
+        // Remove the agent name if it appears at the start of the content
+        const agentNames = ['Director:', 'Analyst:', 'Critic:', 'Expert:', 'System:'];
+        let content = response.content;
+        
+        for (const name of agentNames) {
+            if (content.startsWith(name)) {
+                content = content.substring(name.length).trim();
+            }
+        }
+        
+        console.log(`\n${icon} ${color(content)}\n`);
     }
 
     handleError(error) {
