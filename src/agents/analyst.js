@@ -31,7 +31,8 @@ export class Analyst extends BaseAgent {
             2. Data-driven insights
             3. Actionable recommendations
             
-            Keep your response focused and under 3 sentences.`;
+            Keep your response focused and under 2 sentences.
+            Do not prefix your response with your role name.`;
 
             const response = await this.llm.makeModelRequest({
                 systemPrompt: systemPrompt,
