@@ -112,4 +112,8 @@ export class Application {
             throw error;
         }
     }
+
+    async onAgentThinking(callback) {
+        this.systemCoordinator.onAgentThinking = (agentId, phase) => callback(agentId, phase);
+    }
 }

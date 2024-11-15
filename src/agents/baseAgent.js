@@ -44,7 +44,7 @@ export class BaseAgent {
     }
 
     constructSystemPrompt() {
-        return `You are ${this.name}, ${this.role}. ${this.personality}
+        return `You are ${this.role}. ${this.personality}
         Your expertise includes: ${this.knowledgeBase.join(', ')}.
         
         Previous context: ${this.getRelevantHistory()}
