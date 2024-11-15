@@ -59,7 +59,7 @@ export class Application {
             Logger.info(`Processing user message for conversation ${conversationId}`);
             
             // Get discussion results - responses will be emitted in real-time by SystemCoordinator
-            const discussionResults = await this.systemCoordinator.orchestrateDiscussion(
+            const discussionResults = await this.systemCoordinator.collaborationOrchestrator.orchestrateDiscussion(
                 conversationId,
                 enhancedMessage
             );
