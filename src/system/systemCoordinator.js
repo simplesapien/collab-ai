@@ -73,6 +73,12 @@ export class SystemCoordinator {
 
             // Phase 1: Get initial discussion plan from director
             Logger.info('[SystemCoordinator] Getting discussion plan from director...');
+            
+            // Show the thinking indicator for the director
+            if (this.onAgentThinking) {
+                this.onAgentThinking('director-1', 'thinking');
+            }
+
             const plan = await director.orchestrateDiscussion(message.content, availableAgents);
             Logger.debug('[SystemCoordinator] Received initial plan from director:', plan);
 
@@ -122,6 +128,12 @@ export class SystemCoordinator {
                 });
 
                 try {
+
+                    // Show which agent's turn it is to think
+                    if (this.onAgentThinking) {
+                        this.onAgentThinking(participant.id);
+                    }
+
                     const response = await agent.generateResponse(
                         conversation.messages,
                         participant.task
@@ -179,6 +191,12 @@ export class SystemCoordinator {
                     break;
                 }
 
+                // Show the thinking indicator for the director
+                // Taking this out for now because it seems like there's a race condition with the same function on 231
+                // if (this.onAgentThinking) {
+                //     this.onAgentThinking('director-1', 'planning');
+                // }
+
                 // Get next collaboration plan from director
                 const collaborationPlan = await director.facilitateCollaboration(
                     conversation.messages,
@@ -209,6 +227,11 @@ export class SystemCoordinator {
                 }
 
                 try {
+                    // Add this line before generating collaborative response
+                    if (this.onAgentThinking) {
+                        this.onAgentThinking(nextAgentId);
+                    }
+
                     const task = `Respond to ${collaborationPlan.respondTo.join(' and ')}'s points: ${collaborationPlan.task}`;
                     const response = await nextAgent.generateResponse(
                         conversation.messages,
@@ -246,6 +269,11 @@ export class SystemCoordinator {
             }
 
             // Phase 4: Final Summary (only after collaboration)
+            // Show the thinking indicator for the director
+            if (this.onAgentThinking) {
+                this.onAgentThinking('director-1', 'synthesizing');
+            }
+
             const finalSummary = await director.synthesizeDiscussion(conversation.messages);
             if (this.notifyResponse) {
                 this.notifyResponse({
@@ -294,6 +322,11 @@ export class SystemCoordinator {
                 throw new Error(`Agent not found: ${message.targetAgentId}`);
             }
 
+            // Add this line before generating response
+            if (this.onAgentThinking) {
+                this.onAgentThinking(message.targetAgentId);
+            }
+
             // Generate response
             const response = await agent.generateResponse(
                 conversation.messages,
@@ -337,5 +370,9 @@ export class SystemCoordinator {
 
     getLLMService() {
         return this.llmService;
+    }
+
+    onAgentThinking(agentId) {
+        return agentId;
     }
 }

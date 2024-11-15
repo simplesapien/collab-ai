@@ -66,18 +66,52 @@ class CLI {
     }
 
     async handleInput(input) {
+        // Define agentSpinners at the start of the function
+        const agentSpinners = {};
+        
         try {
             if (input.startsWith('/')) {
                 await this.handleCommand(input);
                 return;
             }
 
-            this.spinner.start('Processing your message...');
-
-            // Set up response listener
             const unsubscribe = this.app.onResponse(response => {
-                this.spinner.stop();
+                // Stop the specific agent's spinner if it exists
+                if (agentSpinners[response.agentId]) {
+                    agentSpinners[response.agentId].stop();
+                    delete agentSpinners[response.agentId];
+                }
                 this.displayAgentResponse(response);
+            });
+
+            // Set up thinking indicators for each agent
+            this.app.onAgentThinking((agentId, phase) => {
+                const agentMessages = {
+                    'director-1': {
+                        thinking: 'Director is analyzing the conversation...',
+                        planning: 'Director is creating a discussion plan...',
+                        synthesizing: 'Director is synthesizing responses...'
+                    },
+                    'analyst-1': 'Analyst is processing...',
+                    'critic-1': 'Critic is evaluating...',
+                    'expert-1': 'Expert is formulating response...',
+                    'system': 'System is creating summary...'
+                };
+
+                let message;
+                if (typeof agentMessages[agentId] === 'string') {
+                    message = agentMessages[agentId];
+                } else if (agentMessages[agentId] && phase) {
+                    message = agentMessages[agentId][phase] || agentMessages[agentId].thinking;
+                } else {
+                    message = `${agentId} is processing...`;
+                }
+                
+                // Stop existing spinner for this agent if it exists
+                if (agentSpinners[agentId]) {
+                    agentSpinners[agentId].stop();
+                }
+                agentSpinners[agentId] = ora(message).start();
             });
 
             // Process the message
@@ -87,14 +121,16 @@ class CLI {
             );
 
             // Update conversation ID if new
-            this.currentConversationId = result.currentConversationId;
+            this.currentConversationId = result.conversationId;
 
             // Cleanup
             unsubscribe();
-            this.spinner.stop();
+            // Stop any remaining spinners
+            Object.values(agentSpinners).forEach(spinner => spinner.stop());
 
         } catch (error) {
-            this.spinner.stop();
+            // Stop any remaining spinners
+            Object.values(agentSpinners).forEach(spinner => spinner.stop());
             this.handleError(error);
         }
     }
@@ -116,8 +152,8 @@ class CLI {
             case '/costs':
                 const costs = await this.app.getCostSummary();
                 console.log('\n' + chalk.cyan('Cost Summary:'));
-                console.log(chalk.dim('Total Cost:'), `$${costs.totalCost.toFixed(4)}`);
-                console.log(chalk.dim('Total Tokens:'), costs.totalTokens);
+                console.log(chalk.dim('Total Cost:'), `$${Number(costs.totalCost).toFixed(4)}`);
+                console.log(chalk.dim('Total Tokens:'), costs.outputTokens + costs.inputTokens);
                 console.log();
                 break;
 
