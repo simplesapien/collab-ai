@@ -8,8 +8,6 @@ import ora from 'ora';
 import clear from 'clear';
 import figlet from 'figlet';
 
-Logger.initialize();
-
 class CLI {
     constructor() {
         this.app = new Application();
@@ -133,6 +131,7 @@ class CLI {
 
             // Set up thinking indicators for each agent
             this.app.onAgentThinking((agentId, phase) => {
+                Logger.debug(`[SystemCoordinator] Agent thinking: ${agentId} - ${phase}`);
                 const agentMessages = {
                     'director-1': {
                         thinking: 'Director is analyzing the conversation...',
