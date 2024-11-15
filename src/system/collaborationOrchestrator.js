@@ -6,7 +6,7 @@ export class CollaborationOrchestrator {
         this.agents = agents;
         this.qualityGate = qualityGate;
         this.notifyResponse = notifyResponse;
-        this.onAgentThinking = onAgentThinking;
+        this.notifyThinking = onAgentThinking;
     }
 
     async orchestrateDiscussion(conversationId, message) {
@@ -50,8 +50,12 @@ export class CollaborationOrchestrator {
             Logger.info('[SystemCoordinator] Getting discussion plan from director...');
             
             // Show the thinking indicator for the director
-            if (this.onAgentThinking) {
-                this.onAgentThinking('director-1', 'thinking');
+            if (this.notifyThinking) {
+                Logger.debug('[CollaborationOrchestrator] Notifying agent thinking:', {
+                    agentId: 'director-1',
+                    phase: 'thinking'
+                });
+                this.notifyThinking('director-1', 'thinking');
             }
 
             const plan = await director.planInitialAgentTasks(message.content, availableAgents);
@@ -62,13 +66,15 @@ export class CollaborationOrchestrator {
                 const directorResponse = {
                     agentId: 'director-1',
                     role: 'Director',
-                    content: `Director assigns ${participant.role}: ${participant.task}`,
+                    content: `${participant.role}: ${participant.task}`,
                     timestamp: Date.now()
                 };
                 
-                // Emit through the app's notification system
+                Logger.debug('[CollaborationOrchestrator] Emitting director response:', directorResponse);
                 if (this.notifyResponse) {
                     this.notifyResponse(directorResponse);
+                } else {
+                    Logger.warn('[CollaborationOrchestrator] No notification callback for director response');
                 }
 
                 // Log to conversation manager
@@ -104,8 +110,8 @@ export class CollaborationOrchestrator {
 
                 try {
                     // Show which agent's turn it is to think
-                    if (this.onAgentThinking) {
-                        this.onAgentThinking(participant.id);
+                    if (this.notifyThinking) {
+                        this.notifyThinking(participant.id);
                     }
 
                     const response = await agent.generateResponse(
@@ -127,13 +133,15 @@ export class CollaborationOrchestrator {
                     const agentResponse = {
                         agentId: participant.id,
                         role: participant.role,
-                        content: `${participant.role}: ${cleanedResponse}`,
+                        content: cleanedResponse,
                         timestamp: Date.now()
                     };
 
-                    // Only emit through the notification system
+                    Logger.debug('[CollaborationOrchestrator] Emitting agent response:', agentResponse);
                     if (this.notifyResponse) {
                         this.notifyResponse(agentResponse);
+                    } else {
+                        Logger.warn('[CollaborationOrchestrator] No notification callback for agent response');
                     }
 
                     // Add response to the collection
@@ -211,8 +219,8 @@ export class CollaborationOrchestrator {
 
                 try {
                     // Add this line before generating collaborative response
-                    if (this.onAgentThinking) {
-                        this.onAgentThinking(nextAgentId);
+                    if (this.notifyThinking) {
+                        this.notifyThinking(nextAgentId);
                     }
 
                     const task = `Respond to ${collaborationPlan.respondTo.join(' and ')}'s points: ${collaborationPlan.task}`;
@@ -224,14 +232,15 @@ export class CollaborationOrchestrator {
                     const collaborativeResponse = {
                         agentId: nextAgent.id,
                         role: collaborationPlan.nextAgent,
-                        content: `${collaborationPlan.nextAgent}: ${response}`,
-                        response: response,
+                        content: response,
                         timestamp: Date.now()
                     };
 
-                    // Only emit through notification system
+                    Logger.debug('[CollaborationOrchestrator] Emitting collaborative response:', collaborativeResponse);
                     if (this.notifyResponse) {
                         this.notifyResponse(collaborativeResponse);
+                    } else {
+                        Logger.warn('[CollaborationOrchestrator] No notification callback for collaborative response');
                     }
 
                     // Only log to conversation manager (don't emit)
@@ -252,18 +261,20 @@ export class CollaborationOrchestrator {
             }
 
             // Phase 4: Final Summary
-            if (this.onAgentThinking) {
-                this.onAgentThinking('director-1', 'synthesizing');
+            if (this.notifyThinking) {
+                this.notifyThinking('director-1', 'synthesizing');
             }
 
             const finalSummary = await director.synthesizeDiscussion(conversation.messages);
             if (this.notifyResponse) {
-                this.notifyResponse({
+                const summaryResponse = {
                     agentId: 'director-1',
                     role: 'Summary',
                     content: finalSummary,
                     timestamp: Date.now()
-                });
+                };
+                Logger.debug('[CollaborationOrchestrator] Emitting final summary:', summaryResponse);
+                this.notifyResponse(summaryResponse);
             }
 
             return {
