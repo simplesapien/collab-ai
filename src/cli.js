@@ -248,6 +248,14 @@ class CLI {
 
     displayAgentResponse(response) {
         Logger.debug('CLI: Displaying agent response:', response);
+        
+        // Special handling for round updates
+        if (response.type === 'round-update') {
+            console.log(chalk.dim('\n' + response.content + '\n'));
+            return;
+        }
+
+        // Regular response handling continues as before
         const colors = {
             'director-1': chalk.blue,
             'analyst-1': chalk.green,

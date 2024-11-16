@@ -32,9 +32,19 @@ export class LLMService {
                 Logger.debug('[LLMService] makeModelRequest params:', params);
                 await this.rateLimiter.checkLimit();
 
+                // Get recent context in a more conversational format
+                // There were issues that the LLM wasn't able to follow instructions because the 
+                // context was too long. This limits the context to the last 5 messages, and 
+                // formats it in a way that may be easier for the LLM to understand.
+                const recentContext = params.context ? params.context.slice(-5).map(msg => ({
+                    role: msg.agentId === 'user' ? 'user' : 'assistant',
+                    content: msg.content
+                })) : [];
+
                 // Format messages using MessageFormatter
                 const formattedData = MessageFormatter.formatMessages({
                     ...params,
+                    context: recentContext, // Pass the limited context
                     modelConfig: {
                         modelsByAgent: this.config.modelsByAgent,
                         defaultModel: this.config.defaultModel
