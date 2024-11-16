@@ -7,6 +7,7 @@ export class ConversationManager {
         this.conversations = new Map();
         this.config = config;
         this.metadata = new Map();
+        this.currentConversationId = null;
     }
 
     logMessage(conversationId, message) {
@@ -57,33 +58,19 @@ export class ConversationManager {
         return conversation;
     }
 
-    createConversation(conversation) {
-        try {
-            if (!Validators.isValidConversation(conversation)) {
-                throw new Error('Invalid conversation format');
-            }
+    createConversation(conversationData) {
+        this.currentConversationId = conversationData.id;
+        const conversation = {
+            id: conversationData.id,
+            messages: [],
+            ...conversationData
+        };
+        this.conversations.set(conversationData.id, conversation);
+        this.updateMetadata(conversationData.id);
+        this.cleanup();
 
-            const enhancedConversation = {
-                ...conversation,
-                created: Date.now(),
-                messages: conversation.messages || [],
-                metadata: {
-                    participantIds: new Set(),
-                    messageCount: 0,
-                    lastActivity: Date.now()
-                }
-            };
-
-            this.conversations.set(conversation.id, enhancedConversation);
-            this.updateMetadata(conversation.id);
-            this.cleanup();
-
-            Logger.info(`Created new conversation ${conversation.id}`);
-            return enhancedConversation;
-        } catch (error) {
-            Logger.error('Error in createConversation:', error);
-            throw error;
-        }
+        Logger.info(`Created new conversation ${conversationData.id}`);
+        return conversation;
     }
 
     updateMetadata(conversationId, additional = {}) {
@@ -157,5 +144,9 @@ export class ConversationManager {
             acc[msg.agentId] = (acc[msg.agentId] || 0) + 1;
             return acc;
         }, {});
+    }
+
+    getCurrentConversationId() {
+        return this.currentConversationId;
     }
 }

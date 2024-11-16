@@ -14,6 +14,7 @@ class CLI {
         this.currentConversationId = null;
         this.spinner = ora();
         this.agentSpinners = {};
+        this.responseHandler = null;
     }
 
     async initialize() {
@@ -115,10 +116,16 @@ class CLI {
                 }).start();
             });
 
-            // Set up enhanced notification handling
-            const unsubscribe = this.app.onResponse(response => {
-                Logger.debug('[CLI] Received response:', response);
+            // Set up the single response handler
+            this.responseHandler = (response) => {
+                Logger.debug('CLI: Received response:', response);
                 
+                // Clear spinner BEFORE handling the response
+                if (this.agentSpinners[response.agentId]) {
+                    this.agentSpinners[response.agentId].stop();
+                    delete this.agentSpinners[response.agentId];
+                }
+
                 // Handle different response types
                 switch (response.type) {
                     case 'error':
@@ -130,16 +137,10 @@ class CLI {
                     default:
                         this.displayAgentResponse(response);
                 }
+            };
 
-                // Clear spinner if exists
-                if (this.agentSpinners[response.agentId]) {
-                    this.agentSpinners[response.agentId].stop();
-                    delete this.agentSpinners[response.agentId];
-                }
-            });
-
-            // Store unsubscribe function for cleanup
-            this.cleanup = unsubscribe;
+            // Set up the single subscription
+            this.cleanup = this.app.onResponse(this.responseHandler);
 
             // Start the interactive session
             await this.startInteractiveSession();
@@ -156,8 +157,11 @@ class CLI {
         process.on('SIGINT', async () => {
             if (currentProcess) {
                 console.log(chalk.yellow('\n\nStopping current process...'));
-                // Clean up any spinners
+                // Clear all spinners
                 Object.values(this.agentSpinners || {}).forEach(spinner => spinner.stop());
+                this.agentSpinners = {};
+                // Cancel the current conversation in the application
+                await this.app.cancelCurrentProcess();
                 currentProcess = null;
                 // Add a small delay before showing the next prompt
                 setTimeout(() => {
@@ -201,8 +205,7 @@ class CLI {
     }
 
     async handleInput(input) {
-        const agentSpinners = {};
-        this.agentSpinners = agentSpinners;
+        this.agentSpinners = {};
         
         try {
             if (input.startsWith('/')) {
@@ -210,39 +213,21 @@ class CLI {
                 return;
             }
 
-            // Add debug logging for subscription
-            Logger.debug('CLI: Setting up response subscription');
-            const unsubscribe = this.app.onResponse(response => {
-                Logger.debug('CLI: Received response:', response);
-                // Stop the specific agent's spinner if it exists
-                if (agentSpinners[response.agentId]) {
-                    agentSpinners[response.agentId].stop();
-                    delete agentSpinners[response.agentId];
-                }
-                this.displayAgentResponse(response);
-            });
-
-            // Process the message
             const result = await this.app.processUserMessage(
                 { content: input },
                 this.currentConversationId
             );
 
-            // Update conversation ID if new
             this.currentConversationId = result.conversationId;
 
-            // Add debug logging for cleanup
-            Logger.debug('CLI: Cleaning up response subscription');
-            unsubscribe();
-            // Stop any remaining spinners
-            Object.values(agentSpinners).forEach(spinner => spinner.stop());
-
         } catch (error) {
-            // Stop any remaining spinners
-            Object.values(agentSpinners).forEach(spinner => spinner.stop());
+            // Clear all spinners on error
+            Object.values(this.agentSpinners).forEach(spinner => spinner.stop());
             this.handleError(error);
         } finally {
-            this.agentSpinners = null;
+            // Clear all spinners and reset
+            Object.values(this.agentSpinners).forEach(spinner => spinner.stop());
+            this.agentSpinners = {};
         }
     }
 
