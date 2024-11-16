@@ -172,7 +172,15 @@ export class CollaborationOrchestrator {
                 // Increment the counter at the START of each collaboration round
                 this.qualityGate.incrementRound();
                 
-                Logger.debug(`[SystemCoordinator] Starting collaboration round ${this.qualityGate.currentRound}`);
+                // Not necessary right now but just keeping as a reminder of how to use the current notification system
+                // // Simple round notification through the existing response system
+                // if (this.notifyResponse) {
+                //     this.notifyResponse({
+                //         agentId: 'system',
+                //         content: `Starting collaboration round ${this.qualityGate.currentRound}`,
+                //         type: 'round-update'  // Add this to differentiate from regular responses
+                //     });
+                // }
                 
                 // Quality check now uses the correct round number
                 const qualityCheck = await this.qualityGate.validateCollaborationContinuation(
@@ -185,6 +193,9 @@ export class CollaborationOrchestrator {
                     break;
                 }
 
+                // Log the round number to the console
+                Logger.info(`[SystemCoordinator] Collaboration round (after shouldContinue) ${this.qualityGate.currentRound} is continuing`);
+                
                 // Show the thinking indicator for the director
                 // Taking this out for now because it seems like there's a race condition with the same function on 231
                 // if (this.onAgentThinking) {
@@ -262,20 +273,22 @@ export class CollaborationOrchestrator {
             }
 
             // Phase 4: Final Summary
-            if (this.notifyThinking) {
-                this.notifyThinking('director-1', 'synthesizing');
-            }
+            if (this.qualityGate.currentRound > 1) {
+                if (this.notifyThinking) {
+                    this.notifyThinking('director-1', 'synthesizing');
+                }
 
-            const finalSummary = await director.synthesizeDiscussion(conversation.messages);
-            if (this.notifyResponse) {
-                const summaryResponse = {
-                    agentId: 'director-1',
-                    role: 'Summary',
-                    content: finalSummary,
-                    timestamp: Date.now()
-                };
-                Logger.debug('[CollaborationOrchestrator] Emitting final summary:', summaryResponse);
-                this.notifyResponse(summaryResponse);
+                const finalSummary = await director.synthesizeDiscussion(conversation.messages);
+                if (this.notifyResponse) {
+                    const summaryResponse = {
+                        agentId: 'director-1',
+                        role: 'Summary',
+                        content: finalSummary,
+                        timestamp: Date.now()
+                    };
+                    Logger.debug('[CollaborationOrchestrator] Emitting final summary:', summaryResponse);
+                    this.notifyResponse(summaryResponse);
+                }
             }
 
             return {

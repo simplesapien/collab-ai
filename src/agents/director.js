@@ -123,41 +123,43 @@ export class Director extends BaseAgent {
 
             // Format previous responses for the prompt
             const formattedResponses = previousResponses.map(r => ({
-                role: r.role || r.agentId.split('-')[0], // Fallback to agent ID if role is missing
-                response: r.response || r.content.split(': ')[1] // Handle both formats
+                role: r.role || r.agentId.split('-')[0].charAt(0).toUpperCase() + r.agentId.split('-')[0].slice(1), // Properly capitalize role
+                response: r.response || r.content
             }));
 
-            const systemPrompt = `As the Director, analyze the following conversation and determine the next most valuable interaction.
+            // Get all roles except the last speaker
+            const availableRoles = ['Analyst', 'Critic', 'Expert'].filter(role => 
+                role !== formattedResponses[formattedResponses.length - 1]?.role
+            );
 
-            Last response in this conversation:
-            --${formattedResponses[formattedResponses.length - 1]?.response}--
+            const systemPrompt = `You are a JSON-only response API. You must ONLY return a valid JSON object with no additional text.
 
-            Available roles: Analyst, Critic, Expert
+            Current conversation state:
+            - Last speaker: ${formattedResponses[formattedResponses.length - 1]?.role}
+            - Available next speakers: ${availableRoles.join(', ')}
+            - Last message: "${formattedResponses[formattedResponses.length - 1]?.response}"
 
-            Determine the next interaction using ONLY the available roles listed above.
-            
-            Requirements:
-            1. nextAgent must be one of: Analyst, Critic, or Expert
-            2. respondTo must be one of the roles that already contributed
-            3. nextAgent CANNOT be the same as any role in respondTo
-            4. nextAgent CANNOT be the same as the last agent who spoke
-            5. Task should build upon the last response in the conversation
+            Response requirements:
+            1. Must be valid JSON
+            2. Must contain exactly these fields: nextAgent, respondTo, task
+            3. No additional text or explanation allowed
 
-            Respond in strict JSON format:
+            Example valid response:
             {
-                "nextAgent": "one of: Analyst, Critic, or Expert",
+                "nextAgent": "${availableRoles[0]}",
                 "respondTo": ["${formattedResponses[formattedResponses.length - 1]?.role}"],
-                "task": "specific instruction for the agent"
+                "task": "example task description"
             }`;
 
-            Logger.debug('[Director] planNextAgentInteraction - constructed system prompt:', systemPrompt);
+            const userPrompt = `Return a JSON object selecting the next agent from [${availableRoles.join(', ')}] and their task.`;
 
             Logger.debug('[Director] planNextAgentInteraction - making LLM request...');
             const response = await this.llm.makeModelRequest({
                 systemPrompt: systemPrompt,
-                userPrompt: "",
+                userPrompt: userPrompt,
                 context: messages,
-                agentType: this.role
+                agentType: this.role,
+                forceJsonResponse: true  // Add this flag if your LLM service supports it
             });
             Logger.debug('[Director] planNextAgentInteraction - received LLM response:', response);
             
@@ -197,9 +199,17 @@ export class Director extends BaseAgent {
                 // Add additional validation before returning the plan
                 if (plan.nextAgent && plan.respondTo) {
                     const lastResponse = formattedResponses[formattedResponses.length - 1];
-                    if (plan.nextAgent === lastResponse?.role || 
-                        plan.respondTo.includes(plan.nextAgent)) {
-                        Logger.warn('[Director] Invalid plan - agent would respond to self');
+                    
+                    // Debug the comparison
+                    Logger.debug('[Director] Comparing roles:', {
+                        nextAgent: plan.nextAgent,
+                        lastResponseRole: lastResponse?.role,
+                        lastResponseAgentId: lastResponse?.agentId
+                    });
+                    
+                    // Compare the actual roles, ensuring case-insensitive comparison
+                    if (plan.nextAgent.toLowerCase() === lastResponse?.role?.toLowerCase()) {
+                        Logger.warn('[Director] Invalid plan - agent would speak twice in a row');
                         return null;
                     }
                 }
