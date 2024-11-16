@@ -49,30 +49,31 @@ export class Analyst extends BaseAgent {
         }
     }
 
-    async provideSummaryStatistics(context) {
-        try {
-            console.log(`${this.role} providing summary statistics`);
-            console.log('Incoming context:', context);
+    // Unused
+    // async provideSummaryStatistics(context) {
+    //     try {
+    //         console.log(`${this.role} providing summary statistics`);
+    //         console.log('Incoming context:', context);
             
-            const validatedContext = this.validateContext(context);
-            console.log('Validated context:', validatedContext);
+    //         const validatedContext = this.validateContext(context);
+    //         console.log('Validated context:', validatedContext);
 
-            const systemPrompt = `Provide key statistical insights from the discussion.
-            Focus on quantifiable elements and data-driven observations.`;
+    //         const systemPrompt = `Provide key statistical insights from the discussion.
+    //         Focus on quantifiable elements and data-driven observations.`;
             
-            const response = await this.llm.makeModelRequest({
-                systemPrompt: systemPrompt,
-                userPrompt: "Summarize the key statistical insights from the discussion.",
-                context: validatedContext,
-                agentType: this.role
-            });
+    //         const response = await this.llm.makeModelRequest({
+    //             systemPrompt: systemPrompt,
+    //             userPrompt: "Summarize the key statistical insights from the discussion.",
+    //             context: validatedContext,
+    //             agentType: this.role
+    //         });
 
-            return response;
-        } catch (error) {
-            Logger.error('Error in Analyst.provideSummaryStatistics:', error);
-            throw error;
-        }
-    }
+    //         return response;
+    //     } catch (error) {
+    //         Logger.error('Error in Analyst.provideSummaryStatistics:', error);
+    //         throw error;
+    //     }
+    // }
 
     storeAnalysis(prompt, response) {
         const key = Date.now();

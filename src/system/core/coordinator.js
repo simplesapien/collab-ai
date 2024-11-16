@@ -211,6 +211,7 @@ export class Coordinator {
         return initialResponses;
     }
 
+    // Phase 3: Collaboration - handle the collaborative response
     async _handleCollaborativeResponse(agent, conversation, plan, responses) {
         this.notifyManager.notifyThinking(agent.id, 'thinking');
 

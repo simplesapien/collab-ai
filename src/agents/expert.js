@@ -41,29 +41,6 @@ export class Expert extends BaseAgent {
         }
     }
 
-    async validateInformation(context, information) {
-        try {
-            console.log(`${this.role} validating information:`, information);
-            console.log('Incoming context:', context);
-            
-            const validatedContext = this.validateContext(context);
-            console.log('Validated context:', validatedContext);
-
-            const systemPrompt = `Validate the following information based on your expertise.
-            Identify any inaccuracies or areas needing clarification.`;
-            
-            return await this.llm.makeModelRequest({
-                systemPrompt: systemPrompt,
-                userPrompt: `Validate: ${information}`,
-                context: validatedContext,
-                agentType: this.role
-            });
-        } catch (error) {
-            Logger.error('Error in Expert.validateInformation:', error);
-            throw error;
-        }
-    }
-
     storeInsight(query, response) {
         const key = Date.now();
         this.insights.set(key, {

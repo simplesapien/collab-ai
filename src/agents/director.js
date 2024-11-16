@@ -99,21 +99,6 @@ export class Director extends BaseAgent {
         }
     }
 
-    async determineNextDiscussionStep(context) {
-        const systemPrompt = `You are ${this.name}, the discussion Director. 
-        Your role is to guide the ongoing discussion between: 
-        ${Array.from(this.activeParticipants).join(', ')}
-        
-        Based on the conversation history, determine:
-        1. Which agent should speak next
-        2. What specific aspect they should address
-        3. When the discussion should conclude
-        
-        Keep the discussion focused and encourage building on others' ideas.`;
-    
-        return await this.llm.makeModelRequest(systemPrompt, "Guide the next step of the discussion", context);
-    }
-
     async planNextAgentInteraction(messages, previousResponses) {
         try {
             Logger.debug('[Director] planNextAgentInteraction - starting with:', {

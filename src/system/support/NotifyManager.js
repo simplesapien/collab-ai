@@ -86,6 +86,11 @@ export class NotifyManager {
         this.notificationService.sendError(error, agentId);
     }
 
+    // Potential uses for getActiveStates (not currently in use):
+    // - UI: Display which agents are currently "thinking"
+    // - Prevention: Avoid sending multiple requests to busy agents
+    // - Debugging: Monitor agent processing states
+    // - System monitoring: Track active processing load
     getActiveStates() {
         return this.notificationService.getActiveStates();
     }
