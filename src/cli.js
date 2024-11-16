@@ -78,6 +78,7 @@ class CLI {
                     'analyst-1': chalk.green,
                     'critic-1': chalk.yellow,
                     'expert-1': chalk.magenta,
+                    'quality-gate': chalk.cyan,
                     'system': chalk.red
                 };
 
@@ -85,11 +86,16 @@ class CLI {
                     'director-1': {
                         thinking: '🤔 Director is analyzing...',
                         planning: '📋 Director is planning...',
-                        synthesizing: '🔄 Director is synthesizing...'
+                        synthesizing: '🔄 Director is synthesizing...',
+                        reviewing: '👀 Director is reviewing responses...'
                     },
                     'analyst-1': '📊 Analyst is processing...',
                     'critic-1': '🔍 Critic is evaluating...',
                     'expert-1': '👨‍🔬 Expert is formulating...',
+                    'quality-gate': {
+                        reviewing: '🔎 Quality Gate is reviewing responses...',
+                        evaluating: '⚖️ Quality Gate is evaluating quality...'
+                    },
                     'system': '⚙️ System is processing...'
                 };
 
@@ -255,12 +261,12 @@ class CLI {
             return;
         }
 
-        // Regular response handling continues as before
         const colors = {
             'director-1': chalk.blue,
             'analyst-1': chalk.green,
             'critic-1': chalk.yellow,
             'expert-1': chalk.magenta,
+            'quality-gate': chalk.cyan,
             'system': chalk.red
         };
 
@@ -269,6 +275,7 @@ class CLI {
             'analyst-1': '📊',
             'critic-1': '🔍',
             'expert-1': '👨‍🔬',
+            'quality-gate': '🔎',
             'system': '⚙️'
         };
 
@@ -276,13 +283,23 @@ class CLI {
         const icon = icons[response.agentId] || '🤖';
         
         // Remove the agent name if it appears at the start of the content
-        const agentNames = ['Director:', 'Analyst:', 'Critic:', 'Expert:', 'System:'];
+        const agentNames = ['Director:', 'Analyst:', 'Critic:', 'Expert:', 'Quality Gate:', 'System:'];
         let content = response.content;
         
         for (const name of agentNames) {
             if (content.startsWith(name)) {
                 content = content.substring(name.length).trim();
             }
+        }
+
+        // Add special formatting for quality feedback
+        if (response.agentId === 'quality-gate') {
+            if (response.passed) {
+                console.log(`\n${icon} ${color('✓ Quality Check Passed:')} ${chalk.dim(content)}\n`);
+            } else {
+                console.log(`\n${icon} ${color('⚠ Quality Check Feedback:')} ${chalk.dim(content)}\n`);
+            }
+            return;
         }
         
         console.log(`\n${icon} ${color(content)}\n`);
