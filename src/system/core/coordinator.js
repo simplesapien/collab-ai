@@ -1,12 +1,11 @@
 import { Logger } from '../../utils/logger.js';
 
 export class Coordinator {
-    constructor(conversationManager, agentManager, qualityGate, notifyResponse, onAgentThinking) {
+    constructor(conversationManager, agentManager, qualityGate, notifyManager) {
         this.conversationManager = conversationManager;
         this.agentManager = agentManager;
         this.qualityGate = qualityGate;
-        this.notifyResponse = notifyResponse;
-        this.notifyThinking = onAgentThinking;
+        this.notifyManager = notifyManager;
         Logger.debug('[Coordinator] Initialized with dependencies');
     }
 
@@ -39,13 +38,13 @@ export class Coordinator {
             Logger.debug(`[Coordinator] Collaboration complete`, { resultCount: collaborationResults.length });
             
             // Phase 4: Final Summary
-            this.notifyThinking('director-1', 'synthesizing');
+            this.notifyManager.notifyThinking('director-1', 'synthesizing');
             Logger.debug(`[Coordinator] Starting final summary phase`);
             const finalSummary = await director.synthesizeDiscussion(conversation.messages);
             Logger.debug(`[Coordinator] Final summary complete`, { summary: finalSummary });
 
             // Emit final summary to the UI if the callback is provided
-            if (this.notifyResponse) {
+            if (this.notifyManager.notifyResponse) {
                 const summaryResponse = {
                     agentId: 'director-1',
                     role: 'Summary',
@@ -53,7 +52,7 @@ export class Coordinator {
                     timestamp: Date.now()
                 };
                 Logger.debug('[CollaborationOrchestrator] Emitting final summary:', summaryResponse);
-                this.notifyResponse(summaryResponse);
+                this.notifyManager.notifyResponse(summaryResponse);
             }
             return {
                 plan: plan.participants,
@@ -86,14 +85,14 @@ export class Coordinator {
     // Phase 1: Planning - execute the planning 
     async _executeInitialPlanning(director, message, availableAgents) {
         Logger.debug(`[Coordinator] Executing initial planning`, { messageContent: message.content });
-        this.notifyThinking('director-1', 'planning');
+        this.notifyManager.notifyThinking('director-1', 'planning');
         const plan = await director.planInitialAgentTasks(message.content, availableAgents);
-        await this._emitDirectorPlan(plan);
+        await this._emitDirectorPlan(plan, this.conversationManager.getCurrentConversationId());
         return plan;
     }
 
     // Phase 1: Planning - emit the plan to the UI
-    async _emitDirectorPlan(plan) {
+    async _emitDirectorPlan(plan, conversationId) {
         Logger.debug(`[Coordinator] Emitting director plan`, { participantCount: plan.participants.length });
         for (const participant of plan.participants) {
             const response = {
@@ -102,8 +101,8 @@ export class Coordinator {
                 content: `${participant.role}: ${participant.task}`,
                 timestamp: Date.now()
             };
-            this.conversationManager.logMessage(this.currentConversationId, response);
-            this.notifyResponse(response);
+            this.conversationManager.logMessage(conversationId, response);
+            this.notifyManager.notifyResponse(response);
         }
     }
 
@@ -121,7 +120,7 @@ export class Coordinator {
                 continue;
             }
 
-            this.notifyThinking(agent.id, 'thinking');
+            this.notifyManager.notifyThinking(agent.id, 'thinking');
             
             try {
                 const response = await this.agentManager.generateAgentResponse(
@@ -137,7 +136,7 @@ export class Coordinator {
                 );
 
                 this.conversationManager.logMessage(conversation.id, formattedResponse);
-                this.notifyResponse(formattedResponse);
+                this.notifyManager.notifyResponse(formattedResponse);
                 responses.push(formattedResponse);
             } catch (error) {
                 Logger.error(`[Coordinator] Error generating response for agent ${agent.id}:`, error);
@@ -154,12 +153,19 @@ export class Coordinator {
         this.qualityGate.resetRoundCounter();
         
         while (true) {
-            this.qualityGate.incrementRound();
+            const currentRound = this.qualityGate.incrementRound();
+            Logger.info(`[Coordinator] Starting collaboration round ${currentRound}`);
             
             const qualityCheck = await this.qualityGate.validateCollaborationContinuation(
                 conversation,
                 initialResponses
             );
+
+            Logger.debug('[Coordinator] Quality check result:', {
+                shouldContinue: qualityCheck.shouldContinue,
+                reason: qualityCheck.reason,
+                round: currentRound
+            });
 
             if (!qualityCheck.shouldContinue) {
                 Logger.info(`[Coordinator] Ending collaboration: ${qualityCheck.reason}`);
@@ -206,7 +212,7 @@ export class Coordinator {
     }
 
     async _handleCollaborativeResponse(agent, conversation, plan, responses) {
-        this.notifyThinking(agent.id, 'thinking');
+        this.notifyManager.notifyThinking(agent.id, 'thinking');
 
         const task = `Respond to ${plan.respondTo.join(' and ')}'s points: ${plan.task}`;
         const response = await this.agentManager.generateAgentResponse(agent.id, conversation, task);
@@ -218,7 +224,7 @@ export class Coordinator {
         );
 
         this.conversationManager.logMessage(conversation.id, collaborativeResponse);
-        this.notifyResponse(collaborativeResponse);
+        this.notifyManager.notifyResponse(collaborativeResponse);
         responses.push(collaborativeResponse);
     }
 

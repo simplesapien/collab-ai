@@ -27,12 +27,7 @@ export class Application {
         try {
             await this.system.initialize(
                 agentConfigs,
-                (response) => this.notifyManager.notifyResponse(response),
-                (agentId, phase) => {
-                    if (this.thinkingCallback) {
-                        this.thinkingCallback(agentId, phase);
-                    }
-                }
+                this.notifyManager
             );
             
             Logger.info('[Application] Initialized successfully');

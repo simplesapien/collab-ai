@@ -3,53 +3,41 @@ import { ConversationManager } from '../support/ConversationManager.js';
 import { LLMService } from '../../services/llm.js';
 import { Logger } from '../../utils/logger.js';
 import { config } from '../../config/config.js';
-import { AgentFactory } from '../../agents/agentFactory.js';
-import { QualityGate } from '../../quality/QualityGate.js';
+import { QualityGate } from '../quality/QualityGate.js';
 import { Coordinator } from './coordinator.js';
 import { AgentManager } from '../support/AgentManager.js';
-import { NotifyManager } from '../support/NotifyManager.js';
 
 export class System {
     constructor() {
-        this.conversationManager = new ConversationManager(config.conversation);
-        this.llmService = new LLMService(config.llm);
-        this.agentManager = new AgentManager(this.llmService);
-        this.activeConversations = new Set();
-        this.qualityGate = new QualityGate(config.collaboration);
         this.coordinator = null;
-        this.notifyManager = new NotifyManager();
-        Logger.debug('[System] Initialized with NotifyManager');
+        this.agentManager = null;
+        this.conversationManager = null;
+        this.llmService = null;
+        this.qualityGate = new QualityGate(config);
     }
 
-    async initialize(agentConfigs, notifyCallback, thinkingCallback) {
+    async initialize(agentConfigs, notifyManager) {
         try {
-            // Initialize notification manager
-            const initialized = this.notifyManager.initialize(
-                notifyCallback,
-                thinkingCallback
-            );
+            // Initialize services
+            this.llmService = new LLMService();
+            this.agentManager = new AgentManager(this.llmService);
+            this.conversationManager = new ConversationManager();
+            this.qualityGate = new QualityGate(this.llmService);
 
-            if (!initialized) {
-                throw new Error('Failed to initialize notification system');
-            }
-
-            // Initialize agents
-            await this.agentManager.initializeAgents(agentConfigs);
-            
-            // Create coordinator with notification methods
+            // Initialize coordinator with notifyManager
             this.coordinator = new Coordinator(
                 this.conversationManager,
                 this.agentManager,
                 this.qualityGate,
-                (response) => this.notifyManager.notifyResponse(response),
-                (agentId, phase) => this.notifyManager.notifyThinking(agentId, phase)
+                notifyManager
             );
-            
-            Logger.debug('[System] Initialization complete');
-            return true;
+
+            // Initialize agents
+            await this.agentManager.initializeAgents(agentConfigs);
+
+            Logger.info('[System] Initialized successfully');
         } catch (error) {
-            Logger.error('[System] Error during initialization:', error);
-            this.notifyManager.notifyError(error);
+            Logger.error('[System] Failed to initialize:', error);
             throw error;
         }
     }
