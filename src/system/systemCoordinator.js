@@ -4,7 +4,7 @@ import { LLMService } from '../services/llm.js';
 import { Logger } from '../utils/logger.js';
 import { config } from '../config/config.js';
 import { AgentFactory } from '../agents/agentFactory.js';
-import { CollaborationQualityGate } from '../quality/CollaborationQualityGate.js';
+import { QualityGate } from '../quality/QualityGate.js';
 import { CollaborationOrchestrator } from './collaborationOrchestrator.js';
 
 export class SystemCoordinator {
@@ -16,7 +16,7 @@ export class SystemCoordinator {
         // Track active conversations
         this.activeConversations = new Set();
         this.notifyResponse = null;
-        this.qualityGate = new CollaborationQualityGate(config.collaboration);
+        this.qualityGate = new QualityGate(config.collaboration);
         this.collaborationOrchestrator = null;
     }
 
