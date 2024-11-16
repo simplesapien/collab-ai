@@ -8059,3 +8059,11 @@ true
 [2024-11-16T02:26:11.893Z] ERROR: Error processing user message:
 {}
 [2024-11-16T02:26:11.893Z] DEBUG: CLI: Cleaning up response subscription
+[2024-11-16T02:32:49.341Z] ERROR: Failed to initialize CLI application:
+{
+  "name": "ExitPromptError"
+}
+[2024-11-16T02:32:49.342Z] ERROR: CLI Error:
+{
+  "name": "ExitPromptError"
+}

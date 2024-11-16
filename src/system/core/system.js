@@ -1,5 +1,5 @@
 // src/system/system.js
-import { ConversationManager } from '../../conversation/conversationManager.js';
+import { ConversationManager } from '../support/ConversationManager.js';
 import { LLMService } from '../../services/llm.js';
 import { Logger } from '../../utils/logger.js';
 import { config } from '../../config/config.js';
