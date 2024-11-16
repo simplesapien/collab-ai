@@ -1,6 +1,6 @@
-import { Logger } from '../utils/logger.js';
+import { Logger } from '../../utils/logger.js';
 
-export class CollaborationOrchestrator {
+export class Coordinator {
     constructor(conversationManager, agents, qualityGate, notifyResponse, onAgentThinking) {
         this.conversationManager = conversationManager;
         this.agents = agents;

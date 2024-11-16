@@ -1,5 +1,5 @@
 // src/app.js
-import { System } from './system/system.js';
+import { System } from './system/core/system.js';
 import { agentConfigs } from './config/agentConfigs.js';
 import { Logger } from './utils/logger.js';
 import { generateId } from './utils/generators.js';
@@ -65,7 +65,7 @@ export class Application {
             
             // Add debug log before orchestrating discussion
             Logger.debug('Starting discussion orchestration with callback:', !!this.responseCallbacks.size);
-            const discussionResults = await this.system.collaborationOrchestrator.orchestrateDiscussion(
+            const discussionResults = await this.system.coordinator.orchestrateDiscussion(
                 conversationId,
                 enhancedMessage
             );
