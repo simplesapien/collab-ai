@@ -1,16 +1,17 @@
 import { Logger } from '../utils/logger.js';
 
-export class CollaborationQualityGate {
+export class QualityGate {
     constructor(config = {}) {
         this.maxCollaborationRounds = config.maxCollaborationRounds || 15;
-        this.minRelevanceScore = config.minRelevanceScore || 0.7;
-        this.minCoherenceScore = config.minCoherenceScore || 0.6;
         this.currentRound = 0;
+        Logger.debug(`[QualityGate] Initialized with max rounds: ${this.maxCollaborationRounds}`);
     }
 
     async validateCollaborationContinuation(conversation, agentResponses) {
+        Logger.debug(`[QualityGate] Validating continuation - Round ${this.currentRound}/${this.maxCollaborationRounds}`);
+        
         if (this.currentRound >= this.maxCollaborationRounds) {
-            Logger.info('[QualityGate] Max collaboration rounds reached');
+            Logger.info(`[QualityGate] Max rounds (${this.maxCollaborationRounds}) reached at round ${this.currentRound}`);
             return {
                 shouldContinue: false,
                 reason: 'MAX_ROUNDS_REACHED'
@@ -18,15 +19,20 @@ export class CollaborationQualityGate {
         }
 
         const qualityMetrics = await this.analyzeResponseQuality(conversation, agentResponses);
-        
-        if (qualityMetrics.topicDrift > 0.3) {
+        return this._validateMetrics(qualityMetrics);
+    }
+
+    _validateMetrics(metrics) {
+        if (metrics.topicDrift > 0.3) {
+            Logger.info('[QualityGate] Stopping due to topic drift');
             return {
                 shouldContinue: false,
                 reason: 'TOPIC_DRIFT'
             };
         }
 
-        if (qualityMetrics.consensusReached) {
+        if (metrics.consensusReached) {
+            Logger.info('[QualityGate] Stopping due to consensus reached');
             return {
                 shouldContinue: false,
                 reason: 'CONSENSUS_REACHED'
@@ -35,8 +41,21 @@ export class CollaborationQualityGate {
 
         return {
             shouldContinue: true,
-            qualityMetrics
+            qualityMetrics: metrics
         };
+    }
+
+    resetRoundCounter() {
+        const oldValue = this.currentRound;
+        this.currentRound = 0;
+        Logger.info(`[QualityGate] Round counter reset from ${oldValue} to ${this.currentRound}`);
+    }
+
+    incrementRound() {
+        const oldValue = this.currentRound;
+        this.currentRound++;
+        Logger.info(`[QualityGate] Round counter incremented from ${oldValue} to ${this.currentRound}`);
+        return this.currentRound;
     }
 
     async analyzeResponseQuality(conversation, agentResponses) {
@@ -48,14 +67,5 @@ export class CollaborationQualityGate {
             consensusReached: false,
             responseCoherence: 0.9
         };
-    }
-
-    resetRoundCounter() {
-        this.currentRound = 0;
-    }
-
-    incrementRound() {
-        this.currentRound++;
-        return this.currentRound;
     }
 } 
