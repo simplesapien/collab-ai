@@ -64,8 +64,8 @@ export class Application {
             Logger.info(`Processing user message for conversation ${conversationId}`);
             
             // Add debug log before orchestrating discussion
-            Logger.debug('Starting discussion orchestration with callback:', !!this.responseCallbacks.size);
-            const discussionResults = await this.system.coordinator.orchestrateDiscussion(
+            Logger.debug('Starting discussion coordination with callback:', !!this.responseCallbacks.size);
+            const discussionResults = await this.system.coordinator.coordinateDiscussion(
                 conversationId,
                 enhancedMessage
             );
