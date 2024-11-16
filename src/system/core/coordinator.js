@@ -39,24 +39,22 @@ export class Coordinator {
             Logger.debug(`[Coordinator] Collaboration complete`, { resultCount: collaborationResults.length });
             
             // Phase 4: Final Summary
-            if (this.qualityGate.currentRound > 1) {
-                if (this.notifyThinking) {
-                    this.notifyThinking('director-1', 'synthesizing');
-                }
+            this.notifyThinking('director-1', 'synthesizing');
+            Logger.debug(`[Coordinator] Starting final summary phase`);
+            const finalSummary = await director.synthesizeDiscussion(conversation.messages);
+            Logger.debug(`[Coordinator] Final summary complete`, { summary: finalSummary });
 
-                const finalSummary = await director.synthesizeDiscussion(conversation.messages);
-                if (this.notifyResponse) {
-                    const summaryResponse = {
-                        agentId: 'director-1',
-                        role: 'Summary',
-                        content: finalSummary,
-                        timestamp: Date.now()
-                    };
-                    Logger.debug('[CollaborationOrchestrator] Emitting final summary:', summaryResponse);
-                    this.notifyResponse(summaryResponse);
-                }
+            // Emit final summary to the UI if the callback is provided
+            if (this.notifyResponse) {
+                const summaryResponse = {
+                    agentId: 'director-1',
+                    role: 'Summary',
+                    content: finalSummary,
+                    timestamp: Date.now()
+                };
+                Logger.debug('[CollaborationOrchestrator] Emitting final summary:', summaryResponse);
+                this.notifyResponse(summaryResponse);
             }
-
             return {
                 plan: plan.participants,
                 responses: agentResponses,
@@ -107,6 +105,7 @@ export class Coordinator {
         return availableAgents;
     }
 
+    // Phase 1: Planning - execute the planning 
     async _executeInitialPlanning(director, message, availableAgents) {
         Logger.debug(`[Coordinator] Executing initial planning`, { messageContent: message.content });
         this._notifyAgentThinking('director-1', 'thinking');
@@ -115,6 +114,7 @@ export class Coordinator {
         return plan;
     }
 
+    // Phase 1: Planning - emit the plan to the UI
     async _emitDirectorPlan(plan) {
         Logger.debug(`[Coordinator] Emitting director plan`, { participantCount: plan.participants.length });
         for (const participant of plan.participants) {
@@ -131,6 +131,7 @@ export class Coordinator {
         }
     }
 
+    // Phase 1: Planning - clean the response
     _cleanResponse(response, agentId) {
         const agentPrefixes = {
             'director-1': /^(?:Director:?\s*)/i,
@@ -142,12 +143,14 @@ export class Coordinator {
         return response.replace(agentPrefixes[agentId.toLowerCase()], '').trim();
     }
 
+    // Phase 2: Initial Responses - notify the UI that the agent is thinking
     _notifyAgentThinking(agentId, phase = 'thinking') {
         if (this.notifyThinking) {
             this.notifyThinking(agentId, phase);
         }
     }
 
+    // Phase 2: Initial Responses - execute the responses
     async _executeInitialResponses(conversation, plan) {
         Logger.debug(`[Coordinator] Executing initial responses for ${conversation.id}`);
         const responses = [];
@@ -205,6 +208,7 @@ export class Coordinator {
         return responses;
     }
 
+    // Phase 3: Collaboration - execute the collaboration
     async _executeCollaborationPhase(conversation, director, initialResponses) {
         Logger.info('[SystemCoordinator] Starting collaboration phase...');
         
