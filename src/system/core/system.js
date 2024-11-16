@@ -7,6 +7,7 @@ import { AgentFactory } from '../../agents/agentFactory.js';
 import { QualityGate } from '../../quality/QualityGate.js';
 import { Coordinator } from './coordinator.js';
 import { AgentManager } from '../support/AgentManager.js';
+import { NotificationHandler } from '../support/NotifyManager.js';
 
 export class System {
     constructor() {
@@ -14,30 +15,33 @@ export class System {
         this.llmService = new LLMService(config.llm);
         this.agentManager = new AgentManager(this.llmService);
         this.activeConversations = new Set();
-        this.notifyResponse = null;
         this.qualityGate = new QualityGate(config.collaboration);
         this.coordinator = null;
+        this.notificationHandler = new NotificationHandler();
     }
 
-    async initialize(agentConfigs, notifyCallback) {
+    async initialize(agentConfigs, notifyCallback, thinkingCallback) {
         try {
-            // Store callback for notifying UI/client of agent responses
-            this.notifyResponse = notifyCallback;
+            // Initialize notification handler with both callbacks
+            this.notificationHandler.initialize(
+                notifyCallback,
+                thinkingCallback
+            );
             
-            // Initialize all agents via AgentManager before creating coordinator
+            // Initialize all agents via AgentManager
             await this.agentManager.initializeAgents(agentConfigs);
             
-            // Create coordinator with initialized agents from AgentManager
+            // Create coordinator with notification handler
             this.coordinator = new Coordinator(
                 this.conversationManager,
                 this.agentManager,
                 this.qualityGate, 
-                this.notifyResponse,
-                (agentId, phase) => this.notifyAgentThinking(agentId, phase)
+                (response) => this.notificationHandler.notify(response),
+                (agentId, phase) => this.notificationHandler.notifyThinking(agentId, phase)
             );
             
         } catch (error) {
-            Logger.error('Error initializing Coordinator:', error);
+            Logger.error('Error initializing System:', error);
             throw error;
         }
     }
@@ -65,7 +69,7 @@ export class System {
                 throw new Error(`Agent not found: ${message.targetAgentId}`);
             }
 
-            this.notifyAgentThinking(message.targetAgentId, 'thinking');
+            this.notificationHandler.notifyThinking(message.targetAgentId, 'thinking');
 
             // Generate response
             const response = await agent.generateResponse(
@@ -100,11 +104,5 @@ export class System {
 
     getLLMService() {
         return this.llmService;
-    }
-
-    notifyAgentThinking(agentId, phase) {
-        if (this.onAgentThinking) {
-            this.onAgentThinking(agentId, phase);
-        }
     }
 }
