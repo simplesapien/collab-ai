@@ -65,7 +65,7 @@ class CLI {
             console.log(chalk.dim('Ctrl+C   - Stop current process\n'));
             
             // Set up thinking indicators for each agent
-            await this.app.onAgentThinking((agentId, phase) => {
+            this.app.onAgentThinking((agentId, phase) => {
                 Logger.debug(`CLI: Agent thinking update:`, { agentId, phase });
                 
                 // Stop existing spinner for this agent if it exists
@@ -114,6 +114,32 @@ class CLI {
                     spinner: 'dots'
                 }).start();
             });
+
+            // Set up enhanced notification handling
+            const unsubscribe = this.app.onResponse(response => {
+                Logger.debug('[CLI] Received response:', response);
+                
+                // Handle different response types
+                switch (response.type) {
+                    case 'error':
+                        this.handleError(response.error);
+                        break;
+                    case 'state-update':
+                        this.updateAgentState(response);
+                        break;
+                    default:
+                        this.displayAgentResponse(response);
+                }
+
+                // Clear spinner if exists
+                if (this.agentSpinners[response.agentId]) {
+                    this.agentSpinners[response.agentId].stop();
+                    delete this.agentSpinners[response.agentId];
+                }
+            });
+
+            // Store unsubscribe function for cleanup
+            this.cleanup = unsubscribe;
 
             // Start the interactive session
             await this.startInteractiveSession();
@@ -308,6 +334,17 @@ class CLI {
     handleError(error) {
         console.log(chalk.red('\n❌ Error:', error.message, '\n'));
         Logger.error('CLI Error:', error);
+    }
+
+    // Add new method to handle agent state updates
+    updateAgentState(stateUpdate) {
+        const { agentId, state } = stateUpdate;
+        Logger.debug('[CLI] Agent state update:', stateUpdate);
+        
+        // Update display or handle state change as needed
+        if (this.agentSpinners[agentId]) {
+            this.agentSpinners[agentId].text = `${agentId} is ${state}...`;
+        }
     }
 }
 

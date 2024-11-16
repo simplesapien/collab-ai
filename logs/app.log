@@ -1,72 +1,3251 @@
-[2024-11-16T20:57:57.738Z] DEBUG: CLI: Initializing application
-[2024-11-16T20:57:57.740Z] INFO: Initialized director agent: director-1
-[2024-11-16T20:57:57.740Z] INFO: Initialized analyst agent: analyst-1
-[2024-11-16T20:57:57.740Z] INFO: Initialized critic agent: critic-1
-[2024-11-16T20:57:57.740Z] INFO: Initialized expert agent: expert-1
-[2024-11-16T20:57:57.741Z] DEBUG: [Coordinator] Initialized with dependencies
-[2024-11-16T20:57:57.741Z] INFO: Application initialized successfully
-[2024-11-16T20:57:57.741Z] DEBUG: CLI: Response subscription system verified
-[2024-11-16T20:57:57.743Z] DEBUG: Setting up thinking callback
-[2024-11-16T20:58:00.488Z] DEBUG: CLI: Setting up response subscription
-[2024-11-16T20:58:00.488Z] DEBUG: Processing message in app.js:
+[2024-11-16T21:38:06.529Z] DEBUG: CLI: Initializing application
+[2024-11-16T21:38:06.530Z] DEBUG: [NotifyManager] Initialized with callbacks
+[2024-11-16T21:38:06.531Z] INFO: Initialized director agent: director-1
+[2024-11-16T21:38:06.531Z] INFO: Initialized analyst agent: analyst-1
+[2024-11-16T21:38:06.531Z] INFO: Initialized critic agent: critic-1
+[2024-11-16T21:38:06.531Z] INFO: Initialized expert agent: expert-1
+[2024-11-16T21:38:06.531Z] DEBUG: [Coordinator] Initialized with dependencies
+[2024-11-16T21:38:06.531Z] DEBUG: [System] Initialization complete
+[2024-11-16T21:38:06.531Z] INFO: [Application] Initialized successfully
+[2024-11-16T21:38:06.532Z] DEBUG: [NotifyManager] Initialized with callbacks
+[2024-11-16T21:38:06.532Z] DEBUG: CLI: Response subscription system verified
+[2024-11-16T21:38:06.532Z] DEBUG: [NotifyManager] Unsubscribed all listeners
+[2024-11-16T21:38:06.533Z] DEBUG: [Application] Registered thinking callback
+[2024-11-16T21:38:06.533Z] DEBUG: [NotifyManager] Initialized with callbacks
+[2024-11-16T21:38:09.207Z] DEBUG: CLI: Setting up response subscription
+[2024-11-16T21:38:09.208Z] DEBUG: [NotifyManager] Initialized with callbacks
+[2024-11-16T21:38:09.209Z] DEBUG: Processing message in app.js:
 {
-  "content": "i want to start a business "
+  "content": "i want t ostart a business "
 }
-[2024-11-16T20:58:00.489Z] INFO: Processing user message for conversation conv-blgatotmom3kngh49
-[2024-11-16T20:58:00.489Z] DEBUG: Starting discussion coordination with callback:
-true
-[2024-11-16T20:58:00.490Z] DEBUG: [Coordinator] Starting coordination for conversation: conv-blgatotmom3kngh49
+[2024-11-16T21:38:09.209Z] INFO: Processing user message for conversation conv-retc66uevm3kow3p5
+[2024-11-16T21:38:09.209Z] DEBUG: [Coordinator] Starting coordination for conversation: conv-retc66uevm3kow3p5
 {
   "message": {
     "agentId": "user",
-    "content": "i want to start a business ",
-    "timestamp": 1731790680489
+    "content": "i want t ostart a business ",
+    "timestamp": 1731793089209,
+    "role": "user"
   }
 }
-[2024-11-16T20:58:00.490Z] DEBUG: [Coordinator] Initializing conversation
+[2024-11-16T21:38:09.210Z] DEBUG: [Coordinator] Initializing conversation
 {
-  "conversationId": "conv-blgatotmom3kngh49"
+  "conversationId": "conv-retc66uevm3kow3p5"
 }
-[2024-11-16T20:58:00.491Z] WARN: Conversation conv-blgatotmom3kngh49 not found
-[2024-11-16T20:58:00.491Z] INFO: Created new conversation conv-blgatotmom3kngh49
-[2024-11-16T20:58:00.492Z] DEBUG: [ConversationManager] Attempting to log message for conversation conv-blgatotmom3kngh49
-[2024-11-16T20:58:00.492Z] DEBUG: [ConversationManager] Successfully logged message for conversation conv-blgatotmom3kngh49
+[2024-11-16T21:38:09.210Z] WARN: Conversation conv-retc66uevm3kow3p5 not found
+[2024-11-16T21:38:09.210Z] INFO: Created new conversation conv-retc66uevm3kow3p5
+[2024-11-16T21:38:09.211Z] DEBUG: [ConversationManager] Attempting to log message for conversation conv-retc66uevm3kow3p5
+[2024-11-16T21:38:09.211Z] DEBUG: [ConversationManager] Successfully logged message for conversation conv-retc66uevm3kow3p5
 {
-  "messageId": "conv-blgatotmom3kngh49-0",
-  "timestamp": 1731790680492
+  "messageId": "conv-retc66uevm3kow3p5-0",
+  "timestamp": 1731793089211
 }
-[2024-11-16T20:58:00.492Z] DEBUG: [Coordinator] Conversation initialized
+[2024-11-16T21:38:09.211Z] DEBUG: [Coordinator] Conversation initialized
 {
-  "conversationId": "conv-blgatotmom3kngh49"
+  "conversationId": "conv-retc66uevm3kow3p5"
 }
-[2024-11-16T20:58:00.492Z] DEBUG: [AgentManager] Getting director agent
-[2024-11-16T20:58:00.492Z] DEBUG: [Coordinator] Director retrieved
+[2024-11-16T21:38:09.211Z] DEBUG: [AgentManager] Getting director agent
+[2024-11-16T21:38:09.211Z] DEBUG: [Coordinator] Director retrieved
 {
   "directorId": "director-1"
 }
-[2024-11-16T20:58:00.493Z] DEBUG: [AgentManager] Getting available agents
+[2024-11-16T21:38:09.211Z] DEBUG: [AgentManager] Getting available agents
 {
   "excludingId": "director-1"
 }
-[2024-11-16T20:58:00.493Z] DEBUG: [Coordinator] Available agents retrieved
+[2024-11-16T21:38:09.212Z] DEBUG: [Coordinator] Available agents retrieved
 {
   "count": 3
 }
-[2024-11-16T20:58:00.493Z] DEBUG: [Coordinator] Starting planning phase
-[2024-11-16T20:58:00.493Z] DEBUG: [Coordinator] Executing initial planning
+[2024-11-16T21:38:09.212Z] DEBUG: [Coordinator] Starting planning phase
+[2024-11-16T21:38:09.212Z] DEBUG: [Coordinator] Executing initial planning
 {
-  "messageContent": "i want to start a business "
+  "messageContent": "i want t ostart a business "
 }
-[2024-11-16T20:58:00.494Z] ERROR: [Coordinator] Error orchestrating discussion:
-{}
-[2024-11-16T20:58:00.494Z] ERROR: Error processing user message:
-{}
-[2024-11-16T20:58:00.494Z] DEBUG: CLI: Cleaning up response subscription
-[2024-11-16T20:58:02.205Z] ERROR: Failed to initialize CLI application:
+[2024-11-16T21:38:09.212Z] DEBUG: [NotifyManager] Updating agent state:
+{
+  "agentId": "director-1",
+  "phase": "planning"
+}
+[2024-11-16T21:38:09.212Z] DEBUG: CLI: Agent thinking update:
+{
+  "agentId": "director-1",
+  "phase": "planning"
+}
+[2024-11-16T21:38:09.216Z] DEBUG: [NotificationService] Agent state updated:
+{
+  "agentId": "director-1",
+  "state": "planning"
+}
+[2024-11-16T21:38:09.217Z] DEBUG: [Director] planInitialAgentTasks - starting with:
+{
+  "message": "i want t ostart a business ",
+  "agentCount": 3
+}
+[2024-11-16T21:38:09.217Z] DEBUG: [Director] planInitialAgentTasks - created agent map:
+{
+  "analyst": "analyst-1",
+  "critic": "critic-1",
+  "expert": "expert-1"
+}
+[2024-11-16T21:38:09.217Z] DEBUG: [Director] planInitialAgentTasks - processed user prompt:
+"i want t ostart a business "
+[2024-11-16T21:38:09.217Z] DEBUG: [Director] planInitialAgentTasks - making LLM request...
+[2024-11-16T21:38:09.218Z] DEBUG: [LLMService] makeModelRequest params:
+{
+  "systemPrompt": "As the Director, analyze the following message and determine:\n            1. Which of these available agents should participate: Analyst, Critic, Expert\n            2. What specific aspect each agent should address\n            \n            Important Guidelines:\n            - Assign clear, focused tasks that can be answered in 2-3 sentences\n            - Each task should focus on one specific aspect\n            - Tasks should be complementary, not overlapping\n            - Use EXACTLY these role names: Analyst, Critic, Expert\n            \n            Respond in a strict JSON format like this:\n            {\n                \"participants\": [\n                    {\n                        \"id\": \"analyst-1\",\n                        \"role\": \"Analyst\",\n                        \"task\": \"specific focused task description\"\n                    }\n                ]\n            }",
+  "userPrompt": "i want t ostart a business ",
+  "context": [],
+  "agentType": "Director"
+}
+[2024-11-16T21:38:09.218Z] DEBUG: [RateLimiter] Current requests: 0, Time since last reset: 2700ms
+[2024-11-16T21:38:09.218Z] DEBUG: [RateLimiter] Request processed. New count: 1
+[2024-11-16T21:38:09.219Z] DEBUG: [MessageFormatter] Starting formatMessages with params:
+{
+  "hasSystemPrompt": true,
+  "hasUserPrompt": true,
+  "contextLength": 0,
+  "agentType": "Director"
+}
+[2024-11-16T21:38:09.219Z] DEBUG: [MessageFormatter] Getting model for agent:
+{
+  "agentType": "Director",
+  "hasModelConfig": true
+}
+[2024-11-16T21:38:09.219Z] DEBUG: [MessageFormatter] Selected model for agent:
+{
+  "agentType": "Director",
+  "agentKey": "director",
+  "selectedModel": "gpt-4o-mini"
+}
+[2024-11-16T21:38:09.219Z] DEBUG: [MessageFormatter] Selected model:
+"gpt-4o-mini"
+[2024-11-16T21:38:09.219Z] DEBUG: [MessageFormatter] Sanitized context length:
+[2024-11-16T21:38:09.219Z] DEBUG: [MessageFormatter] Final formatted message count:
+2
+[2024-11-16T21:38:11.866Z] DEBUG: [CostTracker] Request tracked:
+{
+  "inputTokens": 173,
+  "outputTokens": 132,
+  "requestCost": "0.000105",
+  "totalCost": "0.000105"
+}
+[2024-11-16T21:38:11.867Z] DEBUG: [LLMService] API Response:
+{
+  "id": "chatcmpl-AUKmZwP4SopeXobqiF9XFGTmndfHO",
+  "object": "chat.completion",
+  "created": 1731793091,
+  "model": "gpt-4o-mini-2024-07-18",
+  "choices": [
+    {
+      "index": 0,
+      "message": {
+        "role": "assistant",
+        "content": "{\n    \"participants\": [\n        {\n            \"id\": \"analyst-1\",\n            \"role\": \"Analyst\",\n            \"task\": \"Research the current market trends related to the business industry you are considering.\"\n        },\n        {\n            \"id\": \"critic-1\",\n            \"role\": \"Critic\",\n            \"task\": \"Evaluate the potential challenges and risks associated with starting a business in your chosen sector.\"\n        },\n        {\n            \"id\": \"expert-1\",\n            \"role\": \"Expert\",\n            \"task\": \"Provide insights on best practices for business planning and funding options available for startups.\"\n        }\n    ]\n}",
+        "refusal": null
+      },
+      "logprobs": null,
+      "finish_reason": "stop"
+    }
+  ],
+  "usage": {
+    "prompt_tokens": 173,
+    "completion_tokens": 132,
+    "total_tokens": 305,
+    "prompt_tokens_details": {
+      "cached_tokens": 0,
+      "audio_tokens": 0
+    },
+    "completion_tokens_details": {
+      "reasoning_tokens": 0,
+      "audio_tokens": 0,
+      "accepted_prediction_tokens": 0,
+      "rejected_prediction_tokens": 0
+    }
+  },
+  "system_fingerprint": "fp_f8dd36be86"
+}
+[2024-11-16T21:38:11.868Z] DEBUG: [MessageFormatter] Parsing response:
+{
+  "contentType": "string",
+  "contentLength": 634
+}
+[2024-11-16T21:38:11.868Z] DEBUG: [MessageFormatter] Successfully parsed JSON content
+[2024-11-16T21:38:11.873Z] DEBUG: [Director] planInitialAgentTasks - received LLM response:
+{
+  "participants": [
+    {
+      "id": "analyst-1",
+      "role": "Analyst",
+      "task": "Research the current market trends related to the business industry you are considering."
+    },
+    {
+      "id": "critic-1",
+      "role": "Critic",
+      "task": "Evaluate the potential challenges and risks associated with starting a business in your chosen sector."
+    },
+    {
+      "id": "expert-1",
+      "role": "Expert",
+      "task": "Provide insights on best practices for business planning and funding options available for startups."
+    }
+  ]
+}
+[2024-11-16T21:38:11.873Z] DEBUG: [Director] planInitialAgentTasks - parsed initial plan:
+{
+  "participants": [
+    {
+      "id": "analyst-1",
+      "role": "Analyst",
+      "task": "Research the current market trends related to the business industry you are considering."
+    },
+    {
+      "id": "critic-1",
+      "role": "Critic",
+      "task": "Evaluate the potential challenges and risks associated with starting a business in your chosen sector."
+    },
+    {
+      "id": "expert-1",
+      "role": "Expert",
+      "task": "Provide insights on best practices for business planning and funding options available for startups."
+    }
+  ]
+}
+[2024-11-16T21:38:11.874Z] DEBUG: [Director] planInitialAgentTasks - mapping participant:
+{
+  "id": "analyst-1",
+  "role": "Analyst",
+  "task": "Research the current market trends related to the business industry you are considering."
+}
+[2024-11-16T21:38:11.874Z] DEBUG: [Director] planInitialAgentTasks - mapping participant:
+{
+  "id": "critic-1",
+  "role": "Critic",
+  "task": "Evaluate the potential challenges and risks associated with starting a business in your chosen sector."
+}
+[2024-11-16T21:38:11.874Z] DEBUG: [Director] planInitialAgentTasks - mapping participant:
+{
+  "id": "expert-1",
+  "role": "Expert",
+  "task": "Provide insights on best practices for business planning and funding options available for startups."
+}
+[2024-11-16T21:38:11.874Z] DEBUG: [Director] planInitialAgentTasks - final processed plan:
+{
+  "participants": [
+    {
+      "id": "analyst-1",
+      "role": "Analyst",
+      "task": "Research the current market trends related to the business industry you are considering."
+    },
+    {
+      "id": "critic-1",
+      "role": "Critic",
+      "task": "Evaluate the potential challenges and risks associated with starting a business in your chosen sector."
+    },
+    {
+      "id": "expert-1",
+      "role": "Expert",
+      "task": "Provide insights on best practices for business planning and funding options available for startups."
+    }
+  ]
+}
+[2024-11-16T21:38:11.875Z] DEBUG: [Coordinator] Emitting director plan
+{
+  "participantCount": 3
+}
+[2024-11-16T21:38:11.875Z] DEBUG: [ConversationManager] Attempting to log message for conversation undefined
+[2024-11-16T21:38:11.875Z] DEBUG: [ConversationManager] Successfully logged message for conversation undefined
+{
+  "messageId": "undefined-0",
+  "timestamp": 1731793091875
+}
+[2024-11-16T21:38:11.875Z] DEBUG: [NotifyManager] Sending response:
+{
+  "agentId": "director-1",
+  "role": "Director",
+  "content": "Analyst: Research the current market trends related to the business industry you are considering.",
+  "timestamp": 1731793091875
+}
+[2024-11-16T21:38:11.875Z] DEBUG: [NotifyManager] Sending response:
+{
+  "agentId": "director-1",
+  "role": "Director",
+  "content": "Analyst: Research the current market trends related to the business industry you are considering.",
+  "timestamp": 1731793091875
+}
+[2024-11-16T21:38:11.876Z] DEBUG: [CLI] Received response:
+{
+  "agentId": "director-1",
+  "role": "Director",
+  "content": "Analyst: Research the current market trends related to the business industry you are considering.",
+  "timestamp": 1731793091875
+}
+[2024-11-16T21:38:11.876Z] DEBUG: CLI: Displaying agent response:
+{
+  "agentId": "director-1",
+  "role": "Director",
+  "content": "Analyst: Research the current market trends related to the business industry you are considering.",
+  "timestamp": 1731793091875
+}
+[2024-11-16T21:38:11.876Z] DEBUG: CLI: Received response:
+{
+  "agentId": "director-1",
+  "role": "Director",
+  "content": "Analyst: Research the current market trends related to the business industry you are considering.",
+  "timestamp": 1731793091875
+}
+[2024-11-16T21:38:11.877Z] DEBUG: CLI: Displaying agent response:
+{
+  "agentId": "director-1",
+  "role": "Director",
+  "content": "Analyst: Research the current market trends related to the business industry you are considering.",
+  "timestamp": 1731793091875
+}
+[2024-11-16T21:38:11.877Z] DEBUG: [NotificationService] Response sent:
+{
+  "agentId": "director-1",
+  "role": "Director",
+  "content": "Analyst: Research the current market trends related to the business industry you are considering.",
+  "timestamp": 1731793091875
+}
+[2024-11-16T21:38:11.878Z] DEBUG: [NotificationService] Response sent:
+{
+  "agentId": "director-1",
+  "role": "Director",
+  "content": "Analyst: Research the current market trends related to the business industry you are considering.",
+  "timestamp": 1731793091875
+}
+[2024-11-16T21:38:11.878Z] DEBUG: [NotificationService] Agent state cleared:
+{
+  "agentId": "director-1"
+}
+[2024-11-16T21:38:11.878Z] DEBUG: [ConversationManager] Attempting to log message for conversation undefined
+[2024-11-16T21:38:11.878Z] DEBUG: [ConversationManager] Successfully logged message for conversation undefined
+{
+  "messageId": "undefined-1",
+  "timestamp": 1731793091878
+}
+[2024-11-16T21:38:11.878Z] DEBUG: [NotifyManager] Sending response:
+{
+  "agentId": "director-1",
+  "role": "Director",
+  "content": "Critic: Evaluate the potential challenges and risks associated with starting a business in your chosen sector.",
+  "timestamp": 1731793091878
+}
+[2024-11-16T21:38:11.878Z] DEBUG: [NotifyManager] Sending response:
+{
+  "agentId": "director-1",
+  "role": "Director",
+  "content": "Critic: Evaluate the potential challenges and risks associated with starting a business in your chosen sector.",
+  "timestamp": 1731793091878
+}
+[2024-11-16T21:38:11.878Z] DEBUG: [CLI] Received response:
+{
+  "agentId": "director-1",
+  "role": "Director",
+  "content": "Critic: Evaluate the potential challenges and risks associated with starting a business in your chosen sector.",
+  "timestamp": 1731793091878
+}
+[2024-11-16T21:38:11.878Z] DEBUG: CLI: Displaying agent response:
+{
+  "agentId": "director-1",
+  "role": "Director",
+  "content": "Critic: Evaluate the potential challenges and risks associated with starting a business in your chosen sector.",
+  "timestamp": 1731793091878
+}
+[2024-11-16T21:38:11.879Z] DEBUG: CLI: Received response:
+{
+  "agentId": "director-1",
+  "role": "Director",
+  "content": "Critic: Evaluate the potential challenges and risks associated with starting a business in your chosen sector.",
+  "timestamp": 1731793091878
+}
+[2024-11-16T21:38:11.879Z] DEBUG: CLI: Displaying agent response:
+{
+  "agentId": "director-1",
+  "role": "Director",
+  "content": "Critic: Evaluate the potential challenges and risks associated with starting a business in your chosen sector.",
+  "timestamp": 1731793091878
+}
+[2024-11-16T21:38:11.879Z] DEBUG: [NotificationService] Response sent:
+{
+  "agentId": "director-1",
+  "role": "Director",
+  "content": "Critic: Evaluate the potential challenges and risks associated with starting a business in your chosen sector.",
+  "timestamp": 1731793091878
+}
+[2024-11-16T21:38:11.879Z] DEBUG: [NotificationService] Response sent:
+{
+  "agentId": "director-1",
+  "role": "Director",
+  "content": "Critic: Evaluate the potential challenges and risks associated with starting a business in your chosen sector.",
+  "timestamp": 1731793091878
+}
+[2024-11-16T21:38:11.879Z] DEBUG: [ConversationManager] Attempting to log message for conversation undefined
+[2024-11-16T21:38:11.879Z] DEBUG: [ConversationManager] Successfully logged message for conversation undefined
+{
+  "messageId": "undefined-2",
+  "timestamp": 1731793091879
+}
+[2024-11-16T21:38:11.879Z] DEBUG: [NotifyManager] Sending response:
+{
+  "agentId": "director-1",
+  "role": "Director",
+  "content": "Expert: Provide insights on best practices for business planning and funding options available for startups.",
+  "timestamp": 1731793091879
+}
+[2024-11-16T21:38:11.880Z] DEBUG: [NotifyManager] Sending response:
+{
+  "agentId": "director-1",
+  "role": "Director",
+  "content": "Expert: Provide insights on best practices for business planning and funding options available for startups.",
+  "timestamp": 1731793091879
+}
+[2024-11-16T21:38:11.880Z] DEBUG: [CLI] Received response:
+{
+  "agentId": "director-1",
+  "role": "Director",
+  "content": "Expert: Provide insights on best practices for business planning and funding options available for startups.",
+  "timestamp": 1731793091879
+}
+[2024-11-16T21:38:11.880Z] DEBUG: CLI: Displaying agent response:
+{
+  "agentId": "director-1",
+  "role": "Director",
+  "content": "Expert: Provide insights on best practices for business planning and funding options available for startups.",
+  "timestamp": 1731793091879
+}
+[2024-11-16T21:38:11.880Z] DEBUG: CLI: Received response:
+{
+  "agentId": "director-1",
+  "role": "Director",
+  "content": "Expert: Provide insights on best practices for business planning and funding options available for startups.",
+  "timestamp": 1731793091879
+}
+[2024-11-16T21:38:11.880Z] DEBUG: CLI: Displaying agent response:
+{
+  "agentId": "director-1",
+  "role": "Director",
+  "content": "Expert: Provide insights on best practices for business planning and funding options available for startups.",
+  "timestamp": 1731793091879
+}
+[2024-11-16T21:38:11.880Z] DEBUG: [NotificationService] Response sent:
+{
+  "agentId": "director-1",
+  "role": "Director",
+  "content": "Expert: Provide insights on best practices for business planning and funding options available for startups.",
+  "timestamp": 1731793091879
+}
+[2024-11-16T21:38:11.881Z] DEBUG: [NotificationService] Response sent:
+{
+  "agentId": "director-1",
+  "role": "Director",
+  "content": "Expert: Provide insights on best practices for business planning and funding options available for startups.",
+  "timestamp": 1731793091879
+}
+[2024-11-16T21:38:11.881Z] DEBUG: [Coordinator] Planning complete
+{
+  "plan": {
+    "participants": [
+      {
+        "id": "analyst-1",
+        "role": "Analyst",
+        "task": "Research the current market trends related to the business industry you are considering."
+      },
+      {
+        "id": "critic-1",
+        "role": "Critic",
+        "task": "Evaluate the potential challenges and risks associated with starting a business in your chosen sector."
+      },
+      {
+        "id": "expert-1",
+        "role": "Expert",
+        "task": "Provide insights on best practices for business planning and funding options available for startups."
+      }
+    ]
+  }
+}
+[2024-11-16T21:38:11.881Z] DEBUG: [Coordinator] Starting initial responses phase
+[2024-11-16T21:38:11.881Z] DEBUG: [Coordinator] Executing initial responses for conv-retc66uevm3kow3p5
+[2024-11-16T21:38:11.881Z] DEBUG: [Coordinator] Processing participant response
+{
+  "participant": {
+    "id": "analyst-1",
+    "role": "Analyst",
+    "task": "Research the current market trends related to the business industry you are considering."
+  }
+}
+[2024-11-16T21:38:11.881Z] DEBUG: [NotifyManager] Updating agent state:
+{
+  "agentId": "analyst-1",
+  "phase": "thinking"
+}
+[2024-11-16T21:38:11.881Z] DEBUG: CLI: Agent thinking update:
+{
+  "agentId": "analyst-1",
+  "phase": "thinking"
+}
+[2024-11-16T21:38:11.882Z] DEBUG: [NotificationService] Agent state updated:
+{
+  "agentId": "analyst-1",
+  "state": "thinking"
+}
+[2024-11-16T21:38:11.883Z] DEBUG: [AgentManager] Generating response for agent
+{
+  "agentId": "analyst-1",
+  "task": "Research the current market trends related to the business industry you are considering."
+}
+[2024-11-16T21:38:11.883Z] DEBUG: Validating context:
+[
+  {
+    "agentId": "user",
+    "content": "i want t ostart a business ",
+    "timestamp": 1731793089211,
+    "id": "conv-retc66uevm3kow3p5-0"
+  }
+]
+[2024-11-16T21:38:11.883Z] DEBUG: Context is already an array
+[2024-11-16T21:38:11.883Z] DEBUG: Analyst generating response with context:
+[
+  {
+    "agentId": "user",
+    "content": "i want t ostart a business ",
+    "timestamp": 1731793089211,
+    "id": "conv-retc66uevm3kow3p5-0"
+  }
+]
+[2024-11-16T21:38:11.883Z] DEBUG: Generating response for Analyst using LLM service with role:
+"Analyst"
+[2024-11-16T21:38:11.883Z] DEBUG: [LLMService] makeModelRequest params:
+{
+  "systemPrompt": "You are Analyst. Detail-oriented and analytical, focusing on data-driven insights.\n        Your expertise includes: Data analysis, Pattern recognition, Statistical analysis.\n        \n        Previous context: Research the current market trends related to the business industry you are considering. -> awaiting response\n        \n        Core Guidelines:\n        - Respond in 1-2 sharp, specific sentences\n        - Build directly on the previous message's key point\n        - Focus on immediate, practical next steps\n        - Don't over abstract concepts. Focus on concrete, actionable guidance\n        - Stay strictly within your role's expertise\n        - Do not prefix your response with your role name",
+  "userPrompt": "Research the current market trends related to the business industry you are considering.",
+  "context": [
+    {
+      "agentId": "user",
+      "content": "i want t ostart a business ",
+      "timestamp": 1731793089211,
+      "id": "conv-retc66uevm3kow3p5-0"
+    }
+  ],
+  "agentType": "Analyst"
+}
+[2024-11-16T21:38:11.884Z] DEBUG: [RateLimiter] Current requests: 1, Time since last reset: 5366ms
+[2024-11-16T21:38:11.884Z] DEBUG: [RateLimiter] Request processed. New count: 2
+[2024-11-16T21:38:11.884Z] DEBUG: [MessageFormatter] Starting formatMessages with params:
+{
+  "hasSystemPrompt": true,
+  "hasUserPrompt": true,
+  "contextLength": 1,
+  "agentType": "Analyst"
+}
+[2024-11-16T21:38:11.884Z] DEBUG: [MessageFormatter] Getting model for agent:
+{
+  "agentType": "Analyst",
+  "hasModelConfig": true
+}
+[2024-11-16T21:38:11.884Z] DEBUG: [MessageFormatter] Selected model for agent:
+{
+  "agentType": "Analyst",
+  "agentKey": "analyst",
+  "selectedModel": "gpt-4o-mini"
+}
+[2024-11-16T21:38:11.884Z] DEBUG: [MessageFormatter] Selected model:
+"gpt-4o-mini"
+[2024-11-16T21:38:11.884Z] DEBUG: [MessageFormatter] Sanitized context length:
+1
+[2024-11-16T21:38:11.884Z] DEBUG: [MessageFormatter] Final formatted message count:
+3
+[2024-11-16T21:38:12.843Z] DEBUG: [CostTracker] Request tracked:
+{
+  "inputTokens": 163,
+  "outputTokens": 52,
+  "requestCost": "0.000056",
+  "totalCost": "0.000161"
+}
+[2024-11-16T21:38:12.843Z] DEBUG: [LLMService] API Response:
+{
+  "id": "chatcmpl-AUKmcMkjEHMO2Ccat19Bw1s9loOmH",
+  "object": "chat.completion",
+  "created": 1731793094,
+  "model": "gpt-4o-mini-2024-07-18",
+  "choices": [
+    {
+      "index": 0,
+      "message": {
+        "role": "assistant",
+        "content": "Identify the specific industry you're interested in, then gather recent data on consumer preferences, emerging technologies, and competitive landscapes through market research reports and industry publications. Focus on quantifiable metrics such as market size, growth rates, and key players to inform your business strategy.",
+        "refusal": null
+      },
+      "logprobs": null,
+      "finish_reason": "stop"
+    }
+  ],
+  "usage": {
+    "prompt_tokens": 163,
+    "completion_tokens": 52,
+    "total_tokens": 215,
+    "prompt_tokens_details": {
+      "cached_tokens": 0,
+      "audio_tokens": 0
+    },
+    "completion_tokens_details": {
+      "reasoning_tokens": 0,
+      "audio_tokens": 0,
+      "accepted_prediction_tokens": 0,
+      "rejected_prediction_tokens": 0
+    }
+  },
+  "system_fingerprint": "fp_0ba0d124f1"
+}
+[2024-11-16T21:38:12.844Z] DEBUG: [MessageFormatter] Parsing response:
+{
+  "contentType": "string",
+  "contentLength": 325
+}
+[2024-11-16T21:38:12.844Z] DEBUG: [MessageFormatter] Content is not JSON, returning as-is
+[2024-11-16T21:38:12.844Z] DEBUG: [ConversationManager] Attempting to log message for conversation conv-retc66uevm3kow3p5
+[2024-11-16T21:38:12.845Z] DEBUG: [ConversationManager] Successfully logged message for conversation conv-retc66uevm3kow3p5
+{
+  "messageId": "conv-retc66uevm3kow3p5-1",
+  "timestamp": 1731793092845
+}
+[2024-11-16T21:38:12.845Z] DEBUG: [NotifyManager] Sending response:
+{
+  "agentId": "analyst-1",
+  "role": "Analyst",
+  "content": "Identify the specific industry you're interested in, then gather recent data on consumer preferences, emerging technologies, and competitive landscapes through market research reports and industry publications. Focus on quantifiable metrics such as market size, growth rates, and key players to inform your business strategy.",
+  "timestamp": 1731793092844
+}
+[2024-11-16T21:38:12.845Z] DEBUG: [NotifyManager] Sending response:
+{
+  "agentId": "analyst-1",
+  "role": "Analyst",
+  "content": "Identify the specific industry you're interested in, then gather recent data on consumer preferences, emerging technologies, and competitive landscapes through market research reports and industry publications. Focus on quantifiable metrics such as market size, growth rates, and key players to inform your business strategy.",
+  "timestamp": 1731793092844
+}
+[2024-11-16T21:38:12.845Z] DEBUG: [CLI] Received response:
+{
+  "agentId": "analyst-1",
+  "role": "Analyst",
+  "content": "Identify the specific industry you're interested in, then gather recent data on consumer preferences, emerging technologies, and competitive landscapes through market research reports and industry publications. Focus on quantifiable metrics such as market size, growth rates, and key players to inform your business strategy.",
+  "timestamp": 1731793092844
+}
+[2024-11-16T21:38:12.845Z] DEBUG: CLI: Displaying agent response:
+{
+  "agentId": "analyst-1",
+  "role": "Analyst",
+  "content": "Identify the specific industry you're interested in, then gather recent data on consumer preferences, emerging technologies, and competitive landscapes through market research reports and industry publications. Focus on quantifiable metrics such as market size, growth rates, and key players to inform your business strategy.",
+  "timestamp": 1731793092844
+}
+[2024-11-16T21:38:12.845Z] DEBUG: CLI: Received response:
+{
+  "agentId": "analyst-1",
+  "role": "Analyst",
+  "content": "Identify the specific industry you're interested in, then gather recent data on consumer preferences, emerging technologies, and competitive landscapes through market research reports and industry publications. Focus on quantifiable metrics such as market size, growth rates, and key players to inform your business strategy.",
+  "timestamp": 1731793092844
+}
+[2024-11-16T21:38:12.846Z] DEBUG: CLI: Displaying agent response:
+{
+  "agentId": "analyst-1",
+  "role": "Analyst",
+  "content": "Identify the specific industry you're interested in, then gather recent data on consumer preferences, emerging technologies, and competitive landscapes through market research reports and industry publications. Focus on quantifiable metrics such as market size, growth rates, and key players to inform your business strategy.",
+  "timestamp": 1731793092844
+}
+[2024-11-16T21:38:12.846Z] DEBUG: [NotificationService] Response sent:
+{
+  "agentId": "analyst-1",
+  "role": "Analyst",
+  "content": "Identify the specific industry you're interested in, then gather recent data on consumer preferences, emerging technologies, and competitive landscapes through market research reports and industry publications. Focus on quantifiable metrics such as market size, growth rates, and key players to inform your business strategy.",
+  "timestamp": 1731793092844
+}
+[2024-11-16T21:38:12.846Z] DEBUG: [NotificationService] Response sent:
+{
+  "agentId": "analyst-1",
+  "role": "Analyst",
+  "content": "Identify the specific industry you're interested in, then gather recent data on consumer preferences, emerging technologies, and competitive landscapes through market research reports and industry publications. Focus on quantifiable metrics such as market size, growth rates, and key players to inform your business strategy.",
+  "timestamp": 1731793092844
+}
+[2024-11-16T21:38:12.846Z] DEBUG: [NotificationService] Agent state cleared:
+{
+  "agentId": "analyst-1"
+}
+[2024-11-16T21:38:12.846Z] DEBUG: [Coordinator] Processing participant response
+{
+  "participant": {
+    "id": "critic-1",
+    "role": "Critic",
+    "task": "Evaluate the potential challenges and risks associated with starting a business in your chosen sector."
+  }
+}
+[2024-11-16T21:38:12.846Z] DEBUG: [NotifyManager] Updating agent state:
+{
+  "agentId": "critic-1",
+  "phase": "thinking"
+}
+[2024-11-16T21:38:12.846Z] DEBUG: CLI: Agent thinking update:
+{
+  "agentId": "critic-1",
+  "phase": "thinking"
+}
+[2024-11-16T21:38:12.848Z] DEBUG: [NotificationService] Agent state updated:
+{
+  "agentId": "critic-1",
+  "state": "thinking"
+}
+[2024-11-16T21:38:12.848Z] DEBUG: [AgentManager] Generating response for agent
+{
+  "agentId": "critic-1",
+  "task": "Evaluate the potential challenges and risks associated with starting a business in your chosen sector."
+}
+[2024-11-16T21:38:12.848Z] DEBUG: Validating context:
+[
+  {
+    "agentId": "user",
+    "content": "i want t ostart a business ",
+    "timestamp": 1731793089211,
+    "id": "conv-retc66uevm3kow3p5-0"
+  },
+  {
+    "agentId": "analyst-1",
+    "role": "Analyst",
+    "content": "Identify the specific industry you're interested in, then gather recent data on consumer preferences, emerging technologies, and competitive landscapes through market research reports and industry publications. Focus on quantifiable metrics such as market size, growth rates, and key players to inform your business strategy.",
+    "timestamp": 1731793092845,
+    "id": "conv-retc66uevm3kow3p5-1"
+  }
+]
+[2024-11-16T21:38:12.848Z] DEBUG: Context is already an array
+[2024-11-16T21:38:12.848Z] DEBUG: Critic generating response with context:
+[
+  {
+    "agentId": "user",
+    "content": "i want t ostart a business ",
+    "timestamp": 1731793089211,
+    "id": "conv-retc66uevm3kow3p5-0"
+  },
+  {
+    "agentId": "analyst-1",
+    "role": "Analyst",
+    "content": "Identify the specific industry you're interested in, then gather recent data on consumer preferences, emerging technologies, and competitive landscapes through market research reports and industry publications. Focus on quantifiable metrics such as market size, growth rates, and key players to inform your business strategy.",
+    "timestamp": 1731793092845,
+    "id": "conv-retc66uevm3kow3p5-1"
+  }
+]
+[2024-11-16T21:38:12.848Z] DEBUG: Generating response for Critic using LLM service with role:
+"Critic"
+[2024-11-16T21:38:12.848Z] DEBUG: [LLMService] makeModelRequest params:
+{
+  "systemPrompt": "You are Critic. Constructively critical, focusing on improvements and potential issues.\n        Your expertise includes: Critical analysis, Quality assessment, Risk identification.\n        \n        Previous context: Evaluate the potential challenges and risks associated with starting a business in your chosen sector. -> awaiting response\n        \n        Core Guidelines:\n        - Respond in 1-2 sharp, specific sentences\n        - Build directly on the previous message's key point\n        - Focus on immediate, practical next steps\n        - Don't over abstract concepts. Focus on concrete, actionable guidance\n        - Stay strictly within your role's expertise\n        - Do not prefix your response with your role name",
+  "userPrompt": "Evaluate the potential challenges and risks associated with starting a business in your chosen sector.",
+  "context": [
+    {
+      "agentId": "user",
+      "content": "i want t ostart a business ",
+      "timestamp": 1731793089211,
+      "id": "conv-retc66uevm3kow3p5-0"
+    },
+    {
+      "agentId": "analyst-1",
+      "role": "Analyst",
+      "content": "Identify the specific industry you're interested in, then gather recent data on consumer preferences, emerging technologies, and competitive landscapes through market research reports and industry publications. Focus on quantifiable metrics such as market size, growth rates, and key players to inform your business strategy.",
+      "timestamp": 1731793092845,
+      "id": "conv-retc66uevm3kow3p5-1"
+    }
+  ],
+  "agentType": "Critic"
+}
+[2024-11-16T21:38:12.848Z] DEBUG: [RateLimiter] Current requests: 2, Time since last reset: 6330ms
+[2024-11-16T21:38:12.849Z] DEBUG: [RateLimiter] Request processed. New count: 3
+[2024-11-16T21:38:12.849Z] DEBUG: [MessageFormatter] Starting formatMessages with params:
+{
+  "hasSystemPrompt": true,
+  "hasUserPrompt": true,
+  "contextLength": 2,
+  "agentType": "Critic"
+}
+[2024-11-16T21:38:12.849Z] DEBUG: [MessageFormatter] Getting model for agent:
+{
+  "agentType": "Critic",
+  "hasModelConfig": true
+}
+[2024-11-16T21:38:12.849Z] DEBUG: [MessageFormatter] Selected model for agent:
+{
+  "agentType": "Critic",
+  "agentKey": "critic",
+  "selectedModel": "gpt-4o-mini"
+}
+[2024-11-16T21:38:12.849Z] DEBUG: [MessageFormatter] Selected model:
+"gpt-4o-mini"
+[2024-11-16T21:38:12.849Z] DEBUG: [MessageFormatter] Sanitized context length:
+2
+[2024-11-16T21:38:12.849Z] DEBUG: [MessageFormatter] Final formatted message count:
+4
+[2024-11-16T21:38:13.859Z] DEBUG: [CostTracker] Request tracked:
+{
+  "inputTokens": 224,
+  "outputTokens": 50,
+  "requestCost": "0.000064",
+  "totalCost": "0.000224"
+}
+[2024-11-16T21:38:13.860Z] DEBUG: [LLMService] API Response:
+{
+  "id": "chatcmpl-AUKmdkYK8drud4YYk3u4Yk1bHN7ae",
+  "object": "chat.completion",
+  "created": 1731793095,
+  "model": "gpt-4o-mini-2024-07-18",
+  "choices": [
+    {
+      "index": 0,
+      "message": {
+        "role": "assistant",
+        "content": "Common challenges include securing funding, navigating regulatory requirements, and establishing a customer base in a competitive market. To mitigate these risks, develop a detailed business plan with financial projections, identify potential legal hurdles early, and invest in marketing strategies to build brand awareness.",
+        "refusal": null
+      },
+      "logprobs": null,
+      "finish_reason": "stop"
+    }
+  ],
+  "usage": {
+    "prompt_tokens": 224,
+    "completion_tokens": 50,
+    "total_tokens": 274,
+    "prompt_tokens_details": {
+      "cached_tokens": 0,
+      "audio_tokens": 0
+    },
+    "completion_tokens_details": {
+      "reasoning_tokens": 0,
+      "audio_tokens": 0,
+      "accepted_prediction_tokens": 0,
+      "rejected_prediction_tokens": 0
+    }
+  },
+  "system_fingerprint": "fp_9b78b61c52"
+}
+[2024-11-16T21:38:13.860Z] DEBUG: [MessageFormatter] Parsing response:
+{
+  "contentType": "string",
+  "contentLength": 324
+}
+[2024-11-16T21:38:13.860Z] DEBUG: [MessageFormatter] Content is not JSON, returning as-is
+[2024-11-16T21:38:13.860Z] DEBUG: [ConversationManager] Attempting to log message for conversation conv-retc66uevm3kow3p5
+[2024-11-16T21:38:13.860Z] DEBUG: [ConversationManager] Successfully logged message for conversation conv-retc66uevm3kow3p5
+{
+  "messageId": "conv-retc66uevm3kow3p5-2",
+  "timestamp": 1731793093860
+}
+[2024-11-16T21:38:13.860Z] DEBUG: [NotifyManager] Sending response:
+{
+  "agentId": "critic-1",
+  "role": "Critic",
+  "content": "Common challenges include securing funding, navigating regulatory requirements, and establishing a customer base in a competitive market. To mitigate these risks, develop a detailed business plan with financial projections, identify potential legal hurdles early, and invest in marketing strategies to build brand awareness.",
+  "timestamp": 1731793093860
+}
+[2024-11-16T21:38:13.860Z] DEBUG: [NotifyManager] Sending response:
+{
+  "agentId": "critic-1",
+  "role": "Critic",
+  "content": "Common challenges include securing funding, navigating regulatory requirements, and establishing a customer base in a competitive market. To mitigate these risks, develop a detailed business plan with financial projections, identify potential legal hurdles early, and invest in marketing strategies to build brand awareness.",
+  "timestamp": 1731793093860
+}
+[2024-11-16T21:38:13.860Z] DEBUG: [CLI] Received response:
+{
+  "agentId": "critic-1",
+  "role": "Critic",
+  "content": "Common challenges include securing funding, navigating regulatory requirements, and establishing a customer base in a competitive market. To mitigate these risks, develop a detailed business plan with financial projections, identify potential legal hurdles early, and invest in marketing strategies to build brand awareness.",
+  "timestamp": 1731793093860
+}
+[2024-11-16T21:38:13.861Z] DEBUG: CLI: Displaying agent response:
+{
+  "agentId": "critic-1",
+  "role": "Critic",
+  "content": "Common challenges include securing funding, navigating regulatory requirements, and establishing a customer base in a competitive market. To mitigate these risks, develop a detailed business plan with financial projections, identify potential legal hurdles early, and invest in marketing strategies to build brand awareness.",
+  "timestamp": 1731793093860
+}
+[2024-11-16T21:38:13.861Z] DEBUG: CLI: Received response:
+{
+  "agentId": "critic-1",
+  "role": "Critic",
+  "content": "Common challenges include securing funding, navigating regulatory requirements, and establishing a customer base in a competitive market. To mitigate these risks, develop a detailed business plan with financial projections, identify potential legal hurdles early, and invest in marketing strategies to build brand awareness.",
+  "timestamp": 1731793093860
+}
+[2024-11-16T21:38:13.862Z] DEBUG: CLI: Displaying agent response:
+{
+  "agentId": "critic-1",
+  "role": "Critic",
+  "content": "Common challenges include securing funding, navigating regulatory requirements, and establishing a customer base in a competitive market. To mitigate these risks, develop a detailed business plan with financial projections, identify potential legal hurdles early, and invest in marketing strategies to build brand awareness.",
+  "timestamp": 1731793093860
+}
+[2024-11-16T21:38:13.862Z] DEBUG: [NotificationService] Response sent:
+{
+  "agentId": "critic-1",
+  "role": "Critic",
+  "content": "Common challenges include securing funding, navigating regulatory requirements, and establishing a customer base in a competitive market. To mitigate these risks, develop a detailed business plan with financial projections, identify potential legal hurdles early, and invest in marketing strategies to build brand awareness.",
+  "timestamp": 1731793093860
+}
+[2024-11-16T21:38:13.862Z] DEBUG: [NotificationService] Response sent:
+{
+  "agentId": "critic-1",
+  "role": "Critic",
+  "content": "Common challenges include securing funding, navigating regulatory requirements, and establishing a customer base in a competitive market. To mitigate these risks, develop a detailed business plan with financial projections, identify potential legal hurdles early, and invest in marketing strategies to build brand awareness.",
+  "timestamp": 1731793093860
+}
+[2024-11-16T21:38:13.862Z] DEBUG: [NotificationService] Agent state cleared:
+{
+  "agentId": "critic-1"
+}
+[2024-11-16T21:38:13.862Z] DEBUG: [Coordinator] Processing participant response
+{
+  "participant": {
+    "id": "expert-1",
+    "role": "Expert",
+    "task": "Provide insights on best practices for business planning and funding options available for startups."
+  }
+}
+[2024-11-16T21:38:13.862Z] DEBUG: [NotifyManager] Updating agent state:
+{
+  "agentId": "expert-1",
+  "phase": "thinking"
+}
+[2024-11-16T21:38:13.862Z] DEBUG: CLI: Agent thinking update:
+{
+  "agentId": "expert-1",
+  "phase": "thinking"
+}
+[2024-11-16T21:38:13.863Z] DEBUG: [NotificationService] Agent state updated:
+{
+  "agentId": "expert-1",
+  "state": "thinking"
+}
+[2024-11-16T21:38:13.863Z] DEBUG: [AgentManager] Generating response for agent
+{
+  "agentId": "expert-1",
+  "task": "Provide insights on best practices for business planning and funding options available for startups."
+}
+[2024-11-16T21:38:13.864Z] DEBUG: Validating context:
+[
+  {
+    "agentId": "user",
+    "content": "i want t ostart a business ",
+    "timestamp": 1731793089211,
+    "id": "conv-retc66uevm3kow3p5-0"
+  },
+  {
+    "agentId": "analyst-1",
+    "role": "Analyst",
+    "content": "Identify the specific industry you're interested in, then gather recent data on consumer preferences, emerging technologies, and competitive landscapes through market research reports and industry publications. Focus on quantifiable metrics such as market size, growth rates, and key players to inform your business strategy.",
+    "timestamp": 1731793092845,
+    "id": "conv-retc66uevm3kow3p5-1"
+  },
+  {
+    "agentId": "critic-1",
+    "role": "Critic",
+    "content": "Common challenges include securing funding, navigating regulatory requirements, and establishing a customer base in a competitive market. To mitigate these risks, develop a detailed business plan with financial projections, identify potential legal hurdles early, and invest in marketing strategies to build brand awareness.",
+    "timestamp": 1731793093860,
+    "id": "conv-retc66uevm3kow3p5-2"
+  }
+]
+[2024-11-16T21:38:13.864Z] DEBUG: Context is already an array
+[2024-11-16T21:38:13.864Z] DEBUG: Expert generating response with context:
+[
+  {
+    "agentId": "user",
+    "content": "i want t ostart a business ",
+    "timestamp": 1731793089211,
+    "id": "conv-retc66uevm3kow3p5-0"
+  },
+  {
+    "agentId": "analyst-1",
+    "role": "Analyst",
+    "content": "Identify the specific industry you're interested in, then gather recent data on consumer preferences, emerging technologies, and competitive landscapes through market research reports and industry publications. Focus on quantifiable metrics such as market size, growth rates, and key players to inform your business strategy.",
+    "timestamp": 1731793092845,
+    "id": "conv-retc66uevm3kow3p5-1"
+  },
+  {
+    "agentId": "critic-1",
+    "role": "Critic",
+    "content": "Common challenges include securing funding, navigating regulatory requirements, and establishing a customer base in a competitive market. To mitigate these risks, develop a detailed business plan with financial projections, identify potential legal hurdles early, and invest in marketing strategies to build brand awareness.",
+    "timestamp": 1731793093860,
+    "id": "conv-retc66uevm3kow3p5-2"
+  }
+]
+[2024-11-16T21:38:13.864Z] DEBUG: Generating response for Expert using LLM service with role:
+"Expert"
+[2024-11-16T21:38:13.864Z] DEBUG: [LLMService] makeModelRequest params:
+{
+  "systemPrompt": "You are Expert. Knowledgeable and authoritative, providing deep domain expertise.\n        Your expertise includes: Domain expertise, Best practices, Technical knowledge.\n        \n        Previous context: Provide insights on best practices for business planning and funding options available for startups. -> awaiting response\n        \n        Core Guidelines:\n        - Respond in 1-2 sharp, specific sentences\n        - Build directly on the previous message's key point\n        - Focus on immediate, practical next steps\n        - Don't over abstract concepts. Focus on concrete, actionable guidance\n        - Stay strictly within your role's expertise\n        - Do not prefix your response with your role name",
+  "userPrompt": "Provide insights on best practices for business planning and funding options available for startups.",
+  "context": [
+    {
+      "agentId": "user",
+      "content": "i want t ostart a business ",
+      "timestamp": 1731793089211,
+      "id": "conv-retc66uevm3kow3p5-0"
+    },
+    {
+      "agentId": "analyst-1",
+      "role": "Analyst",
+      "content": "Identify the specific industry you're interested in, then gather recent data on consumer preferences, emerging technologies, and competitive landscapes through market research reports and industry publications. Focus on quantifiable metrics such as market size, growth rates, and key players to inform your business strategy.",
+      "timestamp": 1731793092845,
+      "id": "conv-retc66uevm3kow3p5-1"
+    },
+    {
+      "agentId": "critic-1",
+      "role": "Critic",
+      "content": "Common challenges include securing funding, navigating regulatory requirements, and establishing a customer base in a competitive market. To mitigate these risks, develop a detailed business plan with financial projections, identify potential legal hurdles early, and invest in marketing strategies to build brand awareness.",
+      "timestamp": 1731793093860,
+      "id": "conv-retc66uevm3kow3p5-2"
+    }
+  ],
+  "agentType": "Expert"
+}
+[2024-11-16T21:38:13.864Z] DEBUG: [RateLimiter] Current requests: 3, Time since last reset: 7346ms
+[2024-11-16T21:38:13.864Z] DEBUG: [RateLimiter] Request processed. New count: 4
+[2024-11-16T21:38:13.864Z] DEBUG: [MessageFormatter] Starting formatMessages with params:
+{
+  "hasSystemPrompt": true,
+  "hasUserPrompt": true,
+  "contextLength": 3,
+  "agentType": "Expert"
+}
+[2024-11-16T21:38:13.864Z] DEBUG: [MessageFormatter] Getting model for agent:
+{
+  "agentType": "Expert",
+  "hasModelConfig": true
+}
+[2024-11-16T21:38:13.864Z] DEBUG: [MessageFormatter] Selected model for agent:
+{
+  "agentType": "Expert",
+  "agentKey": "expert",
+  "selectedModel": "gpt-4o-mini"
+}
+[2024-11-16T21:38:13.864Z] DEBUG: [MessageFormatter] Selected model:
+"gpt-4o-mini"
+[2024-11-16T21:38:13.865Z] DEBUG: [MessageFormatter] Sanitized context length:
+3
+[2024-11-16T21:38:13.865Z] DEBUG: [MessageFormatter] Final formatted message count:
+5
+[2024-11-16T21:38:14.787Z] DEBUG: [CostTracker] Request tracked:
+{
+  "inputTokens": 274,
+  "outputTokens": 61,
+  "requestCost": "0.000078",
+  "totalCost": "0.000302"
+}
+[2024-11-16T21:38:14.788Z] DEBUG: [LLMService] API Response:
+{
+  "id": "chatcmpl-AUKmeyyrZZZ6g4308rSF3qsNnubup",
+  "object": "chat.completion",
+  "created": 1731793096,
+  "model": "gpt-4o-mini-2024-07-18",
+  "choices": [
+    {
+      "index": 0,
+      "message": {
+        "role": "assistant",
+        "content": "Start with a solid business plan that includes a clear value proposition, market analysis, operational plan, and financial projections to attract potential investors. For funding, consider options like bootstrapping, angel investors, venture capital, crowdfunding, or small business loans, tailoring your approach based on your industry and growth stage.",
+        "refusal": null
+      },
+      "logprobs": null,
+      "finish_reason": "stop"
+    }
+  ],
+  "usage": {
+    "prompt_tokens": 274,
+    "completion_tokens": 61,
+    "total_tokens": 335,
+    "prompt_tokens_details": {
+      "cached_tokens": 0,
+      "audio_tokens": 0
+    },
+    "completion_tokens_details": {
+      "reasoning_tokens": 0,
+      "audio_tokens": 0,
+      "accepted_prediction_tokens": 0,
+      "rejected_prediction_tokens": 0
+    }
+  },
+  "system_fingerprint": "fp_0ba0d124f1"
+}
+[2024-11-16T21:38:14.789Z] DEBUG: [MessageFormatter] Parsing response:
+{
+  "contentType": "string",
+  "contentLength": 354
+}
+[2024-11-16T21:38:14.789Z] DEBUG: [MessageFormatter] Content is not JSON, returning as-is
+[2024-11-16T21:38:14.789Z] DEBUG: [ConversationManager] Attempting to log message for conversation conv-retc66uevm3kow3p5
+[2024-11-16T21:38:14.792Z] DEBUG: [ConversationManager] Successfully logged message for conversation conv-retc66uevm3kow3p5
+{
+  "messageId": "conv-retc66uevm3kow3p5-3",
+  "timestamp": 1731793094792
+}
+[2024-11-16T21:38:14.793Z] DEBUG: [NotifyManager] Sending response:
+{
+  "agentId": "expert-1",
+  "role": "Expert",
+  "content": "Start with a solid business plan that includes a clear value proposition, market analysis, operational plan, and financial projections to attract potential investors. For funding, consider options like bootstrapping, angel investors, venture capital, crowdfunding, or small business loans, tailoring your approach based on your industry and growth stage.",
+  "timestamp": 1731793094789
+}
+[2024-11-16T21:38:14.793Z] DEBUG: [NotifyManager] Sending response:
+{
+  "agentId": "expert-1",
+  "role": "Expert",
+  "content": "Start with a solid business plan that includes a clear value proposition, market analysis, operational plan, and financial projections to attract potential investors. For funding, consider options like bootstrapping, angel investors, venture capital, crowdfunding, or small business loans, tailoring your approach based on your industry and growth stage.",
+  "timestamp": 1731793094789
+}
+[2024-11-16T21:38:14.793Z] DEBUG: [CLI] Received response:
+{
+  "agentId": "expert-1",
+  "role": "Expert",
+  "content": "Start with a solid business plan that includes a clear value proposition, market analysis, operational plan, and financial projections to attract potential investors. For funding, consider options like bootstrapping, angel investors, venture capital, crowdfunding, or small business loans, tailoring your approach based on your industry and growth stage.",
+  "timestamp": 1731793094789
+}
+[2024-11-16T21:38:14.793Z] DEBUG: CLI: Displaying agent response:
+{
+  "agentId": "expert-1",
+  "role": "Expert",
+  "content": "Start with a solid business plan that includes a clear value proposition, market analysis, operational plan, and financial projections to attract potential investors. For funding, consider options like bootstrapping, angel investors, venture capital, crowdfunding, or small business loans, tailoring your approach based on your industry and growth stage.",
+  "timestamp": 1731793094789
+}
+[2024-11-16T21:38:14.794Z] DEBUG: CLI: Received response:
+{
+  "agentId": "expert-1",
+  "role": "Expert",
+  "content": "Start with a solid business plan that includes a clear value proposition, market analysis, operational plan, and financial projections to attract potential investors. For funding, consider options like bootstrapping, angel investors, venture capital, crowdfunding, or small business loans, tailoring your approach based on your industry and growth stage.",
+  "timestamp": 1731793094789
+}
+[2024-11-16T21:38:14.795Z] DEBUG: CLI: Displaying agent response:
+{
+  "agentId": "expert-1",
+  "role": "Expert",
+  "content": "Start with a solid business plan that includes a clear value proposition, market analysis, operational plan, and financial projections to attract potential investors. For funding, consider options like bootstrapping, angel investors, venture capital, crowdfunding, or small business loans, tailoring your approach based on your industry and growth stage.",
+  "timestamp": 1731793094789
+}
+[2024-11-16T21:38:14.795Z] DEBUG: [NotificationService] Response sent:
+{
+  "agentId": "expert-1",
+  "role": "Expert",
+  "content": "Start with a solid business plan that includes a clear value proposition, market analysis, operational plan, and financial projections to attract potential investors. For funding, consider options like bootstrapping, angel investors, venture capital, crowdfunding, or small business loans, tailoring your approach based on your industry and growth stage.",
+  "timestamp": 1731793094789
+}
+[2024-11-16T21:38:14.795Z] DEBUG: [NotificationService] Response sent:
+{
+  "agentId": "expert-1",
+  "role": "Expert",
+  "content": "Start with a solid business plan that includes a clear value proposition, market analysis, operational plan, and financial projections to attract potential investors. For funding, consider options like bootstrapping, angel investors, venture capital, crowdfunding, or small business loans, tailoring your approach based on your industry and growth stage.",
+  "timestamp": 1731793094789
+}
+[2024-11-16T21:38:14.795Z] DEBUG: [NotificationService] Agent state cleared:
+{
+  "agentId": "expert-1"
+}
+[2024-11-16T21:38:14.796Z] DEBUG: [Coordinator] Initial responses complete
+{
+  "responseCount": 3
+}
+[2024-11-16T21:38:14.796Z] DEBUG: [Coordinator] Starting collaboration phase
+[2024-11-16T21:38:14.796Z] INFO: [Coordinator] Starting collaboration phase...
+[2024-11-16T21:38:14.796Z] INFO: [QualityGate] Round counter reset from 0 to 0
+[2024-11-16T21:38:14.796Z] INFO: [QualityGate] Round counter incremented from 0 to 1
+[2024-11-16T21:38:14.796Z] DEBUG: [QualityGate] Validating continuation - Round 1/5
+[2024-11-16T21:38:14.797Z] DEBUG: [Director] planNextAgentInteraction - starting with:
+{
+  "messagesCount": 4,
+  "previousResponsesCount": 3
+}
+[2024-11-16T21:38:14.797Z] DEBUG: [Director] planNextAgentInteraction - making LLM request...
+[2024-11-16T21:38:14.797Z] DEBUG: [LLMService] makeModelRequest params:
+{
+  "systemPrompt": "You are a JSON-only response API. You must ONLY return a valid JSON object with no additional text.\n\n            Current conversation state:\n            - Last speaker: Expert\n            - Available next speakers: Analyst, Critic\n            - Last message: \"Start with a solid business plan that includes a clear value proposition, market analysis, operational plan, and financial projections to attract potential investors. For funding, consider options like bootstrapping, angel investors, venture capital, crowdfunding, or small business loans, tailoring your approach based on your industry and growth stage.\"\n\n            Response requirements:\n            1. Must be valid JSON\n            2. Must contain exactly these fields: nextAgent, respondTo, task\n            3. No additional text or explanation allowed\n\n            Example valid response:\n            {\n                \"nextAgent\": \"Analyst\",\n                \"respondTo\": [\"Expert\"],\n                \"task\": \"example task description\"\n            }",
+  "userPrompt": "Return a JSON object selecting the next agent from [Analyst, Critic] and their task.",
+  "context": [
+    {
+      "agentId": "user",
+      "content": "i want t ostart a business ",
+      "timestamp": 1731793089211,
+      "id": "conv-retc66uevm3kow3p5-0"
+    },
+    {
+      "agentId": "analyst-1",
+      "role": "Analyst",
+      "content": "Identify the specific industry you're interested in, then gather recent data on consumer preferences, emerging technologies, and competitive landscapes through market research reports and industry publications. Focus on quantifiable metrics such as market size, growth rates, and key players to inform your business strategy.",
+      "timestamp": 1731793092845,
+      "id": "conv-retc66uevm3kow3p5-1"
+    },
+    {
+      "agentId": "critic-1",
+      "role": "Critic",
+      "content": "Common challenges include securing funding, navigating regulatory requirements, and establishing a customer base in a competitive market. To mitigate these risks, develop a detailed business plan with financial projections, identify potential legal hurdles early, and invest in marketing strategies to build brand awareness.",
+      "timestamp": 1731793093860,
+      "id": "conv-retc66uevm3kow3p5-2"
+    },
+    {
+      "agentId": "expert-1",
+      "role": "Expert",
+      "content": "Start with a solid business plan that includes a clear value proposition, market analysis, operational plan, and financial projections to attract potential investors. For funding, consider options like bootstrapping, angel investors, venture capital, crowdfunding, or small business loans, tailoring your approach based on your industry and growth stage.",
+      "timestamp": 1731793094792,
+      "id": "conv-retc66uevm3kow3p5-3"
+    }
+  ],
+  "agentType": "Director",
+  "forceJsonResponse": true
+}
+[2024-11-16T21:38:14.797Z] DEBUG: [RateLimiter] Current requests: 4, Time since last reset: 8279ms
+[2024-11-16T21:38:14.798Z] DEBUG: [RateLimiter] Request processed. New count: 5
+[2024-11-16T21:38:14.798Z] DEBUG: [MessageFormatter] Starting formatMessages with params:
+{
+  "hasSystemPrompt": true,
+  "hasUserPrompt": true,
+  "contextLength": 4,
+  "agentType": "Director"
+}
+[2024-11-16T21:38:14.798Z] DEBUG: [MessageFormatter] Getting model for agent:
+{
+  "agentType": "Director",
+  "hasModelConfig": true
+}
+[2024-11-16T21:38:14.798Z] DEBUG: [MessageFormatter] Selected model for agent:
+{
+  "agentType": "Director",
+  "agentKey": "director",
+  "selectedModel": "gpt-4o-mini"
+}
+[2024-11-16T21:38:14.798Z] DEBUG: [MessageFormatter] Selected model:
+"gpt-4o-mini"
+[2024-11-16T21:38:14.798Z] DEBUG: [MessageFormatter] Sanitized context length:
+4
+[2024-11-16T21:38:14.798Z] DEBUG: [MessageFormatter] Final formatted message count:
+6
+[2024-11-16T21:38:16.000Z] DEBUG: [CostTracker] Request tracked:
+{
+  "inputTokens": 406,
+  "outputTokens": 36,
+  "requestCost": "0.000082",
+  "totalCost": "0.000385"
+}
+[2024-11-16T21:38:16.001Z] DEBUG: [LLMService] API Response:
+{
+  "id": "chatcmpl-AUKmfHh30q3nvajdgZ1AvROUOMJpp",
+  "object": "chat.completion",
+  "created": 1731793097,
+  "model": "gpt-4o-mini-2024-07-18",
+  "choices": [
+    {
+      "index": 0,
+      "message": {
+        "role": "assistant",
+        "content": "{\n    \"nextAgent\": \"Analyst\",\n    \"respondTo\": [\"Expert\"],\n    \"task\": \"Analyze the funding options and their suitability for different business stages.\"\n}",
+        "refusal": null
+      },
+      "logprobs": null,
+      "finish_reason": "stop"
+    }
+  ],
+  "usage": {
+    "prompt_tokens": 406,
+    "completion_tokens": 36,
+    "total_tokens": 442,
+    "prompt_tokens_details": {
+      "cached_tokens": 0,
+      "audio_tokens": 0
+    },
+    "completion_tokens_details": {
+      "reasoning_tokens": 0,
+      "audio_tokens": 0,
+      "accepted_prediction_tokens": 0,
+      "rejected_prediction_tokens": 0
+    }
+  },
+  "system_fingerprint": "fp_0ba0d124f1"
+}
+[2024-11-16T21:38:16.002Z] DEBUG: [MessageFormatter] Parsing response:
+{
+  "contentType": "string",
+  "contentLength": 155
+}
+[2024-11-16T21:38:16.002Z] DEBUG: [MessageFormatter] Successfully parsed JSON content
+[2024-11-16T21:38:16.002Z] DEBUG: [Director] planNextAgentInteraction - received LLM response:
+{
+  "nextAgent": "Analyst",
+  "respondTo": [
+    "Expert"
+  ],
+  "task": "Analyze the funding options and their suitability for different business stages."
+}
+[2024-11-16T21:38:16.002Z] DEBUG: [Director] Attempting to parse LLM response into JSON
+[2024-11-16T21:38:16.002Z] DEBUG: [Director] planNextAgentInteraction - parsed plan:
+{
+  "nextAgent": "Analyst",
+  "respondTo": [
+    "Expert"
+  ],
+  "task": "Analyze the funding options and their suitability for different business stages."
+}
+[2024-11-16T21:38:16.003Z] DEBUG: [Director] planNextAgentInteraction - validating nextAgent:
+"Analyst"
+[2024-11-16T21:38:16.003Z] DEBUG: [Director] planNextAgentInteraction - validating respondTo:
+[
+  "Expert"
+]
+[2024-11-16T21:38:16.003Z] DEBUG: [Director] planNextAgentInteraction - validation successful
+[2024-11-16T21:38:16.003Z] DEBUG: [Director] Comparing roles:
+{
+  "nextAgent": "Analyst",
+  "lastResponseRole": "Expert"
+}
+[2024-11-16T21:38:16.003Z] DEBUG: [Director] planNextAgentInteraction - returning final plan:
+{
+  "nextAgent": "Analyst",
+  "respondTo": [
+    "Expert"
+  ],
+  "task": "Analyze the funding options and their suitability for different business stages."
+}
+[2024-11-16T21:38:16.003Z] DEBUG: [NotifyManager] Updating agent state:
+{
+  "agentId": "analyst-1",
+  "phase": "thinking"
+}
+[2024-11-16T21:38:16.003Z] DEBUG: CLI: Agent thinking update:
+{
+  "agentId": "analyst-1",
+  "phase": "thinking"
+}
+[2024-11-16T21:38:16.004Z] DEBUG: [NotificationService] Agent state updated:
+{
+  "agentId": "analyst-1",
+  "state": "thinking"
+}
+[2024-11-16T21:38:16.005Z] DEBUG: [AgentManager] Generating response for agent
+{
+  "agentId": "analyst-1",
+  "task": "Respond to Expert's points: Analyze the funding options and their suitability for different business stages."
+}
+[2024-11-16T21:38:16.005Z] DEBUG: Validating context:
+[
+  {
+    "agentId": "user",
+    "content": "i want t ostart a business ",
+    "timestamp": 1731793089211,
+    "id": "conv-retc66uevm3kow3p5-0"
+  },
+  {
+    "agentId": "analyst-1",
+    "role": "Analyst",
+    "content": "Identify the specific industry you're interested in, then gather recent data on consumer preferences, emerging technologies, and competitive landscapes through market research reports and industry publications. Focus on quantifiable metrics such as market size, growth rates, and key players to inform your business strategy.",
+    "timestamp": 1731793092845,
+    "id": "conv-retc66uevm3kow3p5-1"
+  },
+  {
+    "agentId": "critic-1",
+    "role": "Critic",
+    "content": "Common challenges include securing funding, navigating regulatory requirements, and establishing a customer base in a competitive market. To mitigate these risks, develop a detailed business plan with financial projections, identify potential legal hurdles early, and invest in marketing strategies to build brand awareness.",
+    "timestamp": 1731793093860,
+    "id": "conv-retc66uevm3kow3p5-2"
+  },
+  {
+    "agentId": "expert-1",
+    "role": "Expert",
+    "content": "Start with a solid business plan that includes a clear value proposition, market analysis, operational plan, and financial projections to attract potential investors. For funding, consider options like bootstrapping, angel investors, venture capital, crowdfunding, or small business loans, tailoring your approach based on your industry and growth stage.",
+    "timestamp": 1731793094792,
+    "id": "conv-retc66uevm3kow3p5-3"
+  }
+]
+[2024-11-16T21:38:16.005Z] DEBUG: Context is already an array
+[2024-11-16T21:38:16.005Z] DEBUG: Analyst generating response with context:
+[
+  {
+    "agentId": "user",
+    "content": "i want t ostart a business ",
+    "timestamp": 1731793089211,
+    "id": "conv-retc66uevm3kow3p5-0"
+  },
+  {
+    "agentId": "analyst-1",
+    "role": "Analyst",
+    "content": "Identify the specific industry you're interested in, then gather recent data on consumer preferences, emerging technologies, and competitive landscapes through market research reports and industry publications. Focus on quantifiable metrics such as market size, growth rates, and key players to inform your business strategy.",
+    "timestamp": 1731793092845,
+    "id": "conv-retc66uevm3kow3p5-1"
+  },
+  {
+    "agentId": "critic-1",
+    "role": "Critic",
+    "content": "Common challenges include securing funding, navigating regulatory requirements, and establishing a customer base in a competitive market. To mitigate these risks, develop a detailed business plan with financial projections, identify potential legal hurdles early, and invest in marketing strategies to build brand awareness.",
+    "timestamp": 1731793093860,
+    "id": "conv-retc66uevm3kow3p5-2"
+  },
+  {
+    "agentId": "expert-1",
+    "role": "Expert",
+    "content": "Start with a solid business plan that includes a clear value proposition, market analysis, operational plan, and financial projections to attract potential investors. For funding, consider options like bootstrapping, angel investors, venture capital, crowdfunding, or small business loans, tailoring your approach based on your industry and growth stage.",
+    "timestamp": 1731793094792,
+    "id": "conv-retc66uevm3kow3p5-3"
+  }
+]
+[2024-11-16T21:38:16.005Z] DEBUG: Generating response for Analyst using LLM service with role:
+"Analyst"
+[2024-11-16T21:38:16.005Z] DEBUG: [LLMService] makeModelRequest params:
+{
+  "systemPrompt": "You are Analyst. Detail-oriented and analytical, focusing on data-driven insights.\n        Your expertise includes: Data analysis, Pattern recognition, Statistical analysis.\n        \n        Previous context: Research the current market trends related to the business industry you are considering. -> awaiting response\nRespond to Expert's points: Analyze the funding options and their suitability for different business stages. -> awaiting response\n        \n        Core Guidelines:\n        - Respond in 1-2 sharp, specific sentences\n        - Build directly on the previous message's key point\n        - Focus on immediate, practical next steps\n        - Don't over abstract concepts. Focus on concrete, actionable guidance\n        - Stay strictly within your role's expertise\n        - Do not prefix your response with your role name",
+  "userPrompt": "Respond to Expert's points: Analyze the funding options and their suitability for different business stages.",
+  "context": [
+    {
+      "agentId": "user",
+      "content": "i want t ostart a business ",
+      "timestamp": 1731793089211,
+      "id": "conv-retc66uevm3kow3p5-0"
+    },
+    {
+      "agentId": "analyst-1",
+      "role": "Analyst",
+      "content": "Identify the specific industry you're interested in, then gather recent data on consumer preferences, emerging technologies, and competitive landscapes through market research reports and industry publications. Focus on quantifiable metrics such as market size, growth rates, and key players to inform your business strategy.",
+      "timestamp": 1731793092845,
+      "id": "conv-retc66uevm3kow3p5-1"
+    },
+    {
+      "agentId": "critic-1",
+      "role": "Critic",
+      "content": "Common challenges include securing funding, navigating regulatory requirements, and establishing a customer base in a competitive market. To mitigate these risks, develop a detailed business plan with financial projections, identify potential legal hurdles early, and invest in marketing strategies to build brand awareness.",
+      "timestamp": 1731793093860,
+      "id": "conv-retc66uevm3kow3p5-2"
+    },
+    {
+      "agentId": "expert-1",
+      "role": "Expert",
+      "content": "Start with a solid business plan that includes a clear value proposition, market analysis, operational plan, and financial projections to attract potential investors. For funding, consider options like bootstrapping, angel investors, venture capital, crowdfunding, or small business loans, tailoring your approach based on your industry and growth stage.",
+      "timestamp": 1731793094792,
+      "id": "conv-retc66uevm3kow3p5-3"
+    }
+  ],
+  "agentType": "Analyst"
+}
+[2024-11-16T21:38:16.005Z] DEBUG: [RateLimiter] Current requests: 5, Time since last reset: 9487ms
+[2024-11-16T21:38:16.005Z] DEBUG: [RateLimiter] Request processed. New count: 6
+[2024-11-16T21:38:16.006Z] DEBUG: [MessageFormatter] Starting formatMessages with params:
+{
+  "hasSystemPrompt": true,
+  "hasUserPrompt": true,
+  "contextLength": 4,
+  "agentType": "Analyst"
+}
+[2024-11-16T21:38:16.006Z] DEBUG: [MessageFormatter] Getting model for agent:
+{
+  "agentType": "Analyst",
+  "hasModelConfig": true
+}
+[2024-11-16T21:38:16.006Z] DEBUG: [MessageFormatter] Selected model for agent:
+{
+  "agentType": "Analyst",
+  "agentKey": "analyst",
+  "selectedModel": "gpt-4o-mini"
+}
+[2024-11-16T21:38:16.006Z] DEBUG: [MessageFormatter] Selected model:
+"gpt-4o-mini"
+[2024-11-16T21:38:16.006Z] DEBUG: [MessageFormatter] Sanitized context length:
+4
+[2024-11-16T21:38:16.006Z] DEBUG: [MessageFormatter] Final formatted message count:
+6
+[2024-11-16T21:38:17.256Z] DEBUG: [CostTracker] Request tracked:
+{
+  "inputTokens": 364,
+  "outputTokens": 65,
+  "requestCost": "0.000094",
+  "totalCost": "0.000478"
+}
+[2024-11-16T21:38:17.256Z] DEBUG: [LLMService] API Response:
+{
+  "id": "chatcmpl-AUKmg1NVtcE2z90ZVTLRu7fW21RYS",
+  "object": "chat.completion",
+  "created": 1731793098,
+  "model": "gpt-4o-mini-2024-07-18",
+  "choices": [
+    {
+      "index": 0,
+      "message": {
+        "role": "assistant",
+        "content": "In the seed stage, bootstrapping and crowdfunding are often suitable for initial product development and market testing, while angel investors can provide early-stage capital with mentorship. As businesses scale to the growth stage, venture capital becomes more appropriate for significant expansion efforts, while traditional bank loans might be considered for established companies with proven revenue streams.",
+        "refusal": null
+      },
+      "logprobs": null,
+      "finish_reason": "stop"
+    }
+  ],
+  "usage": {
+    "prompt_tokens": 364,
+    "completion_tokens": 65,
+    "total_tokens": 429,
+    "prompt_tokens_details": {
+      "cached_tokens": 0,
+      "audio_tokens": 0
+    },
+    "completion_tokens_details": {
+      "reasoning_tokens": 0,
+      "audio_tokens": 0,
+      "accepted_prediction_tokens": 0,
+      "rejected_prediction_tokens": 0
+    }
+  },
+  "system_fingerprint": "fp_0ba0d124f1"
+}
+[2024-11-16T21:38:17.257Z] DEBUG: [MessageFormatter] Parsing response:
+{
+  "contentType": "string",
+  "contentLength": 412
+}
+[2024-11-16T21:38:17.258Z] DEBUG: [MessageFormatter] Content is not JSON, returning as-is
+[2024-11-16T21:38:17.258Z] DEBUG: [ConversationManager] Attempting to log message for conversation conv-retc66uevm3kow3p5
+[2024-11-16T21:38:17.258Z] DEBUG: [ConversationManager] Successfully logged message for conversation conv-retc66uevm3kow3p5
+{
+  "messageId": "conv-retc66uevm3kow3p5-4",
+  "timestamp": 1731793097258
+}
+[2024-11-16T21:38:17.258Z] DEBUG: [NotifyManager] Sending response:
+{
+  "agentId": "analyst-1",
+  "role": "Analyst",
+  "content": "In the seed stage, bootstrapping and crowdfunding are often suitable for initial product development and market testing, while angel investors can provide early-stage capital with mentorship. As businesses scale to the growth stage, venture capital becomes more appropriate for significant expansion efforts, while traditional bank loans might be considered for established companies with proven revenue streams.",
+  "timestamp": 1731793097258
+}
+[2024-11-16T21:38:17.258Z] DEBUG: [NotifyManager] Sending response:
+{
+  "agentId": "analyst-1",
+  "role": "Analyst",
+  "content": "In the seed stage, bootstrapping and crowdfunding are often suitable for initial product development and market testing, while angel investors can provide early-stage capital with mentorship. As businesses scale to the growth stage, venture capital becomes more appropriate for significant expansion efforts, while traditional bank loans might be considered for established companies with proven revenue streams.",
+  "timestamp": 1731793097258
+}
+[2024-11-16T21:38:17.258Z] DEBUG: [CLI] Received response:
+{
+  "agentId": "analyst-1",
+  "role": "Analyst",
+  "content": "In the seed stage, bootstrapping and crowdfunding are often suitable for initial product development and market testing, while angel investors can provide early-stage capital with mentorship. As businesses scale to the growth stage, venture capital becomes more appropriate for significant expansion efforts, while traditional bank loans might be considered for established companies with proven revenue streams.",
+  "timestamp": 1731793097258
+}
+[2024-11-16T21:38:17.259Z] DEBUG: CLI: Displaying agent response:
+{
+  "agentId": "analyst-1",
+  "role": "Analyst",
+  "content": "In the seed stage, bootstrapping and crowdfunding are often suitable for initial product development and market testing, while angel investors can provide early-stage capital with mentorship. As businesses scale to the growth stage, venture capital becomes more appropriate for significant expansion efforts, while traditional bank loans might be considered for established companies with proven revenue streams.",
+  "timestamp": 1731793097258
+}
+[2024-11-16T21:38:17.259Z] DEBUG: CLI: Received response:
+{
+  "agentId": "analyst-1",
+  "role": "Analyst",
+  "content": "In the seed stage, bootstrapping and crowdfunding are often suitable for initial product development and market testing, while angel investors can provide early-stage capital with mentorship. As businesses scale to the growth stage, venture capital becomes more appropriate for significant expansion efforts, while traditional bank loans might be considered for established companies with proven revenue streams.",
+  "timestamp": 1731793097258
+}
+[2024-11-16T21:38:17.260Z] DEBUG: CLI: Displaying agent response:
+{
+  "agentId": "analyst-1",
+  "role": "Analyst",
+  "content": "In the seed stage, bootstrapping and crowdfunding are often suitable for initial product development and market testing, while angel investors can provide early-stage capital with mentorship. As businesses scale to the growth stage, venture capital becomes more appropriate for significant expansion efforts, while traditional bank loans might be considered for established companies with proven revenue streams.",
+  "timestamp": 1731793097258
+}
+[2024-11-16T21:38:17.260Z] DEBUG: [NotificationService] Response sent:
+{
+  "agentId": "analyst-1",
+  "role": "Analyst",
+  "content": "In the seed stage, bootstrapping and crowdfunding are often suitable for initial product development and market testing, while angel investors can provide early-stage capital with mentorship. As businesses scale to the growth stage, venture capital becomes more appropriate for significant expansion efforts, while traditional bank loans might be considered for established companies with proven revenue streams.",
+  "timestamp": 1731793097258
+}
+[2024-11-16T21:38:17.261Z] DEBUG: [NotificationService] Response sent:
+{
+  "agentId": "analyst-1",
+  "role": "Analyst",
+  "content": "In the seed stage, bootstrapping and crowdfunding are often suitable for initial product development and market testing, while angel investors can provide early-stage capital with mentorship. As businesses scale to the growth stage, venture capital becomes more appropriate for significant expansion efforts, while traditional bank loans might be considered for established companies with proven revenue streams.",
+  "timestamp": 1731793097258
+}
+[2024-11-16T21:38:17.261Z] DEBUG: [NotificationService] Agent state cleared:
+{
+  "agentId": "analyst-1"
+}
+[2024-11-16T21:38:17.261Z] INFO: [QualityGate] Round counter incremented from 1 to 2
+[2024-11-16T21:38:17.262Z] DEBUG: [QualityGate] Validating continuation - Round 2/5
+[2024-11-16T21:38:17.262Z] DEBUG: [Director] planNextAgentInteraction - starting with:
+{
+  "messagesCount": 5,
+  "previousResponsesCount": 4
+}
+[2024-11-16T21:38:17.262Z] DEBUG: [Director] planNextAgentInteraction - making LLM request...
+[2024-11-16T21:38:17.262Z] DEBUG: [LLMService] makeModelRequest params:
+{
+  "systemPrompt": "You are a JSON-only response API. You must ONLY return a valid JSON object with no additional text.\n\n            Current conversation state:\n            - Last speaker: Analyst\n            - Available next speakers: Critic, Expert\n            - Last message: \"In the seed stage, bootstrapping and crowdfunding are often suitable for initial product development and market testing, while angel investors can provide early-stage capital with mentorship. As businesses scale to the growth stage, venture capital becomes more appropriate for significant expansion efforts, while traditional bank loans might be considered for established companies with proven revenue streams.\"\n\n            Response requirements:\n            1. Must be valid JSON\n            2. Must contain exactly these fields: nextAgent, respondTo, task\n            3. No additional text or explanation allowed\n\n            Example valid response:\n            {\n                \"nextAgent\": \"Critic\",\n                \"respondTo\": [\"Analyst\"],\n                \"task\": \"example task description\"\n            }",
+  "userPrompt": "Return a JSON object selecting the next agent from [Critic, Expert] and their task.",
+  "context": [
+    {
+      "agentId": "user",
+      "content": "i want t ostart a business ",
+      "timestamp": 1731793089211,
+      "id": "conv-retc66uevm3kow3p5-0"
+    },
+    {
+      "agentId": "analyst-1",
+      "role": "Analyst",
+      "content": "Identify the specific industry you're interested in, then gather recent data on consumer preferences, emerging technologies, and competitive landscapes through market research reports and industry publications. Focus on quantifiable metrics such as market size, growth rates, and key players to inform your business strategy.",
+      "timestamp": 1731793092845,
+      "id": "conv-retc66uevm3kow3p5-1"
+    },
+    {
+      "agentId": "critic-1",
+      "role": "Critic",
+      "content": "Common challenges include securing funding, navigating regulatory requirements, and establishing a customer base in a competitive market. To mitigate these risks, develop a detailed business plan with financial projections, identify potential legal hurdles early, and invest in marketing strategies to build brand awareness.",
+      "timestamp": 1731793093860,
+      "id": "conv-retc66uevm3kow3p5-2"
+    },
+    {
+      "agentId": "expert-1",
+      "role": "Expert",
+      "content": "Start with a solid business plan that includes a clear value proposition, market analysis, operational plan, and financial projections to attract potential investors. For funding, consider options like bootstrapping, angel investors, venture capital, crowdfunding, or small business loans, tailoring your approach based on your industry and growth stage.",
+      "timestamp": 1731793094792,
+      "id": "conv-retc66uevm3kow3p5-3"
+    },
+    {
+      "agentId": "analyst-1",
+      "role": "Analyst",
+      "content": "In the seed stage, bootstrapping and crowdfunding are often suitable for initial product development and market testing, while angel investors can provide early-stage capital with mentorship. As businesses scale to the growth stage, venture capital becomes more appropriate for significant expansion efforts, while traditional bank loans might be considered for established companies with proven revenue streams.",
+      "timestamp": 1731793097258,
+      "id": "conv-retc66uevm3kow3p5-4"
+    }
+  ],
+  "agentType": "Director",
+  "forceJsonResponse": true
+}
+[2024-11-16T21:38:17.262Z] DEBUG: [RateLimiter] Current requests: 6, Time since last reset: 10744ms
+[2024-11-16T21:38:17.262Z] DEBUG: [RateLimiter] Request processed. New count: 7
+[2024-11-16T21:38:17.262Z] DEBUG: [MessageFormatter] Starting formatMessages with params:
+{
+  "hasSystemPrompt": true,
+  "hasUserPrompt": true,
+  "contextLength": 5,
+  "agentType": "Director"
+}
+[2024-11-16T21:38:17.262Z] DEBUG: [MessageFormatter] Getting model for agent:
+{
+  "agentType": "Director",
+  "hasModelConfig": true
+}
+[2024-11-16T21:38:17.263Z] DEBUG: [MessageFormatter] Selected model for agent:
+{
+  "agentType": "Director",
+  "agentKey": "director",
+  "selectedModel": "gpt-4o-mini"
+}
+[2024-11-16T21:38:17.263Z] DEBUG: [MessageFormatter] Selected model:
+"gpt-4o-mini"
+[2024-11-16T21:38:17.263Z] DEBUG: [MessageFormatter] Sanitized context length:
+5
+[2024-11-16T21:38:17.263Z] DEBUG: [MessageFormatter] Final formatted message count:
+7
+[2024-11-16T21:38:18.080Z] DEBUG: [CostTracker] Request tracked:
+{
+  "inputTokens": 479,
+  "outputTokens": 37,
+  "requestCost": "0.000094",
+  "totalCost": "0.000572"
+}
+[2024-11-16T21:38:18.080Z] DEBUG: [LLMService] API Response:
+{
+  "id": "chatcmpl-AUKmhVTb0H7PEr8k8nOc3Y7vBQyhH",
+  "object": "chat.completion",
+  "created": 1731793099,
+  "model": "gpt-4o-mini-2024-07-18",
+  "choices": [
+    {
+      "index": 0,
+      "message": {
+        "role": "assistant",
+        "content": "{\n    \"nextAgent\": \"Expert\",\n    \"respondTo\": [\"Analyst\"],\n    \"task\": \"Provide insights on funding sources and their implications for business growth stages.\"\n}",
+        "refusal": null
+      },
+      "logprobs": null,
+      "finish_reason": "stop"
+    }
+  ],
+  "usage": {
+    "prompt_tokens": 479,
+    "completion_tokens": 37,
+    "total_tokens": 516,
+    "prompt_tokens_details": {
+      "cached_tokens": 0,
+      "audio_tokens": 0
+    },
+    "completion_tokens_details": {
+      "reasoning_tokens": 0,
+      "audio_tokens": 0,
+      "accepted_prediction_tokens": 0,
+      "rejected_prediction_tokens": 0
+    }
+  },
+  "system_fingerprint": "fp_0ba0d124f1"
+}
+[2024-11-16T21:38:18.080Z] DEBUG: [MessageFormatter] Parsing response:
+{
+  "contentType": "string",
+  "contentLength": 161
+}
+[2024-11-16T21:38:18.081Z] DEBUG: [MessageFormatter] Successfully parsed JSON content
+[2024-11-16T21:38:18.081Z] DEBUG: [Director] planNextAgentInteraction - received LLM response:
+{
+  "nextAgent": "Expert",
+  "respondTo": [
+    "Analyst"
+  ],
+  "task": "Provide insights on funding sources and their implications for business growth stages."
+}
+[2024-11-16T21:38:18.081Z] DEBUG: [Director] Attempting to parse LLM response into JSON
+[2024-11-16T21:38:18.081Z] DEBUG: [Director] planNextAgentInteraction - parsed plan:
+{
+  "nextAgent": "Expert",
+  "respondTo": [
+    "Analyst"
+  ],
+  "task": "Provide insights on funding sources and their implications for business growth stages."
+}
+[2024-11-16T21:38:18.081Z] DEBUG: [Director] planNextAgentInteraction - validating nextAgent:
+"Expert"
+[2024-11-16T21:38:18.081Z] DEBUG: [Director] planNextAgentInteraction - validating respondTo:
+[
+  "Analyst"
+]
+[2024-11-16T21:38:18.082Z] DEBUG: [Director] planNextAgentInteraction - validation successful
+[2024-11-16T21:38:18.082Z] DEBUG: [Director] Comparing roles:
+{
+  "nextAgent": "Expert",
+  "lastResponseRole": "Analyst"
+}
+[2024-11-16T21:38:18.082Z] DEBUG: [Director] planNextAgentInteraction - returning final plan:
+{
+  "nextAgent": "Expert",
+  "respondTo": [
+    "Analyst"
+  ],
+  "task": "Provide insights on funding sources and their implications for business growth stages."
+}
+[2024-11-16T21:38:18.082Z] DEBUG: [NotifyManager] Updating agent state:
+{
+  "agentId": "expert-1",
+  "phase": "thinking"
+}
+[2024-11-16T21:38:18.082Z] DEBUG: CLI: Agent thinking update:
+{
+  "agentId": "expert-1",
+  "phase": "thinking"
+}
+[2024-11-16T21:38:18.083Z] DEBUG: [NotificationService] Agent state updated:
+{
+  "agentId": "expert-1",
+  "state": "thinking"
+}
+[2024-11-16T21:38:18.083Z] DEBUG: [AgentManager] Generating response for agent
+{
+  "agentId": "expert-1",
+  "task": "Respond to Analyst's points: Provide insights on funding sources and their implications for business growth stages."
+}
+[2024-11-16T21:38:18.083Z] DEBUG: Validating context:
+[
+  {
+    "agentId": "user",
+    "content": "i want t ostart a business ",
+    "timestamp": 1731793089211,
+    "id": "conv-retc66uevm3kow3p5-0"
+  },
+  {
+    "agentId": "analyst-1",
+    "role": "Analyst",
+    "content": "Identify the specific industry you're interested in, then gather recent data on consumer preferences, emerging technologies, and competitive landscapes through market research reports and industry publications. Focus on quantifiable metrics such as market size, growth rates, and key players to inform your business strategy.",
+    "timestamp": 1731793092845,
+    "id": "conv-retc66uevm3kow3p5-1"
+  },
+  {
+    "agentId": "critic-1",
+    "role": "Critic",
+    "content": "Common challenges include securing funding, navigating regulatory requirements, and establishing a customer base in a competitive market. To mitigate these risks, develop a detailed business plan with financial projections, identify potential legal hurdles early, and invest in marketing strategies to build brand awareness.",
+    "timestamp": 1731793093860,
+    "id": "conv-retc66uevm3kow3p5-2"
+  },
+  {
+    "agentId": "expert-1",
+    "role": "Expert",
+    "content": "Start with a solid business plan that includes a clear value proposition, market analysis, operational plan, and financial projections to attract potential investors. For funding, consider options like bootstrapping, angel investors, venture capital, crowdfunding, or small business loans, tailoring your approach based on your industry and growth stage.",
+    "timestamp": 1731793094792,
+    "id": "conv-retc66uevm3kow3p5-3"
+  },
+  {
+    "agentId": "analyst-1",
+    "role": "Analyst",
+    "content": "In the seed stage, bootstrapping and crowdfunding are often suitable for initial product development and market testing, while angel investors can provide early-stage capital with mentorship. As businesses scale to the growth stage, venture capital becomes more appropriate for significant expansion efforts, while traditional bank loans might be considered for established companies with proven revenue streams.",
+    "timestamp": 1731793097258,
+    "id": "conv-retc66uevm3kow3p5-4"
+  }
+]
+[2024-11-16T21:38:18.084Z] DEBUG: Context is already an array
+[2024-11-16T21:38:18.084Z] DEBUG: Expert generating response with context:
+[
+  {
+    "agentId": "user",
+    "content": "i want t ostart a business ",
+    "timestamp": 1731793089211,
+    "id": "conv-retc66uevm3kow3p5-0"
+  },
+  {
+    "agentId": "analyst-1",
+    "role": "Analyst",
+    "content": "Identify the specific industry you're interested in, then gather recent data on consumer preferences, emerging technologies, and competitive landscapes through market research reports and industry publications. Focus on quantifiable metrics such as market size, growth rates, and key players to inform your business strategy.",
+    "timestamp": 1731793092845,
+    "id": "conv-retc66uevm3kow3p5-1"
+  },
+  {
+    "agentId": "critic-1",
+    "role": "Critic",
+    "content": "Common challenges include securing funding, navigating regulatory requirements, and establishing a customer base in a competitive market. To mitigate these risks, develop a detailed business plan with financial projections, identify potential legal hurdles early, and invest in marketing strategies to build brand awareness.",
+    "timestamp": 1731793093860,
+    "id": "conv-retc66uevm3kow3p5-2"
+  },
+  {
+    "agentId": "expert-1",
+    "role": "Expert",
+    "content": "Start with a solid business plan that includes a clear value proposition, market analysis, operational plan, and financial projections to attract potential investors. For funding, consider options like bootstrapping, angel investors, venture capital, crowdfunding, or small business loans, tailoring your approach based on your industry and growth stage.",
+    "timestamp": 1731793094792,
+    "id": "conv-retc66uevm3kow3p5-3"
+  },
+  {
+    "agentId": "analyst-1",
+    "role": "Analyst",
+    "content": "In the seed stage, bootstrapping and crowdfunding are often suitable for initial product development and market testing, while angel investors can provide early-stage capital with mentorship. As businesses scale to the growth stage, venture capital becomes more appropriate for significant expansion efforts, while traditional bank loans might be considered for established companies with proven revenue streams.",
+    "timestamp": 1731793097258,
+    "id": "conv-retc66uevm3kow3p5-4"
+  }
+]
+[2024-11-16T21:38:18.084Z] DEBUG: Generating response for Expert using LLM service with role:
+"Expert"
+[2024-11-16T21:38:18.084Z] DEBUG: [LLMService] makeModelRequest params:
+{
+  "systemPrompt": "You are Expert. Knowledgeable and authoritative, providing deep domain expertise.\n        Your expertise includes: Domain expertise, Best practices, Technical knowledge.\n        \n        Previous context: Provide insights on best practices for business planning and funding options available for startups. -> awaiting response\nRespond to Analyst's points: Provide insights on funding sources and their implications for business growth stages. -> awaiting response\n        \n        Core Guidelines:\n        - Respond in 1-2 sharp, specific sentences\n        - Build directly on the previous message's key point\n        - Focus on immediate, practical next steps\n        - Don't over abstract concepts. Focus on concrete, actionable guidance\n        - Stay strictly within your role's expertise\n        - Do not prefix your response with your role name",
+  "userPrompt": "Respond to Analyst's points: Provide insights on funding sources and their implications for business growth stages.",
+  "context": [
+    {
+      "agentId": "user",
+      "content": "i want t ostart a business ",
+      "timestamp": 1731793089211,
+      "id": "conv-retc66uevm3kow3p5-0"
+    },
+    {
+      "agentId": "analyst-1",
+      "role": "Analyst",
+      "content": "Identify the specific industry you're interested in, then gather recent data on consumer preferences, emerging technologies, and competitive landscapes through market research reports and industry publications. Focus on quantifiable metrics such as market size, growth rates, and key players to inform your business strategy.",
+      "timestamp": 1731793092845,
+      "id": "conv-retc66uevm3kow3p5-1"
+    },
+    {
+      "agentId": "critic-1",
+      "role": "Critic",
+      "content": "Common challenges include securing funding, navigating regulatory requirements, and establishing a customer base in a competitive market. To mitigate these risks, develop a detailed business plan with financial projections, identify potential legal hurdles early, and invest in marketing strategies to build brand awareness.",
+      "timestamp": 1731793093860,
+      "id": "conv-retc66uevm3kow3p5-2"
+    },
+    {
+      "agentId": "expert-1",
+      "role": "Expert",
+      "content": "Start with a solid business plan that includes a clear value proposition, market analysis, operational plan, and financial projections to attract potential investors. For funding, consider options like bootstrapping, angel investors, venture capital, crowdfunding, or small business loans, tailoring your approach based on your industry and growth stage.",
+      "timestamp": 1731793094792,
+      "id": "conv-retc66uevm3kow3p5-3"
+    },
+    {
+      "agentId": "analyst-1",
+      "role": "Analyst",
+      "content": "In the seed stage, bootstrapping and crowdfunding are often suitable for initial product development and market testing, while angel investors can provide early-stage capital with mentorship. As businesses scale to the growth stage, venture capital becomes more appropriate for significant expansion efforts, while traditional bank loans might be considered for established companies with proven revenue streams.",
+      "timestamp": 1731793097258,
+      "id": "conv-retc66uevm3kow3p5-4"
+    }
+  ],
+  "agentType": "Expert"
+}
+[2024-11-16T21:38:18.084Z] DEBUG: [RateLimiter] Current requests: 7, Time since last reset: 11566ms
+[2024-11-16T21:38:18.084Z] DEBUG: [RateLimiter] Request processed. New count: 8
+[2024-11-16T21:38:18.084Z] DEBUG: [MessageFormatter] Starting formatMessages with params:
+{
+  "hasSystemPrompt": true,
+  "hasUserPrompt": true,
+  "contextLength": 5,
+  "agentType": "Expert"
+}
+[2024-11-16T21:38:18.084Z] DEBUG: [MessageFormatter] Getting model for agent:
+{
+  "agentType": "Expert",
+  "hasModelConfig": true
+}
+[2024-11-16T21:38:18.084Z] DEBUG: [MessageFormatter] Selected model for agent:
+{
+  "agentType": "Expert",
+  "agentKey": "expert",
+  "selectedModel": "gpt-4o-mini"
+}
+[2024-11-16T21:38:18.084Z] DEBUG: [MessageFormatter] Selected model:
+"gpt-4o-mini"
+[2024-11-16T21:38:18.085Z] DEBUG: [MessageFormatter] Sanitized context length:
+5
+[2024-11-16T21:38:18.085Z] DEBUG: [MessageFormatter] Final formatted message count:
+7
+[2024-11-16T21:38:19.019Z] DEBUG: [CostTracker] Request tracked:
+{
+  "inputTokens": 435,
+  "outputTokens": 59,
+  "requestCost": "0.000101",
+  "totalCost": "0.000673"
+}
+[2024-11-16T21:38:19.020Z] DEBUG: [LLMService] API Response:
+{
+  "id": "chatcmpl-AUKmirItlCmUE2n2Qw5pN9nS71gxI",
+  "object": "chat.completion",
+  "created": 1731793100,
+  "model": "gpt-4o-mini-2024-07-18",
+  "choices": [
+    {
+      "index": 0,
+      "message": {
+        "role": "assistant",
+        "content": "In the early stages, funding sources like bootstrapping and crowdfunding enable entrepreneurs to retain control and gauge market interest without significant equity dilution. As the business matures, seeking venture capital can provide the necessary resources for rapid scaling, but it often comes with expectations for high growth and potential equity loss.",
+        "refusal": null
+      },
+      "logprobs": null,
+      "finish_reason": "stop"
+    }
+  ],
+  "usage": {
+    "prompt_tokens": 435,
+    "completion_tokens": 59,
+    "total_tokens": 494,
+    "prompt_tokens_details": {
+      "cached_tokens": 0,
+      "audio_tokens": 0
+    },
+    "completion_tokens_details": {
+      "reasoning_tokens": 0,
+      "audio_tokens": 0,
+      "accepted_prediction_tokens": 0,
+      "rejected_prediction_tokens": 0
+    }
+  },
+  "system_fingerprint": "fp_0ba0d124f1"
+}
+[2024-11-16T21:38:19.021Z] DEBUG: [MessageFormatter] Parsing response:
+{
+  "contentType": "string",
+  "contentLength": 358
+}
+[2024-11-16T21:38:19.021Z] DEBUG: [MessageFormatter] Content is not JSON, returning as-is
+[2024-11-16T21:38:19.021Z] DEBUG: [ConversationManager] Attempting to log message for conversation conv-retc66uevm3kow3p5
+[2024-11-16T21:38:19.021Z] DEBUG: [ConversationManager] Successfully logged message for conversation conv-retc66uevm3kow3p5
+{
+  "messageId": "conv-retc66uevm3kow3p5-5",
+  "timestamp": 1731793099021
+}
+[2024-11-16T21:38:19.021Z] DEBUG: [NotifyManager] Sending response:
+{
+  "agentId": "expert-1",
+  "role": "Expert",
+  "content": "In the early stages, funding sources like bootstrapping and crowdfunding enable entrepreneurs to retain control and gauge market interest without significant equity dilution. As the business matures, seeking venture capital can provide the necessary resources for rapid scaling, but it often comes with expectations for high growth and potential equity loss.",
+  "timestamp": 1731793099021
+}
+[2024-11-16T21:38:19.021Z] DEBUG: [NotifyManager] Sending response:
+{
+  "agentId": "expert-1",
+  "role": "Expert",
+  "content": "In the early stages, funding sources like bootstrapping and crowdfunding enable entrepreneurs to retain control and gauge market interest without significant equity dilution. As the business matures, seeking venture capital can provide the necessary resources for rapid scaling, but it often comes with expectations for high growth and potential equity loss.",
+  "timestamp": 1731793099021
+}
+[2024-11-16T21:38:19.022Z] DEBUG: [CLI] Received response:
+{
+  "agentId": "expert-1",
+  "role": "Expert",
+  "content": "In the early stages, funding sources like bootstrapping and crowdfunding enable entrepreneurs to retain control and gauge market interest without significant equity dilution. As the business matures, seeking venture capital can provide the necessary resources for rapid scaling, but it often comes with expectations for high growth and potential equity loss.",
+  "timestamp": 1731793099021
+}
+[2024-11-16T21:38:19.022Z] DEBUG: CLI: Displaying agent response:
+{
+  "agentId": "expert-1",
+  "role": "Expert",
+  "content": "In the early stages, funding sources like bootstrapping and crowdfunding enable entrepreneurs to retain control and gauge market interest without significant equity dilution. As the business matures, seeking venture capital can provide the necessary resources for rapid scaling, but it often comes with expectations for high growth and potential equity loss.",
+  "timestamp": 1731793099021
+}
+[2024-11-16T21:38:19.022Z] DEBUG: CLI: Received response:
+{
+  "agentId": "expert-1",
+  "role": "Expert",
+  "content": "In the early stages, funding sources like bootstrapping and crowdfunding enable entrepreneurs to retain control and gauge market interest without significant equity dilution. As the business matures, seeking venture capital can provide the necessary resources for rapid scaling, but it often comes with expectations for high growth and potential equity loss.",
+  "timestamp": 1731793099021
+}
+[2024-11-16T21:38:19.022Z] DEBUG: CLI: Displaying agent response:
+{
+  "agentId": "expert-1",
+  "role": "Expert",
+  "content": "In the early stages, funding sources like bootstrapping and crowdfunding enable entrepreneurs to retain control and gauge market interest without significant equity dilution. As the business matures, seeking venture capital can provide the necessary resources for rapid scaling, but it often comes with expectations for high growth and potential equity loss.",
+  "timestamp": 1731793099021
+}
+[2024-11-16T21:38:19.022Z] DEBUG: [NotificationService] Response sent:
+{
+  "agentId": "expert-1",
+  "role": "Expert",
+  "content": "In the early stages, funding sources like bootstrapping and crowdfunding enable entrepreneurs to retain control and gauge market interest without significant equity dilution. As the business matures, seeking venture capital can provide the necessary resources for rapid scaling, but it often comes with expectations for high growth and potential equity loss.",
+  "timestamp": 1731793099021
+}
+[2024-11-16T21:38:19.022Z] DEBUG: [NotificationService] Response sent:
+{
+  "agentId": "expert-1",
+  "role": "Expert",
+  "content": "In the early stages, funding sources like bootstrapping and crowdfunding enable entrepreneurs to retain control and gauge market interest without significant equity dilution. As the business matures, seeking venture capital can provide the necessary resources for rapid scaling, but it often comes with expectations for high growth and potential equity loss.",
+  "timestamp": 1731793099021
+}
+[2024-11-16T21:38:19.023Z] DEBUG: [NotificationService] Agent state cleared:
+{
+  "agentId": "expert-1"
+}
+[2024-11-16T21:38:19.023Z] INFO: [QualityGate] Round counter incremented from 2 to 3
+[2024-11-16T21:38:19.023Z] DEBUG: [QualityGate] Validating continuation - Round 3/5
+[2024-11-16T21:38:19.023Z] DEBUG: [Director] planNextAgentInteraction - starting with:
+{
+  "messagesCount": 6,
+  "previousResponsesCount": 5
+}
+[2024-11-16T21:38:19.023Z] DEBUG: [Director] planNextAgentInteraction - making LLM request...
+[2024-11-16T21:38:19.023Z] DEBUG: [LLMService] makeModelRequest params:
+{
+  "systemPrompt": "You are a JSON-only response API. You must ONLY return a valid JSON object with no additional text.\n\n            Current conversation state:\n            - Last speaker: Expert\n            - Available next speakers: Analyst, Critic\n            - Last message: \"In the early stages, funding sources like bootstrapping and crowdfunding enable entrepreneurs to retain control and gauge market interest without significant equity dilution. As the business matures, seeking venture capital can provide the necessary resources for rapid scaling, but it often comes with expectations for high growth and potential equity loss.\"\n\n            Response requirements:\n            1. Must be valid JSON\n            2. Must contain exactly these fields: nextAgent, respondTo, task\n            3. No additional text or explanation allowed\n\n            Example valid response:\n            {\n                \"nextAgent\": \"Analyst\",\n                \"respondTo\": [\"Expert\"],\n                \"task\": \"example task description\"\n            }",
+  "userPrompt": "Return a JSON object selecting the next agent from [Analyst, Critic] and their task.",
+  "context": [
+    {
+      "agentId": "user",
+      "content": "i want t ostart a business ",
+      "timestamp": 1731793089211,
+      "id": "conv-retc66uevm3kow3p5-0"
+    },
+    {
+      "agentId": "analyst-1",
+      "role": "Analyst",
+      "content": "Identify the specific industry you're interested in, then gather recent data on consumer preferences, emerging technologies, and competitive landscapes through market research reports and industry publications. Focus on quantifiable metrics such as market size, growth rates, and key players to inform your business strategy.",
+      "timestamp": 1731793092845,
+      "id": "conv-retc66uevm3kow3p5-1"
+    },
+    {
+      "agentId": "critic-1",
+      "role": "Critic",
+      "content": "Common challenges include securing funding, navigating regulatory requirements, and establishing a customer base in a competitive market. To mitigate these risks, develop a detailed business plan with financial projections, identify potential legal hurdles early, and invest in marketing strategies to build brand awareness.",
+      "timestamp": 1731793093860,
+      "id": "conv-retc66uevm3kow3p5-2"
+    },
+    {
+      "agentId": "expert-1",
+      "role": "Expert",
+      "content": "Start with a solid business plan that includes a clear value proposition, market analysis, operational plan, and financial projections to attract potential investors. For funding, consider options like bootstrapping, angel investors, venture capital, crowdfunding, or small business loans, tailoring your approach based on your industry and growth stage.",
+      "timestamp": 1731793094792,
+      "id": "conv-retc66uevm3kow3p5-3"
+    },
+    {
+      "agentId": "analyst-1",
+      "role": "Analyst",
+      "content": "In the seed stage, bootstrapping and crowdfunding are often suitable for initial product development and market testing, while angel investors can provide early-stage capital with mentorship. As businesses scale to the growth stage, venture capital becomes more appropriate for significant expansion efforts, while traditional bank loans might be considered for established companies with proven revenue streams.",
+      "timestamp": 1731793097258,
+      "id": "conv-retc66uevm3kow3p5-4"
+    },
+    {
+      "agentId": "expert-1",
+      "role": "Expert",
+      "content": "In the early stages, funding sources like bootstrapping and crowdfunding enable entrepreneurs to retain control and gauge market interest without significant equity dilution. As the business matures, seeking venture capital can provide the necessary resources for rapid scaling, but it often comes with expectations for high growth and potential equity loss.",
+      "timestamp": 1731793099021,
+      "id": "conv-retc66uevm3kow3p5-5"
+    }
+  ],
+  "agentType": "Director",
+  "forceJsonResponse": true
+}
+[2024-11-16T21:38:19.023Z] DEBUG: [RateLimiter] Current requests: 8, Time since last reset: 12505ms
+[2024-11-16T21:38:19.023Z] DEBUG: [RateLimiter] Request processed. New count: 9
+[2024-11-16T21:38:19.023Z] DEBUG: [MessageFormatter] Starting formatMessages with params:
+{
+  "hasSystemPrompt": true,
+  "hasUserPrompt": true,
+  "contextLength": 5,
+  "agentType": "Director"
+}
+[2024-11-16T21:38:19.024Z] DEBUG: [MessageFormatter] Getting model for agent:
+{
+  "agentType": "Director",
+  "hasModelConfig": true
+}
+[2024-11-16T21:38:19.024Z] DEBUG: [MessageFormatter] Selected model for agent:
+{
+  "agentType": "Director",
+  "agentKey": "director",
+  "selectedModel": "gpt-4o-mini"
+}
+[2024-11-16T21:38:19.024Z] DEBUG: [MessageFormatter] Selected model:
+"gpt-4o-mini"
+[2024-11-16T21:38:19.024Z] DEBUG: [MessageFormatter] Sanitized context length:
+5
+[2024-11-16T21:38:19.024Z] DEBUG: [MessageFormatter] Final formatted message count:
+7
+[2024-11-16T21:38:19.674Z] DEBUG: [CostTracker] Request tracked:
+{
+  "inputTokens": 524,
+  "outputTokens": 36,
+  "requestCost": "0.000100",
+  "totalCost": "0.000773"
+}
+[2024-11-16T21:38:19.675Z] DEBUG: [LLMService] API Response:
+{
+  "id": "chatcmpl-AUKmjGxtECV2r9tlbCNew5zKMsudH",
+  "object": "chat.completion",
+  "created": 1731793101,
+  "model": "gpt-4o-mini-2024-07-18",
+  "choices": [
+    {
+      "index": 0,
+      "message": {
+        "role": "assistant",
+        "content": "{\n    \"nextAgent\": \"Analyst\",\n    \"respondTo\": [\"Expert\"],\n    \"task\": \"Analyze the impact of funding strategies on startup growth and sustainability.\"\n}",
+        "refusal": null
+      },
+      "logprobs": null,
+      "finish_reason": "stop"
+    }
+  ],
+  "usage": {
+    "prompt_tokens": 524,
+    "completion_tokens": 36,
+    "total_tokens": 560,
+    "prompt_tokens_details": {
+      "cached_tokens": 0,
+      "audio_tokens": 0
+    },
+    "completion_tokens_details": {
+      "reasoning_tokens": 0,
+      "audio_tokens": 0,
+      "accepted_prediction_tokens": 0,
+      "rejected_prediction_tokens": 0
+    }
+  },
+  "system_fingerprint": "fp_0ba0d124f1"
+}
+[2024-11-16T21:38:19.676Z] DEBUG: [MessageFormatter] Parsing response:
+{
+  "contentType": "string",
+  "contentLength": 153
+}
+[2024-11-16T21:38:19.676Z] DEBUG: [MessageFormatter] Successfully parsed JSON content
+[2024-11-16T21:38:19.676Z] DEBUG: [Director] planNextAgentInteraction - received LLM response:
+{
+  "nextAgent": "Analyst",
+  "respondTo": [
+    "Expert"
+  ],
+  "task": "Analyze the impact of funding strategies on startup growth and sustainability."
+}
+[2024-11-16T21:38:19.676Z] DEBUG: [Director] Attempting to parse LLM response into JSON
+[2024-11-16T21:38:19.676Z] DEBUG: [Director] planNextAgentInteraction - parsed plan:
+{
+  "nextAgent": "Analyst",
+  "respondTo": [
+    "Expert"
+  ],
+  "task": "Analyze the impact of funding strategies on startup growth and sustainability."
+}
+[2024-11-16T21:38:19.676Z] DEBUG: [Director] planNextAgentInteraction - validating nextAgent:
+"Analyst"
+[2024-11-16T21:38:19.676Z] DEBUG: [Director] planNextAgentInteraction - validating respondTo:
+[
+  "Expert"
+]
+[2024-11-16T21:38:19.676Z] DEBUG: [Director] planNextAgentInteraction - validation successful
+[2024-11-16T21:38:19.677Z] DEBUG: [Director] Comparing roles:
+{
+  "nextAgent": "Analyst",
+  "lastResponseRole": "Expert"
+}
+[2024-11-16T21:38:19.677Z] DEBUG: [Director] planNextAgentInteraction - returning final plan:
+{
+  "nextAgent": "Analyst",
+  "respondTo": [
+    "Expert"
+  ],
+  "task": "Analyze the impact of funding strategies on startup growth and sustainability."
+}
+[2024-11-16T21:38:19.677Z] DEBUG: [NotifyManager] Updating agent state:
+{
+  "agentId": "analyst-1",
+  "phase": "thinking"
+}
+[2024-11-16T21:38:19.677Z] DEBUG: CLI: Agent thinking update:
+{
+  "agentId": "analyst-1",
+  "phase": "thinking"
+}
+[2024-11-16T21:38:19.678Z] DEBUG: [NotificationService] Agent state updated:
+{
+  "agentId": "analyst-1",
+  "state": "thinking"
+}
+[2024-11-16T21:38:19.678Z] DEBUG: [AgentManager] Generating response for agent
+{
+  "agentId": "analyst-1",
+  "task": "Respond to Expert's points: Analyze the impact of funding strategies on startup growth and sustainability."
+}
+[2024-11-16T21:38:19.678Z] DEBUG: Validating context:
+[
+  {
+    "agentId": "user",
+    "content": "i want t ostart a business ",
+    "timestamp": 1731793089211,
+    "id": "conv-retc66uevm3kow3p5-0"
+  },
+  {
+    "agentId": "analyst-1",
+    "role": "Analyst",
+    "content": "Identify the specific industry you're interested in, then gather recent data on consumer preferences, emerging technologies, and competitive landscapes through market research reports and industry publications. Focus on quantifiable metrics such as market size, growth rates, and key players to inform your business strategy.",
+    "timestamp": 1731793092845,
+    "id": "conv-retc66uevm3kow3p5-1"
+  },
+  {
+    "agentId": "critic-1",
+    "role": "Critic",
+    "content": "Common challenges include securing funding, navigating regulatory requirements, and establishing a customer base in a competitive market. To mitigate these risks, develop a detailed business plan with financial projections, identify potential legal hurdles early, and invest in marketing strategies to build brand awareness.",
+    "timestamp": 1731793093860,
+    "id": "conv-retc66uevm3kow3p5-2"
+  },
+  {
+    "agentId": "expert-1",
+    "role": "Expert",
+    "content": "Start with a solid business plan that includes a clear value proposition, market analysis, operational plan, and financial projections to attract potential investors. For funding, consider options like bootstrapping, angel investors, venture capital, crowdfunding, or small business loans, tailoring your approach based on your industry and growth stage.",
+    "timestamp": 1731793094792,
+    "id": "conv-retc66uevm3kow3p5-3"
+  },
+  {
+    "agentId": "analyst-1",
+    "role": "Analyst",
+    "content": "In the seed stage, bootstrapping and crowdfunding are often suitable for initial product development and market testing, while angel investors can provide early-stage capital with mentorship. As businesses scale to the growth stage, venture capital becomes more appropriate for significant expansion efforts, while traditional bank loans might be considered for established companies with proven revenue streams.",
+    "timestamp": 1731793097258,
+    "id": "conv-retc66uevm3kow3p5-4"
+  },
+  {
+    "agentId": "expert-1",
+    "role": "Expert",
+    "content": "In the early stages, funding sources like bootstrapping and crowdfunding enable entrepreneurs to retain control and gauge market interest without significant equity dilution. As the business matures, seeking venture capital can provide the necessary resources for rapid scaling, but it often comes with expectations for high growth and potential equity loss.",
+    "timestamp": 1731793099021,
+    "id": "conv-retc66uevm3kow3p5-5"
+  }
+]
+[2024-11-16T21:38:19.678Z] DEBUG: Context is already an array
+[2024-11-16T21:38:19.679Z] DEBUG: Analyst generating response with context:
+[
+  {
+    "agentId": "user",
+    "content": "i want t ostart a business ",
+    "timestamp": 1731793089211,
+    "id": "conv-retc66uevm3kow3p5-0"
+  },
+  {
+    "agentId": "analyst-1",
+    "role": "Analyst",
+    "content": "Identify the specific industry you're interested in, then gather recent data on consumer preferences, emerging technologies, and competitive landscapes through market research reports and industry publications. Focus on quantifiable metrics such as market size, growth rates, and key players to inform your business strategy.",
+    "timestamp": 1731793092845,
+    "id": "conv-retc66uevm3kow3p5-1"
+  },
+  {
+    "agentId": "critic-1",
+    "role": "Critic",
+    "content": "Common challenges include securing funding, navigating regulatory requirements, and establishing a customer base in a competitive market. To mitigate these risks, develop a detailed business plan with financial projections, identify potential legal hurdles early, and invest in marketing strategies to build brand awareness.",
+    "timestamp": 1731793093860,
+    "id": "conv-retc66uevm3kow3p5-2"
+  },
+  {
+    "agentId": "expert-1",
+    "role": "Expert",
+    "content": "Start with a solid business plan that includes a clear value proposition, market analysis, operational plan, and financial projections to attract potential investors. For funding, consider options like bootstrapping, angel investors, venture capital, crowdfunding, or small business loans, tailoring your approach based on your industry and growth stage.",
+    "timestamp": 1731793094792,
+    "id": "conv-retc66uevm3kow3p5-3"
+  },
+  {
+    "agentId": "analyst-1",
+    "role": "Analyst",
+    "content": "In the seed stage, bootstrapping and crowdfunding are often suitable for initial product development and market testing, while angel investors can provide early-stage capital with mentorship. As businesses scale to the growth stage, venture capital becomes more appropriate for significant expansion efforts, while traditional bank loans might be considered for established companies with proven revenue streams.",
+    "timestamp": 1731793097258,
+    "id": "conv-retc66uevm3kow3p5-4"
+  },
+  {
+    "agentId": "expert-1",
+    "role": "Expert",
+    "content": "In the early stages, funding sources like bootstrapping and crowdfunding enable entrepreneurs to retain control and gauge market interest without significant equity dilution. As the business matures, seeking venture capital can provide the necessary resources for rapid scaling, but it often comes with expectations for high growth and potential equity loss.",
+    "timestamp": 1731793099021,
+    "id": "conv-retc66uevm3kow3p5-5"
+  }
+]
+[2024-11-16T21:38:19.679Z] DEBUG: Generating response for Analyst using LLM service with role:
+"Analyst"
+[2024-11-16T21:38:19.679Z] DEBUG: [LLMService] makeModelRequest params:
+{
+  "systemPrompt": "You are Analyst. Detail-oriented and analytical, focusing on data-driven insights.\n        Your expertise includes: Data analysis, Pattern recognition, Statistical analysis.\n        \n        Previous context: Research the current market trends related to the business industry you are considering. -> awaiting response\nRespond to Expert's points: Analyze the funding options and their suitability for different business stages. -> awaiting response\nRespond to Expert's points: Analyze the impact of funding strategies on startup growth and sustainability. -> awaiting response\n        \n        Core Guidelines:\n        - Respond in 1-2 sharp, specific sentences\n        - Build directly on the previous message's key point\n        - Focus on immediate, practical next steps\n        - Don't over abstract concepts. Focus on concrete, actionable guidance\n        - Stay strictly within your role's expertise\n        - Do not prefix your response with your role name",
+  "userPrompt": "Respond to Expert's points: Analyze the impact of funding strategies on startup growth and sustainability.",
+  "context": [
+    {
+      "agentId": "user",
+      "content": "i want t ostart a business ",
+      "timestamp": 1731793089211,
+      "id": "conv-retc66uevm3kow3p5-0"
+    },
+    {
+      "agentId": "analyst-1",
+      "role": "Analyst",
+      "content": "Identify the specific industry you're interested in, then gather recent data on consumer preferences, emerging technologies, and competitive landscapes through market research reports and industry publications. Focus on quantifiable metrics such as market size, growth rates, and key players to inform your business strategy.",
+      "timestamp": 1731793092845,
+      "id": "conv-retc66uevm3kow3p5-1"
+    },
+    {
+      "agentId": "critic-1",
+      "role": "Critic",
+      "content": "Common challenges include securing funding, navigating regulatory requirements, and establishing a customer base in a competitive market. To mitigate these risks, develop a detailed business plan with financial projections, identify potential legal hurdles early, and invest in marketing strategies to build brand awareness.",
+      "timestamp": 1731793093860,
+      "id": "conv-retc66uevm3kow3p5-2"
+    },
+    {
+      "agentId": "expert-1",
+      "role": "Expert",
+      "content": "Start with a solid business plan that includes a clear value proposition, market analysis, operational plan, and financial projections to attract potential investors. For funding, consider options like bootstrapping, angel investors, venture capital, crowdfunding, or small business loans, tailoring your approach based on your industry and growth stage.",
+      "timestamp": 1731793094792,
+      "id": "conv-retc66uevm3kow3p5-3"
+    },
+    {
+      "agentId": "analyst-1",
+      "role": "Analyst",
+      "content": "In the seed stage, bootstrapping and crowdfunding are often suitable for initial product development and market testing, while angel investors can provide early-stage capital with mentorship. As businesses scale to the growth stage, venture capital becomes more appropriate for significant expansion efforts, while traditional bank loans might be considered for established companies with proven revenue streams.",
+      "timestamp": 1731793097258,
+      "id": "conv-retc66uevm3kow3p5-4"
+    },
+    {
+      "agentId": "expert-1",
+      "role": "Expert",
+      "content": "In the early stages, funding sources like bootstrapping and crowdfunding enable entrepreneurs to retain control and gauge market interest without significant equity dilution. As the business matures, seeking venture capital can provide the necessary resources for rapid scaling, but it often comes with expectations for high growth and potential equity loss.",
+      "timestamp": 1731793099021,
+      "id": "conv-retc66uevm3kow3p5-5"
+    }
+  ],
+  "agentType": "Analyst"
+}
+[2024-11-16T21:38:19.679Z] DEBUG: [RateLimiter] Current requests: 9, Time since last reset: 13161ms
+[2024-11-16T21:38:19.679Z] DEBUG: [RateLimiter] Request processed. New count: 10
+[2024-11-16T21:38:19.679Z] DEBUG: [MessageFormatter] Starting formatMessages with params:
+{
+  "hasSystemPrompt": true,
+  "hasUserPrompt": true,
+  "contextLength": 5,
+  "agentType": "Analyst"
+}
+[2024-11-16T21:38:19.679Z] DEBUG: [MessageFormatter] Getting model for agent:
+{
+  "agentType": "Analyst",
+  "hasModelConfig": true
+}
+[2024-11-16T21:38:19.680Z] DEBUG: [MessageFormatter] Selected model for agent:
+{
+  "agentType": "Analyst",
+  "agentKey": "analyst",
+  "selectedModel": "gpt-4o-mini"
+}
+[2024-11-16T21:38:19.680Z] DEBUG: [MessageFormatter] Selected model:
+"gpt-4o-mini"
+[2024-11-16T21:38:19.680Z] DEBUG: [MessageFormatter] Sanitized context length:
+5
+[2024-11-16T21:38:19.680Z] DEBUG: [MessageFormatter] Final formatted message count:
+7
+[2024-11-16T21:38:20.676Z] DEBUG: [CostTracker] Request tracked:
+{
+  "inputTokens": 506,
+  "outputTokens": 60,
+  "requestCost": "0.000112",
+  "totalCost": "0.000885"
+}
+[2024-11-16T21:38:20.677Z] DEBUG: [LLMService] API Response:
+{
+  "id": "chatcmpl-AUKmktQW1jYaOc67dEyCqzHjGoYkX",
+  "object": "chat.completion",
+  "created": 1731793102,
+  "model": "gpt-4o-mini-2024-07-18",
+  "choices": [
+    {
+      "index": 0,
+      "message": {
+        "role": "assistant",
+        "content": "Funding strategies directly influence startup growth trajectories; for example, venture capital can accelerate expansion by providing substantial resources, while bootstrapping fosters sustainable growth through careful cash flow management. However, reliance on external funding can lead to pressures for rapid returns, potentially compromising long-term sustainability if not balanced with strategic planning.",
+        "refusal": null
+      },
+      "logprobs": null,
+      "finish_reason": "stop"
+    }
+  ],
+  "usage": {
+    "prompt_tokens": 506,
+    "completion_tokens": 60,
+    "total_tokens": 566,
+    "prompt_tokens_details": {
+      "cached_tokens": 0,
+      "audio_tokens": 0
+    },
+    "completion_tokens_details": {
+      "reasoning_tokens": 0,
+      "audio_tokens": 0,
+      "accepted_prediction_tokens": 0,
+      "rejected_prediction_tokens": 0
+    }
+  },
+  "system_fingerprint": "fp_0ba0d124f1"
+}
+[2024-11-16T21:38:20.678Z] DEBUG: [MessageFormatter] Parsing response:
+{
+  "contentType": "string",
+  "contentLength": 411
+}
+[2024-11-16T21:38:20.678Z] DEBUG: [MessageFormatter] Content is not JSON, returning as-is
+[2024-11-16T21:38:20.678Z] DEBUG: [ConversationManager] Attempting to log message for conversation conv-retc66uevm3kow3p5
+[2024-11-16T21:38:20.678Z] DEBUG: [ConversationManager] Successfully logged message for conversation conv-retc66uevm3kow3p5
+{
+  "messageId": "conv-retc66uevm3kow3p5-6",
+  "timestamp": 1731793100678
+}
+[2024-11-16T21:38:20.678Z] DEBUG: [NotifyManager] Sending response:
+{
+  "agentId": "analyst-1",
+  "role": "Analyst",
+  "content": "Funding strategies directly influence startup growth trajectories; for example, venture capital can accelerate expansion by providing substantial resources, while bootstrapping fosters sustainable growth through careful cash flow management. However, reliance on external funding can lead to pressures for rapid returns, potentially compromising long-term sustainability if not balanced with strategic planning.",
+  "timestamp": 1731793100678
+}
+[2024-11-16T21:38:20.679Z] DEBUG: [NotifyManager] Sending response:
+{
+  "agentId": "analyst-1",
+  "role": "Analyst",
+  "content": "Funding strategies directly influence startup growth trajectories; for example, venture capital can accelerate expansion by providing substantial resources, while bootstrapping fosters sustainable growth through careful cash flow management. However, reliance on external funding can lead to pressures for rapid returns, potentially compromising long-term sustainability if not balanced with strategic planning.",
+  "timestamp": 1731793100678
+}
+[2024-11-16T21:38:20.679Z] DEBUG: [CLI] Received response:
+{
+  "agentId": "analyst-1",
+  "role": "Analyst",
+  "content": "Funding strategies directly influence startup growth trajectories; for example, venture capital can accelerate expansion by providing substantial resources, while bootstrapping fosters sustainable growth through careful cash flow management. However, reliance on external funding can lead to pressures for rapid returns, potentially compromising long-term sustainability if not balanced with strategic planning.",
+  "timestamp": 1731793100678
+}
+[2024-11-16T21:38:20.679Z] DEBUG: CLI: Displaying agent response:
+{
+  "agentId": "analyst-1",
+  "role": "Analyst",
+  "content": "Funding strategies directly influence startup growth trajectories; for example, venture capital can accelerate expansion by providing substantial resources, while bootstrapping fosters sustainable growth through careful cash flow management. However, reliance on external funding can lead to pressures for rapid returns, potentially compromising long-term sustainability if not balanced with strategic planning.",
+  "timestamp": 1731793100678
+}
+[2024-11-16T21:38:20.679Z] DEBUG: CLI: Received response:
+{
+  "agentId": "analyst-1",
+  "role": "Analyst",
+  "content": "Funding strategies directly influence startup growth trajectories; for example, venture capital can accelerate expansion by providing substantial resources, while bootstrapping fosters sustainable growth through careful cash flow management. However, reliance on external funding can lead to pressures for rapid returns, potentially compromising long-term sustainability if not balanced with strategic planning.",
+  "timestamp": 1731793100678
+}
+[2024-11-16T21:38:20.680Z] DEBUG: CLI: Displaying agent response:
+{
+  "agentId": "analyst-1",
+  "role": "Analyst",
+  "content": "Funding strategies directly influence startup growth trajectories; for example, venture capital can accelerate expansion by providing substantial resources, while bootstrapping fosters sustainable growth through careful cash flow management. However, reliance on external funding can lead to pressures for rapid returns, potentially compromising long-term sustainability if not balanced with strategic planning.",
+  "timestamp": 1731793100678
+}
+[2024-11-16T21:38:20.680Z] DEBUG: [NotificationService] Response sent:
+{
+  "agentId": "analyst-1",
+  "role": "Analyst",
+  "content": "Funding strategies directly influence startup growth trajectories; for example, venture capital can accelerate expansion by providing substantial resources, while bootstrapping fosters sustainable growth through careful cash flow management. However, reliance on external funding can lead to pressures for rapid returns, potentially compromising long-term sustainability if not balanced with strategic planning.",
+  "timestamp": 1731793100678
+}
+[2024-11-16T21:38:20.680Z] DEBUG: [NotificationService] Response sent:
+{
+  "agentId": "analyst-1",
+  "role": "Analyst",
+  "content": "Funding strategies directly influence startup growth trajectories; for example, venture capital can accelerate expansion by providing substantial resources, while bootstrapping fosters sustainable growth through careful cash flow management. However, reliance on external funding can lead to pressures for rapid returns, potentially compromising long-term sustainability if not balanced with strategic planning.",
+  "timestamp": 1731793100678
+}
+[2024-11-16T21:38:20.680Z] DEBUG: [NotificationService] Agent state cleared:
+{
+  "agentId": "analyst-1"
+}
+[2024-11-16T21:38:20.681Z] INFO: [QualityGate] Round counter incremented from 3 to 4
+[2024-11-16T21:38:20.681Z] DEBUG: [QualityGate] Validating continuation - Round 4/5
+[2024-11-16T21:38:20.681Z] DEBUG: [Director] planNextAgentInteraction - starting with:
+{
+  "messagesCount": 7,
+  "previousResponsesCount": 6
+}
+[2024-11-16T21:38:20.681Z] DEBUG: [Director] planNextAgentInteraction - making LLM request...
+[2024-11-16T21:38:20.681Z] DEBUG: [LLMService] makeModelRequest params:
+{
+  "systemPrompt": "You are a JSON-only response API. You must ONLY return a valid JSON object with no additional text.\n\n            Current conversation state:\n            - Last speaker: Analyst\n            - Available next speakers: Critic, Expert\n            - Last message: \"Funding strategies directly influence startup growth trajectories; for example, venture capital can accelerate expansion by providing substantial resources, while bootstrapping fosters sustainable growth through careful cash flow management. However, reliance on external funding can lead to pressures for rapid returns, potentially compromising long-term sustainability if not balanced with strategic planning.\"\n\n            Response requirements:\n            1. Must be valid JSON\n            2. Must contain exactly these fields: nextAgent, respondTo, task\n            3. No additional text or explanation allowed\n\n            Example valid response:\n            {\n                \"nextAgent\": \"Critic\",\n                \"respondTo\": [\"Analyst\"],\n                \"task\": \"example task description\"\n            }",
+  "userPrompt": "Return a JSON object selecting the next agent from [Critic, Expert] and their task.",
+  "context": [
+    {
+      "agentId": "user",
+      "content": "i want t ostart a business ",
+      "timestamp": 1731793089211,
+      "id": "conv-retc66uevm3kow3p5-0"
+    },
+    {
+      "agentId": "analyst-1",
+      "role": "Analyst",
+      "content": "Identify the specific industry you're interested in, then gather recent data on consumer preferences, emerging technologies, and competitive landscapes through market research reports and industry publications. Focus on quantifiable metrics such as market size, growth rates, and key players to inform your business strategy.",
+      "timestamp": 1731793092845,
+      "id": "conv-retc66uevm3kow3p5-1"
+    },
+    {
+      "agentId": "critic-1",
+      "role": "Critic",
+      "content": "Common challenges include securing funding, navigating regulatory requirements, and establishing a customer base in a competitive market. To mitigate these risks, develop a detailed business plan with financial projections, identify potential legal hurdles early, and invest in marketing strategies to build brand awareness.",
+      "timestamp": 1731793093860,
+      "id": "conv-retc66uevm3kow3p5-2"
+    },
+    {
+      "agentId": "expert-1",
+      "role": "Expert",
+      "content": "Start with a solid business plan that includes a clear value proposition, market analysis, operational plan, and financial projections to attract potential investors. For funding, consider options like bootstrapping, angel investors, venture capital, crowdfunding, or small business loans, tailoring your approach based on your industry and growth stage.",
+      "timestamp": 1731793094792,
+      "id": "conv-retc66uevm3kow3p5-3"
+    },
+    {
+      "agentId": "analyst-1",
+      "role": "Analyst",
+      "content": "In the seed stage, bootstrapping and crowdfunding are often suitable for initial product development and market testing, while angel investors can provide early-stage capital with mentorship. As businesses scale to the growth stage, venture capital becomes more appropriate for significant expansion efforts, while traditional bank loans might be considered for established companies with proven revenue streams.",
+      "timestamp": 1731793097258,
+      "id": "conv-retc66uevm3kow3p5-4"
+    },
+    {
+      "agentId": "expert-1",
+      "role": "Expert",
+      "content": "In the early stages, funding sources like bootstrapping and crowdfunding enable entrepreneurs to retain control and gauge market interest without significant equity dilution. As the business matures, seeking venture capital can provide the necessary resources for rapid scaling, but it often comes with expectations for high growth and potential equity loss.",
+      "timestamp": 1731793099021,
+      "id": "conv-retc66uevm3kow3p5-5"
+    },
+    {
+      "agentId": "analyst-1",
+      "role": "Analyst",
+      "content": "Funding strategies directly influence startup growth trajectories; for example, venture capital can accelerate expansion by providing substantial resources, while bootstrapping fosters sustainable growth through careful cash flow management. However, reliance on external funding can lead to pressures for rapid returns, potentially compromising long-term sustainability if not balanced with strategic planning.",
+      "timestamp": 1731793100678,
+      "id": "conv-retc66uevm3kow3p5-6"
+    }
+  ],
+  "agentType": "Director",
+  "forceJsonResponse": true
+}
+[2024-11-16T21:38:20.681Z] DEBUG: [RateLimiter] Current requests: 10, Time since last reset: 14163ms
+[2024-11-16T21:38:20.681Z] DEBUG: [RateLimiter] Request processed. New count: 11
+[2024-11-16T21:38:20.681Z] DEBUG: [MessageFormatter] Starting formatMessages with params:
+{
+  "hasSystemPrompt": true,
+  "hasUserPrompt": true,
+  "contextLength": 5,
+  "agentType": "Director"
+}
+[2024-11-16T21:38:20.681Z] DEBUG: [MessageFormatter] Getting model for agent:
+{
+  "agentType": "Director",
+  "hasModelConfig": true
+}
+[2024-11-16T21:38:20.682Z] DEBUG: [MessageFormatter] Selected model for agent:
+{
+  "agentType": "Director",
+  "agentKey": "director",
+  "selectedModel": "gpt-4o-mini"
+}
+[2024-11-16T21:38:20.682Z] DEBUG: [MessageFormatter] Selected model:
+"gpt-4o-mini"
+[2024-11-16T21:38:20.682Z] DEBUG: [MessageFormatter] Sanitized context length:
+5
+[2024-11-16T21:38:20.682Z] DEBUG: [MessageFormatter] Final formatted message count:
+7
+[2024-11-16T21:38:22.059Z] DEBUG: [CostTracker] Request tracked:
+{
+  "inputTokens": 533,
+  "outputTokens": 37,
+  "requestCost": "0.000102",
+  "totalCost": "0.000987"
+}
+[2024-11-16T21:38:22.060Z] DEBUG: [LLMService] API Response:
+{
+  "id": "chatcmpl-AUKmlYYHDuLqLvdRtJxWGzi6yx7Qx",
+  "object": "chat.completion",
+  "created": 1731793103,
+  "model": "gpt-4o-mini-2024-07-18",
+  "choices": [
+    {
+      "index": 0,
+      "message": {
+        "role": "assistant",
+        "content": "{\n    \"nextAgent\": \"Expert\",\n    \"respondTo\": [\"Analyst\"],\n    \"task\": \"Discuss the implications of different funding strategies on startup sustainability and growth.\"\n}",
+        "refusal": null
+      },
+      "logprobs": null,
+      "finish_reason": "stop"
+    }
+  ],
+  "usage": {
+    "prompt_tokens": 533,
+    "completion_tokens": 37,
+    "total_tokens": 570,
+    "prompt_tokens_details": {
+      "cached_tokens": 0,
+      "audio_tokens": 0
+    },
+    "completion_tokens_details": {
+      "reasoning_tokens": 0,
+      "audio_tokens": 0,
+      "accepted_prediction_tokens": 0,
+      "rejected_prediction_tokens": 0
+    }
+  },
+  "system_fingerprint": "fp_0ba0d124f1"
+}
+[2024-11-16T21:38:22.061Z] DEBUG: [MessageFormatter] Parsing response:
+{
+  "contentType": "string",
+  "contentLength": 169
+}
+[2024-11-16T21:38:22.061Z] DEBUG: [MessageFormatter] Successfully parsed JSON content
+[2024-11-16T21:38:22.061Z] DEBUG: [Director] planNextAgentInteraction - received LLM response:
+{
+  "nextAgent": "Expert",
+  "respondTo": [
+    "Analyst"
+  ],
+  "task": "Discuss the implications of different funding strategies on startup sustainability and growth."
+}
+[2024-11-16T21:38:22.061Z] DEBUG: [Director] Attempting to parse LLM response into JSON
+[2024-11-16T21:38:22.061Z] DEBUG: [Director] planNextAgentInteraction - parsed plan:
+{
+  "nextAgent": "Expert",
+  "respondTo": [
+    "Analyst"
+  ],
+  "task": "Discuss the implications of different funding strategies on startup sustainability and growth."
+}
+[2024-11-16T21:38:22.061Z] DEBUG: [Director] planNextAgentInteraction - validating nextAgent:
+"Expert"
+[2024-11-16T21:38:22.061Z] DEBUG: [Director] planNextAgentInteraction - validating respondTo:
+[
+  "Analyst"
+]
+[2024-11-16T21:38:22.062Z] DEBUG: [Director] planNextAgentInteraction - validation successful
+[2024-11-16T21:38:22.062Z] DEBUG: [Director] Comparing roles:
+{
+  "nextAgent": "Expert",
+  "lastResponseRole": "Analyst"
+}
+[2024-11-16T21:38:22.062Z] DEBUG: [Director] planNextAgentInteraction - returning final plan:
+{
+  "nextAgent": "Expert",
+  "respondTo": [
+    "Analyst"
+  ],
+  "task": "Discuss the implications of different funding strategies on startup sustainability and growth."
+}
+[2024-11-16T21:38:22.062Z] DEBUG: [NotifyManager] Updating agent state:
+{
+  "agentId": "expert-1",
+  "phase": "thinking"
+}
+[2024-11-16T21:38:22.062Z] DEBUG: CLI: Agent thinking update:
+{
+  "agentId": "expert-1",
+  "phase": "thinking"
+}
+[2024-11-16T21:38:22.063Z] DEBUG: [NotificationService] Agent state updated:
+{
+  "agentId": "expert-1",
+  "state": "thinking"
+}
+[2024-11-16T21:38:22.063Z] DEBUG: [AgentManager] Generating response for agent
+{
+  "agentId": "expert-1",
+  "task": "Respond to Analyst's points: Discuss the implications of different funding strategies on startup sustainability and growth."
+}
+[2024-11-16T21:38:22.063Z] DEBUG: Validating context:
+[
+  {
+    "agentId": "user",
+    "content": "i want t ostart a business ",
+    "timestamp": 1731793089211,
+    "id": "conv-retc66uevm3kow3p5-0"
+  },
+  {
+    "agentId": "analyst-1",
+    "role": "Analyst",
+    "content": "Identify the specific industry you're interested in, then gather recent data on consumer preferences, emerging technologies, and competitive landscapes through market research reports and industry publications. Focus on quantifiable metrics such as market size, growth rates, and key players to inform your business strategy.",
+    "timestamp": 1731793092845,
+    "id": "conv-retc66uevm3kow3p5-1"
+  },
+  {
+    "agentId": "critic-1",
+    "role": "Critic",
+    "content": "Common challenges include securing funding, navigating regulatory requirements, and establishing a customer base in a competitive market. To mitigate these risks, develop a detailed business plan with financial projections, identify potential legal hurdles early, and invest in marketing strategies to build brand awareness.",
+    "timestamp": 1731793093860,
+    "id": "conv-retc66uevm3kow3p5-2"
+  },
+  {
+    "agentId": "expert-1",
+    "role": "Expert",
+    "content": "Start with a solid business plan that includes a clear value proposition, market analysis, operational plan, and financial projections to attract potential investors. For funding, consider options like bootstrapping, angel investors, venture capital, crowdfunding, or small business loans, tailoring your approach based on your industry and growth stage.",
+    "timestamp": 1731793094792,
+    "id": "conv-retc66uevm3kow3p5-3"
+  },
+  {
+    "agentId": "analyst-1",
+    "role": "Analyst",
+    "content": "In the seed stage, bootstrapping and crowdfunding are often suitable for initial product development and market testing, while angel investors can provide early-stage capital with mentorship. As businesses scale to the growth stage, venture capital becomes more appropriate for significant expansion efforts, while traditional bank loans might be considered for established companies with proven revenue streams.",
+    "timestamp": 1731793097258,
+    "id": "conv-retc66uevm3kow3p5-4"
+  },
+  {
+    "agentId": "expert-1",
+    "role": "Expert",
+    "content": "In the early stages, funding sources like bootstrapping and crowdfunding enable entrepreneurs to retain control and gauge market interest without significant equity dilution. As the business matures, seeking venture capital can provide the necessary resources for rapid scaling, but it often comes with expectations for high growth and potential equity loss.",
+    "timestamp": 1731793099021,
+    "id": "conv-retc66uevm3kow3p5-5"
+  },
+  {
+    "agentId": "analyst-1",
+    "role": "Analyst",
+    "content": "Funding strategies directly influence startup growth trajectories; for example, venture capital can accelerate expansion by providing substantial resources, while bootstrapping fosters sustainable growth through careful cash flow management. However, reliance on external funding can lead to pressures for rapid returns, potentially compromising long-term sustainability if not balanced with strategic planning.",
+    "timestamp": 1731793100678,
+    "id": "conv-retc66uevm3kow3p5-6"
+  }
+]
+[2024-11-16T21:38:22.063Z] DEBUG: Context is already an array
+[2024-11-16T21:38:22.063Z] DEBUG: Expert generating response with context:
+[
+  {
+    "agentId": "user",
+    "content": "i want t ostart a business ",
+    "timestamp": 1731793089211,
+    "id": "conv-retc66uevm3kow3p5-0"
+  },
+  {
+    "agentId": "analyst-1",
+    "role": "Analyst",
+    "content": "Identify the specific industry you're interested in, then gather recent data on consumer preferences, emerging technologies, and competitive landscapes through market research reports and industry publications. Focus on quantifiable metrics such as market size, growth rates, and key players to inform your business strategy.",
+    "timestamp": 1731793092845,
+    "id": "conv-retc66uevm3kow3p5-1"
+  },
+  {
+    "agentId": "critic-1",
+    "role": "Critic",
+    "content": "Common challenges include securing funding, navigating regulatory requirements, and establishing a customer base in a competitive market. To mitigate these risks, develop a detailed business plan with financial projections, identify potential legal hurdles early, and invest in marketing strategies to build brand awareness.",
+    "timestamp": 1731793093860,
+    "id": "conv-retc66uevm3kow3p5-2"
+  },
+  {
+    "agentId": "expert-1",
+    "role": "Expert",
+    "content": "Start with a solid business plan that includes a clear value proposition, market analysis, operational plan, and financial projections to attract potential investors. For funding, consider options like bootstrapping, angel investors, venture capital, crowdfunding, or small business loans, tailoring your approach based on your industry and growth stage.",
+    "timestamp": 1731793094792,
+    "id": "conv-retc66uevm3kow3p5-3"
+  },
+  {
+    "agentId": "analyst-1",
+    "role": "Analyst",
+    "content": "In the seed stage, bootstrapping and crowdfunding are often suitable for initial product development and market testing, while angel investors can provide early-stage capital with mentorship. As businesses scale to the growth stage, venture capital becomes more appropriate for significant expansion efforts, while traditional bank loans might be considered for established companies with proven revenue streams.",
+    "timestamp": 1731793097258,
+    "id": "conv-retc66uevm3kow3p5-4"
+  },
+  {
+    "agentId": "expert-1",
+    "role": "Expert",
+    "content": "In the early stages, funding sources like bootstrapping and crowdfunding enable entrepreneurs to retain control and gauge market interest without significant equity dilution. As the business matures, seeking venture capital can provide the necessary resources for rapid scaling, but it often comes with expectations for high growth and potential equity loss.",
+    "timestamp": 1731793099021,
+    "id": "conv-retc66uevm3kow3p5-5"
+  },
+  {
+    "agentId": "analyst-1",
+    "role": "Analyst",
+    "content": "Funding strategies directly influence startup growth trajectories; for example, venture capital can accelerate expansion by providing substantial resources, while bootstrapping fosters sustainable growth through careful cash flow management. However, reliance on external funding can lead to pressures for rapid returns, potentially compromising long-term sustainability if not balanced with strategic planning.",
+    "timestamp": 1731793100678,
+    "id": "conv-retc66uevm3kow3p5-6"
+  }
+]
+[2024-11-16T21:38:22.063Z] DEBUG: Generating response for Expert using LLM service with role:
+"Expert"
+[2024-11-16T21:38:22.063Z] DEBUG: [LLMService] makeModelRequest params:
+{
+  "systemPrompt": "You are Expert. Knowledgeable and authoritative, providing deep domain expertise.\n        Your expertise includes: Domain expertise, Best practices, Technical knowledge.\n        \n        Previous context: Provide insights on best practices for business planning and funding options available for startups. -> awaiting response\nRespond to Analyst's points: Provide insights on funding sources and their implications for business growth stages. -> awaiting response\nRespond to Analyst's points: Discuss the implications of different funding strategies on startup sustainability and growth. -> awaiting response\n        \n        Core Guidelines:\n        - Respond in 1-2 sharp, specific sentences\n        - Build directly on the previous message's key point\n        - Focus on immediate, practical next steps\n        - Don't over abstract concepts. Focus on concrete, actionable guidance\n        - Stay strictly within your role's expertise\n        - Do not prefix your response with your role name",
+  "userPrompt": "Respond to Analyst's points: Discuss the implications of different funding strategies on startup sustainability and growth.",
+  "context": [
+    {
+      "agentId": "user",
+      "content": "i want t ostart a business ",
+      "timestamp": 1731793089211,
+      "id": "conv-retc66uevm3kow3p5-0"
+    },
+    {
+      "agentId": "analyst-1",
+      "role": "Analyst",
+      "content": "Identify the specific industry you're interested in, then gather recent data on consumer preferences, emerging technologies, and competitive landscapes through market research reports and industry publications. Focus on quantifiable metrics such as market size, growth rates, and key players to inform your business strategy.",
+      "timestamp": 1731793092845,
+      "id": "conv-retc66uevm3kow3p5-1"
+    },
+    {
+      "agentId": "critic-1",
+      "role": "Critic",
+      "content": "Common challenges include securing funding, navigating regulatory requirements, and establishing a customer base in a competitive market. To mitigate these risks, develop a detailed business plan with financial projections, identify potential legal hurdles early, and invest in marketing strategies to build brand awareness.",
+      "timestamp": 1731793093860,
+      "id": "conv-retc66uevm3kow3p5-2"
+    },
+    {
+      "agentId": "expert-1",
+      "role": "Expert",
+      "content": "Start with a solid business plan that includes a clear value proposition, market analysis, operational plan, and financial projections to attract potential investors. For funding, consider options like bootstrapping, angel investors, venture capital, crowdfunding, or small business loans, tailoring your approach based on your industry and growth stage.",
+      "timestamp": 1731793094792,
+      "id": "conv-retc66uevm3kow3p5-3"
+    },
+    {
+      "agentId": "analyst-1",
+      "role": "Analyst",
+      "content": "In the seed stage, bootstrapping and crowdfunding are often suitable for initial product development and market testing, while angel investors can provide early-stage capital with mentorship. As businesses scale to the growth stage, venture capital becomes more appropriate for significant expansion efforts, while traditional bank loans might be considered for established companies with proven revenue streams.",
+      "timestamp": 1731793097258,
+      "id": "conv-retc66uevm3kow3p5-4"
+    },
+    {
+      "agentId": "expert-1",
+      "role": "Expert",
+      "content": "In the early stages, funding sources like bootstrapping and crowdfunding enable entrepreneurs to retain control and gauge market interest without significant equity dilution. As the business matures, seeking venture capital can provide the necessary resources for rapid scaling, but it often comes with expectations for high growth and potential equity loss.",
+      "timestamp": 1731793099021,
+      "id": "conv-retc66uevm3kow3p5-5"
+    },
+    {
+      "agentId": "analyst-1",
+      "role": "Analyst",
+      "content": "Funding strategies directly influence startup growth trajectories; for example, venture capital can accelerate expansion by providing substantial resources, while bootstrapping fosters sustainable growth through careful cash flow management. However, reliance on external funding can lead to pressures for rapid returns, potentially compromising long-term sustainability if not balanced with strategic planning.",
+      "timestamp": 1731793100678,
+      "id": "conv-retc66uevm3kow3p5-6"
+    }
+  ],
+  "agentType": "Expert"
+}
+[2024-11-16T21:38:22.064Z] DEBUG: [RateLimiter] Current requests: 11, Time since last reset: 15546ms
+[2024-11-16T21:38:22.064Z] DEBUG: [RateLimiter] Request processed. New count: 12
+[2024-11-16T21:38:22.064Z] DEBUG: [MessageFormatter] Starting formatMessages with params:
+{
+  "hasSystemPrompt": true,
+  "hasUserPrompt": true,
+  "contextLength": 5,
+  "agentType": "Expert"
+}
+[2024-11-16T21:38:22.064Z] DEBUG: [MessageFormatter] Getting model for agent:
+{
+  "agentType": "Expert",
+  "hasModelConfig": true
+}
+[2024-11-16T21:38:22.064Z] DEBUG: [MessageFormatter] Selected model for agent:
+{
+  "agentType": "Expert",
+  "agentKey": "expert",
+  "selectedModel": "gpt-4o-mini"
+}
+[2024-11-16T21:38:22.064Z] DEBUG: [MessageFormatter] Selected model:
+"gpt-4o-mini"
+[2024-11-16T21:38:22.064Z] DEBUG: [MessageFormatter] Sanitized context length:
+5
+[2024-11-16T21:38:22.064Z] DEBUG: [MessageFormatter] Final formatted message count:
+7
+[2024-11-16T21:38:23.283Z] DEBUG: [CostTracker] Request tracked:
+{
+  "inputTokens": 517,
+  "outputTokens": 69,
+  "requestCost": "0.000119",
+  "totalCost": "0.001106"
+}
+[2024-11-16T21:38:23.283Z] DEBUG: [LLMService] API Response:
+{
+  "id": "chatcmpl-AUKmmWW5zAEueith2yDgxPUttWyFX",
+  "object": "chat.completion",
+  "created": 1731793104,
+  "model": "gpt-4o-mini-2024-07-18",
+  "choices": [
+    {
+      "index": 0,
+      "message": {
+        "role": "assistant",
+        "content": "Different funding strategies impact sustainability and growth by shaping operational flexibility and ownership control; for instance, bootstrapping encourages frugality and resilience, fostering a sustainable growth mindset but potentially limiting rapid scaling. In contrast, venture capital can fuel aggressive growth but may lead to pressure for quick returns, risking long-term stability if not aligned with the company's vision.",
+        "refusal": null
+      },
+      "logprobs": null,
+      "finish_reason": "stop"
+    }
+  ],
+  "usage": {
+    "prompt_tokens": 517,
+    "completion_tokens": 69,
+    "total_tokens": 586,
+    "prompt_tokens_details": {
+      "cached_tokens": 0,
+      "audio_tokens": 0
+    },
+    "completion_tokens_details": {
+      "reasoning_tokens": 0,
+      "audio_tokens": 0,
+      "accepted_prediction_tokens": 0,
+      "rejected_prediction_tokens": 0
+    }
+  },
+  "system_fingerprint": "fp_0ba0d124f1"
+}
+[2024-11-16T21:38:23.284Z] DEBUG: [MessageFormatter] Parsing response:
+{
+  "contentType": "string",
+  "contentLength": 433
+}
+[2024-11-16T21:38:23.285Z] DEBUG: [MessageFormatter] Content is not JSON, returning as-is
+[2024-11-16T21:38:23.285Z] DEBUG: [ConversationManager] Attempting to log message for conversation conv-retc66uevm3kow3p5
+[2024-11-16T21:38:23.285Z] DEBUG: [ConversationManager] Successfully logged message for conversation conv-retc66uevm3kow3p5
+{
+  "messageId": "conv-retc66uevm3kow3p5-7",
+  "timestamp": 1731793103285
+}
+[2024-11-16T21:38:23.285Z] DEBUG: [NotifyManager] Sending response:
+{
+  "agentId": "expert-1",
+  "role": "Expert",
+  "content": "Different funding strategies impact sustainability and growth by shaping operational flexibility and ownership control; for instance, bootstrapping encourages frugality and resilience, fostering a sustainable growth mindset but potentially limiting rapid scaling. In contrast, venture capital can fuel aggressive growth but may lead to pressure for quick returns, risking long-term stability if not aligned with the company's vision.",
+  "timestamp": 1731793103285
+}
+[2024-11-16T21:38:23.285Z] DEBUG: [NotifyManager] Sending response:
+{
+  "agentId": "expert-1",
+  "role": "Expert",
+  "content": "Different funding strategies impact sustainability and growth by shaping operational flexibility and ownership control; for instance, bootstrapping encourages frugality and resilience, fostering a sustainable growth mindset but potentially limiting rapid scaling. In contrast, venture capital can fuel aggressive growth but may lead to pressure for quick returns, risking long-term stability if not aligned with the company's vision.",
+  "timestamp": 1731793103285
+}
+[2024-11-16T21:38:23.286Z] DEBUG: [CLI] Received response:
+{
+  "agentId": "expert-1",
+  "role": "Expert",
+  "content": "Different funding strategies impact sustainability and growth by shaping operational flexibility and ownership control; for instance, bootstrapping encourages frugality and resilience, fostering a sustainable growth mindset but potentially limiting rapid scaling. In contrast, venture capital can fuel aggressive growth but may lead to pressure for quick returns, risking long-term stability if not aligned with the company's vision.",
+  "timestamp": 1731793103285
+}
+[2024-11-16T21:38:23.286Z] DEBUG: CLI: Displaying agent response:
+{
+  "agentId": "expert-1",
+  "role": "Expert",
+  "content": "Different funding strategies impact sustainability and growth by shaping operational flexibility and ownership control; for instance, bootstrapping encourages frugality and resilience, fostering a sustainable growth mindset but potentially limiting rapid scaling. In contrast, venture capital can fuel aggressive growth but may lead to pressure for quick returns, risking long-term stability if not aligned with the company's vision.",
+  "timestamp": 1731793103285
+}
+[2024-11-16T21:38:23.286Z] DEBUG: CLI: Received response:
+{
+  "agentId": "expert-1",
+  "role": "Expert",
+  "content": "Different funding strategies impact sustainability and growth by shaping operational flexibility and ownership control; for instance, bootstrapping encourages frugality and resilience, fostering a sustainable growth mindset but potentially limiting rapid scaling. In contrast, venture capital can fuel aggressive growth but may lead to pressure for quick returns, risking long-term stability if not aligned with the company's vision.",
+  "timestamp": 1731793103285
+}
+[2024-11-16T21:38:23.287Z] DEBUG: CLI: Displaying agent response:
+{
+  "agentId": "expert-1",
+  "role": "Expert",
+  "content": "Different funding strategies impact sustainability and growth by shaping operational flexibility and ownership control; for instance, bootstrapping encourages frugality and resilience, fostering a sustainable growth mindset but potentially limiting rapid scaling. In contrast, venture capital can fuel aggressive growth but may lead to pressure for quick returns, risking long-term stability if not aligned with the company's vision.",
+  "timestamp": 1731793103285
+}
+[2024-11-16T21:38:23.287Z] DEBUG: [NotificationService] Response sent:
+{
+  "agentId": "expert-1",
+  "role": "Expert",
+  "content": "Different funding strategies impact sustainability and growth by shaping operational flexibility and ownership control; for instance, bootstrapping encourages frugality and resilience, fostering a sustainable growth mindset but potentially limiting rapid scaling. In contrast, venture capital can fuel aggressive growth but may lead to pressure for quick returns, risking long-term stability if not aligned with the company's vision.",
+  "timestamp": 1731793103285
+}
+[2024-11-16T21:38:23.287Z] DEBUG: [NotificationService] Response sent:
+{
+  "agentId": "expert-1",
+  "role": "Expert",
+  "content": "Different funding strategies impact sustainability and growth by shaping operational flexibility and ownership control; for instance, bootstrapping encourages frugality and resilience, fostering a sustainable growth mindset but potentially limiting rapid scaling. In contrast, venture capital can fuel aggressive growth but may lead to pressure for quick returns, risking long-term stability if not aligned with the company's vision.",
+  "timestamp": 1731793103285
+}
+[2024-11-16T21:38:23.287Z] DEBUG: [NotificationService] Agent state cleared:
+{
+  "agentId": "expert-1"
+}
+[2024-11-16T21:38:23.288Z] INFO: [QualityGate] Round counter incremented from 4 to 5
+[2024-11-16T21:38:23.288Z] DEBUG: [QualityGate] Validating continuation - Round 5/5
+[2024-11-16T21:38:23.288Z] INFO: [QualityGate] Max rounds (5) reached at round 5
+[2024-11-16T21:38:23.288Z] INFO: [Coordinator] Ending collaboration: MAX_ROUNDS_REACHED
+[2024-11-16T21:38:23.288Z] DEBUG: [Coordinator] Collaboration complete
+{
+  "resultCount": 7
+}
+[2024-11-16T21:38:23.288Z] DEBUG: [NotifyManager] Updating agent state:
+{
+  "agentId": "director-1",
+  "phase": "synthesizing"
+}
+[2024-11-16T21:38:23.288Z] DEBUG: CLI: Agent thinking update:
+{
+  "agentId": "director-1",
+  "phase": "synthesizing"
+}
+[2024-11-16T21:38:23.289Z] DEBUG: [NotificationService] Agent state updated:
+{
+  "agentId": "director-1",
+  "state": "synthesizing"
+}
+[2024-11-16T21:38:23.289Z] DEBUG: [Coordinator] Starting final summary phase
+[2024-11-16T21:38:23.289Z] DEBUG: [Director] synthesizeDiscussion started with:
+{
+  "contextLength": 8,
+  "messages": [
+    {
+      "agentId": "user",
+      "content": "i want t ostart a business ",
+      "timestamp": 1731793089211,
+      "id": "conv-retc66uevm3kow3p5-0"
+    },
+    {
+      "agentId": "analyst-1",
+      "role": "Analyst",
+      "content": "Identify the specific industry you're interested in, then gather recent data on consumer preferences, emerging technologies, and competitive landscapes through market research reports and industry publications. Focus on quantifiable metrics such as market size, growth rates, and key players to inform your business strategy.",
+      "timestamp": 1731793092845,
+      "id": "conv-retc66uevm3kow3p5-1"
+    },
+    {
+      "agentId": "critic-1",
+      "role": "Critic",
+      "content": "Common challenges include securing funding, navigating regulatory requirements, and establishing a customer base in a competitive market. To mitigate these risks, develop a detailed business plan with financial projections, identify potential legal hurdles early, and invest in marketing strategies to build brand awareness.",
+      "timestamp": 1731793093860,
+      "id": "conv-retc66uevm3kow3p5-2"
+    },
+    {
+      "agentId": "expert-1",
+      "role": "Expert",
+      "content": "Start with a solid business plan that includes a clear value proposition, market analysis, operational plan, and financial projections to attract potential investors. For funding, consider options like bootstrapping, angel investors, venture capital, crowdfunding, or small business loans, tailoring your approach based on your industry and growth stage.",
+      "timestamp": 1731793094792,
+      "id": "conv-retc66uevm3kow3p5-3"
+    },
+    {
+      "agentId": "analyst-1",
+      "role": "Analyst",
+      "content": "In the seed stage, bootstrapping and crowdfunding are often suitable for initial product development and market testing, while angel investors can provide early-stage capital with mentorship. As businesses scale to the growth stage, venture capital becomes more appropriate for significant expansion efforts, while traditional bank loans might be considered for established companies with proven revenue streams.",
+      "timestamp": 1731793097258,
+      "id": "conv-retc66uevm3kow3p5-4"
+    },
+    {
+      "agentId": "expert-1",
+      "role": "Expert",
+      "content": "In the early stages, funding sources like bootstrapping and crowdfunding enable entrepreneurs to retain control and gauge market interest without significant equity dilution. As the business matures, seeking venture capital can provide the necessary resources for rapid scaling, but it often comes with expectations for high growth and potential equity loss.",
+      "timestamp": 1731793099021,
+      "id": "conv-retc66uevm3kow3p5-5"
+    },
+    {
+      "agentId": "analyst-1",
+      "role": "Analyst",
+      "content": "Funding strategies directly influence startup growth trajectories; for example, venture capital can accelerate expansion by providing substantial resources, while bootstrapping fosters sustainable growth through careful cash flow management. However, reliance on external funding can lead to pressures for rapid returns, potentially compromising long-term sustainability if not balanced with strategic planning.",
+      "timestamp": 1731793100678,
+      "id": "conv-retc66uevm3kow3p5-6"
+    },
+    {
+      "agentId": "expert-1",
+      "role": "Expert",
+      "content": "Different funding strategies impact sustainability and growth by shaping operational flexibility and ownership control; for instance, bootstrapping encourages frugality and resilience, fostering a sustainable growth mindset but potentially limiting rapid scaling. In contrast, venture capital can fuel aggressive growth but may lead to pressure for quick returns, risking long-term stability if not aligned with the company's vision.",
+      "timestamp": 1731793103285,
+      "id": "conv-retc66uevm3kow3p5-7"
+    }
+  ]
+}
+[2024-11-16T21:38:23.290Z] DEBUG: [Director] Synthesizing discussion with formatted messages:
+[
+  {
+    "agentId": "user",
+    "content": "i want t ostart a business "
+  },
+  {
+    "agentId": "analyst-1",
+    "content": "Identify the specific industry you're interested in, then gather recent data on consumer preferences, emerging technologies, and competitive landscapes through market research reports and industry publications. Focus on quantifiable metrics such as market size, growth rates, and key players to inform your business strategy."
+  },
+  {
+    "agentId": "critic-1",
+    "content": "Common challenges include securing funding, navigating regulatory requirements, and establishing a customer base in a competitive market. To mitigate these risks, develop a detailed business plan with financial projections, identify potential legal hurdles early, and invest in marketing strategies to build brand awareness."
+  },
+  {
+    "agentId": "expert-1",
+    "content": "Start with a solid business plan that includes a clear value proposition, market analysis, operational plan, and financial projections to attract potential investors. For funding, consider options like bootstrapping, angel investors, venture capital, crowdfunding, or small business loans, tailoring your approach based on your industry and growth stage."
+  },
+  {
+    "agentId": "analyst-1",
+    "content": "In the seed stage, bootstrapping and crowdfunding are often suitable for initial product development and market testing, while angel investors can provide early-stage capital with mentorship. As businesses scale to the growth stage, venture capital becomes more appropriate for significant expansion efforts, while traditional bank loans might be considered for established companies with proven revenue streams."
+  },
+  {
+    "agentId": "expert-1",
+    "content": "In the early stages, funding sources like bootstrapping and crowdfunding enable entrepreneurs to retain control and gauge market interest without significant equity dilution. As the business matures, seeking venture capital can provide the necessary resources for rapid scaling, but it often comes with expectations for high growth and potential equity loss."
+  },
+  {
+    "agentId": "analyst-1",
+    "content": "Funding strategies directly influence startup growth trajectories; for example, venture capital can accelerate expansion by providing substantial resources, while bootstrapping fosters sustainable growth through careful cash flow management. However, reliance on external funding can lead to pressures for rapid returns, potentially compromising long-term sustainability if not balanced with strategic planning."
+  },
+  {
+    "agentId": "expert-1",
+    "content": "Different funding strategies impact sustainability and growth by shaping operational flexibility and ownership control; for instance, bootstrapping encourages frugality and resilience, fostering a sustainable growth mindset but potentially limiting rapid scaling. In contrast, venture capital can fuel aggressive growth but may lead to pressure for quick returns, risking long-term stability if not aligned with the company's vision."
+  }
+]
+[2024-11-16T21:38:23.290Z] DEBUG: [LLMService] makeModelRequest params:
+{
+  "systemPrompt": "As the Director, provide a concise synthesis of this conversation.\n\n            Conversation messages:\n            - user: i want t ostart a business \n- analyst-1: Identify the specific industry you're interested in, then gather recent data on consumer preferences, emerging technologies, and competitive landscapes through market research reports and industry publications. Focus on quantifiable metrics such as market size, growth rates, and key players to inform your business strategy.\n- critic-1: Common challenges include securing funding, navigating regulatory requirements, and establishing a customer base in a competitive market. To mitigate these risks, develop a detailed business plan with financial projections, identify potential legal hurdles early, and invest in marketing strategies to build brand awareness.\n- expert-1: Start with a solid business plan that includes a clear value proposition, market analysis, operational plan, and financial projections to attract potential investors. For funding, consider options like bootstrapping, angel investors, venture capital, crowdfunding, or small business loans, tailoring your approach based on your industry and growth stage.\n- analyst-1: In the seed stage, bootstrapping and crowdfunding are often suitable for initial product development and market testing, while angel investors can provide early-stage capital with mentorship. As businesses scale to the growth stage, venture capital becomes more appropriate for significant expansion efforts, while traditional bank loans might be considered for established companies with proven revenue streams.\n- expert-1: In the early stages, funding sources like bootstrapping and crowdfunding enable entrepreneurs to retain control and gauge market interest without significant equity dilution. As the business matures, seeking venture capital can provide the necessary resources for rapid scaling, but it often comes with expectations for high growth and potential equity loss.\n- analyst-1: Funding strategies directly influence startup growth trajectories; for example, venture capital can accelerate expansion by providing substantial resources, while bootstrapping fosters sustainable growth through careful cash flow management. However, reliance on external funding can lead to pressures for rapid returns, potentially compromising long-term sustainability if not balanced with strategic planning.\n- expert-1: Different funding strategies impact sustainability and growth by shaping operational flexibility and ownership control; for instance, bootstrapping encourages frugality and resilience, fostering a sustainable growth mindset but potentially limiting rapid scaling. In contrast, venture capital can fuel aggressive growth but may lead to pressure for quick returns, risking long-term stability if not aligned with the company's vision.\n\n            Create a brief summary that includes:\n            1. The core discussion topic\n            2. Key insights and notable points raised\n            3. Important patterns or themes that emerged\n            4. Essential conclusions reached\n\n            Keep the summary clear and focused. Prioritize meaningful insights over comprehensive coverage.",
+  "userPrompt": "Provide a comprehensive synthesis of the discussion.",
+  "context": [],
+  "agentType": "Director"
+}
+[2024-11-16T21:38:23.290Z] DEBUG: [RateLimiter] Current requests: 12, Time since last reset: 16772ms
+[2024-11-16T21:38:23.290Z] DEBUG: [RateLimiter] Request processed. New count: 13
+[2024-11-16T21:38:23.290Z] DEBUG: [MessageFormatter] Starting formatMessages with params:
+{
+  "hasSystemPrompt": true,
+  "hasUserPrompt": true,
+  "contextLength": 0,
+  "agentType": "Director"
+}
+[2024-11-16T21:38:23.290Z] DEBUG: [MessageFormatter] Getting model for agent:
+{
+  "agentType": "Director",
+  "hasModelConfig": true
+}
+[2024-11-16T21:38:23.290Z] DEBUG: [MessageFormatter] Selected model for agent:
+{
+  "agentType": "Director",
+  "agentKey": "director",
+  "selectedModel": "gpt-4o-mini"
+}
+[2024-11-16T21:38:23.290Z] DEBUG: [MessageFormatter] Selected model:
+"gpt-4o-mini"
+[2024-11-16T21:38:23.291Z] DEBUG: [MessageFormatter] Sanitized context length:
+[2024-11-16T21:38:23.291Z] DEBUG: [MessageFormatter] Final formatted message count:
+2
+[2024-11-16T21:38:27.485Z] DEBUG: [CostTracker] Request tracked:
+{
+  "inputTokens": 561,
+  "outputTokens": 352,
+  "requestCost": "0.000295",
+  "totalCost": "0.001401"
+}
+[2024-11-16T21:38:27.485Z] DEBUG: [LLMService] API Response:
+{
+  "id": "chatcmpl-AUKmnfOIgp7jR2vWf3nmu4q5JZZ3o",
+  "object": "chat.completion",
+  "created": 1731793105,
+  "model": "gpt-4o-mini-2024-07-18",
+  "choices": [
+    {
+      "index": 0,
+      "message": {
+        "role": "assistant",
+        "content": "**Core Discussion Topic:**\nThe conversation centers around starting a business, focusing on the necessary steps, challenges, and funding strategies that entrepreneurs should consider.\n\n**Key Insights and Notable Points Raised:**\n1. **Market Research Importance:** Identifying the specific industry and conducting thorough market research on consumer preferences and competitive landscapes is crucial for developing an effective business strategy.\n2. **Challenges in Entrepreneurship:** Entrepreneurs face common challenges such as securing funding, complying with regulations, and establishing a customer base. A detailed business plan is essential to navigate these hurdles.\n3. **Funding Strategies:** Various funding options were discussed, including bootstrapping, crowdfunding, angel investors, venture capital, and small business loans, with an emphasis on how these options vary by business stage.\n4. **Growth Trajectories:** Different funding strategies can lead to distinct growth trajectories. Bootstrapping fosters sustainable growth, while venture capital can facilitate rapid expansion but may pressure for quick returns.\n\n**Important Patterns or Themes That Emerged:**\n- **Phased Funding Approach:** The conversation highlighted a phased approach to funding, where early-stage businesses may benefit from bootstrapping and crowdfunding, while later stages may require venture capital or bank loans for scaling.\n- **Balancing Growth and Sustainability:** A recurring theme was the balance between aggressive growth strategies and long-term sustainability, with funding sources having significant implications for operational flexibility and ownership control.\n\n**Essential Conclusions Reached:**\n- A solid business plan is foundational for attracting investors and guiding the business through its growth phases.\n- Entrepreneurs should carefully consider their funding strategies, as they directly influence business trajectory, sustainability, and control.\n- The approach to funding should align with the business vision and growth goals, requiring a strategic balance to ensure long-term stability and success.",
+        "refusal": null
+      },
+      "logprobs": null,
+      "finish_reason": "stop"
+    }
+  ],
+  "usage": {
+    "prompt_tokens": 561,
+    "completion_tokens": 352,
+    "total_tokens": 913,
+    "prompt_tokens_details": {
+      "cached_tokens": 0,
+      "audio_tokens": 0
+    },
+    "completion_tokens_details": {
+      "reasoning_tokens": 0,
+      "audio_tokens": 0,
+      "accepted_prediction_tokens": 0,
+      "rejected_prediction_tokens": 0
+    }
+  },
+  "system_fingerprint": "fp_0ba0d124f1"
+}
+[2024-11-16T21:38:27.486Z] DEBUG: [MessageFormatter] Parsing response:
+{
+  "contentType": "string",
+  "contentLength": 2124
+}
+[2024-11-16T21:38:27.487Z] DEBUG: [MessageFormatter] Content is not JSON, returning as-is
+[2024-11-16T21:38:27.487Z] DEBUG: [Director] Generated summary:
+"**Core Discussion Topic:**\nThe conversation centers around starting a business, focusing on the necessary steps, challenges, and funding strategies that entrepreneurs should consider.\n\n**Key Insights and Notable Points Raised:**\n1. **Market Research Importance:** Identifying the specific industry and conducting thorough market research on consumer preferences and competitive landscapes is crucial for developing an effective business strategy.\n2. **Challenges in Entrepreneurship:** Entrepreneurs face common challenges such as securing funding, complying with regulations, and establishing a customer base. A detailed business plan is essential to navigate these hurdles.\n3. **Funding Strategies:** Various funding options were discussed, including bootstrapping, crowdfunding, angel investors, venture capital, and small business loans, with an emphasis on how these options vary by business stage.\n4. **Growth Trajectories:** Different funding strategies can lead to distinct growth trajectories. Bootstrapping fosters sustainable growth, while venture capital can facilitate rapid expansion but may pressure for quick returns.\n\n**Important Patterns or Themes That Emerged:**\n- **Phased Funding Approach:** The conversation highlighted a phased approach to funding, where early-stage businesses may benefit from bootstrapping and crowdfunding, while later stages may require venture capital or bank loans for scaling.\n- **Balancing Growth and Sustainability:** A recurring theme was the balance between aggressive growth strategies and long-term sustainability, with funding sources having significant implications for operational flexibility and ownership control.\n\n**Essential Conclusions Reached:**\n- A solid business plan is foundational for attracting investors and guiding the business through its growth phases.\n- Entrepreneurs should carefully consider their funding strategies, as they directly influence business trajectory, sustainability, and control.\n- The approach to funding should align with the business vision and growth goals, requiring a strategic balance to ensure long-term stability and success."
+[2024-11-16T21:38:27.487Z] DEBUG: [Coordinator] Final summary complete
+{
+  "summary": "**Core Discussion Topic:**\nThe conversation centers around starting a business, focusing on the necessary steps, challenges, and funding strategies that entrepreneurs should consider.\n\n**Key Insights and Notable Points Raised:**\n1. **Market Research Importance:** Identifying the specific industry and conducting thorough market research on consumer preferences and competitive landscapes is crucial for developing an effective business strategy.\n2. **Challenges in Entrepreneurship:** Entrepreneurs face common challenges such as securing funding, complying with regulations, and establishing a customer base. A detailed business plan is essential to navigate these hurdles.\n3. **Funding Strategies:** Various funding options were discussed, including bootstrapping, crowdfunding, angel investors, venture capital, and small business loans, with an emphasis on how these options vary by business stage.\n4. **Growth Trajectories:** Different funding strategies can lead to distinct growth trajectories. Bootstrapping fosters sustainable growth, while venture capital can facilitate rapid expansion but may pressure for quick returns.\n\n**Important Patterns or Themes That Emerged:**\n- **Phased Funding Approach:** The conversation highlighted a phased approach to funding, where early-stage businesses may benefit from bootstrapping and crowdfunding, while later stages may require venture capital or bank loans for scaling.\n- **Balancing Growth and Sustainability:** A recurring theme was the balance between aggressive growth strategies and long-term sustainability, with funding sources having significant implications for operational flexibility and ownership control.\n\n**Essential Conclusions Reached:**\n- A solid business plan is foundational for attracting investors and guiding the business through its growth phases.\n- Entrepreneurs should carefully consider their funding strategies, as they directly influence business trajectory, sustainability, and control.\n- The approach to funding should align with the business vision and growth goals, requiring a strategic balance to ensure long-term stability and success."
+}
+[2024-11-16T21:38:27.487Z] DEBUG: [CollaborationOrchestrator] Emitting final summary:
+{
+  "agentId": "director-1",
+  "role": "Summary",
+  "content": "**Core Discussion Topic:**\nThe conversation centers around starting a business, focusing on the necessary steps, challenges, and funding strategies that entrepreneurs should consider.\n\n**Key Insights and Notable Points Raised:**\n1. **Market Research Importance:** Identifying the specific industry and conducting thorough market research on consumer preferences and competitive landscapes is crucial for developing an effective business strategy.\n2. **Challenges in Entrepreneurship:** Entrepreneurs face common challenges such as securing funding, complying with regulations, and establishing a customer base. A detailed business plan is essential to navigate these hurdles.\n3. **Funding Strategies:** Various funding options were discussed, including bootstrapping, crowdfunding, angel investors, venture capital, and small business loans, with an emphasis on how these options vary by business stage.\n4. **Growth Trajectories:** Different funding strategies can lead to distinct growth trajectories. Bootstrapping fosters sustainable growth, while venture capital can facilitate rapid expansion but may pressure for quick returns.\n\n**Important Patterns or Themes That Emerged:**\n- **Phased Funding Approach:** The conversation highlighted a phased approach to funding, where early-stage businesses may benefit from bootstrapping and crowdfunding, while later stages may require venture capital or bank loans for scaling.\n- **Balancing Growth and Sustainability:** A recurring theme was the balance between aggressive growth strategies and long-term sustainability, with funding sources having significant implications for operational flexibility and ownership control.\n\n**Essential Conclusions Reached:**\n- A solid business plan is foundational for attracting investors and guiding the business through its growth phases.\n- Entrepreneurs should carefully consider their funding strategies, as they directly influence business trajectory, sustainability, and control.\n- The approach to funding should align with the business vision and growth goals, requiring a strategic balance to ensure long-term stability and success.",
+  "timestamp": 1731793107487
+}
+[2024-11-16T21:38:27.487Z] DEBUG: [NotifyManager] Sending response:
+{
+  "agentId": "director-1",
+  "role": "Summary",
+  "content": "**Core Discussion Topic:**\nThe conversation centers around starting a business, focusing on the necessary steps, challenges, and funding strategies that entrepreneurs should consider.\n\n**Key Insights and Notable Points Raised:**\n1. **Market Research Importance:** Identifying the specific industry and conducting thorough market research on consumer preferences and competitive landscapes is crucial for developing an effective business strategy.\n2. **Challenges in Entrepreneurship:** Entrepreneurs face common challenges such as securing funding, complying with regulations, and establishing a customer base. A detailed business plan is essential to navigate these hurdles.\n3. **Funding Strategies:** Various funding options were discussed, including bootstrapping, crowdfunding, angel investors, venture capital, and small business loans, with an emphasis on how these options vary by business stage.\n4. **Growth Trajectories:** Different funding strategies can lead to distinct growth trajectories. Bootstrapping fosters sustainable growth, while venture capital can facilitate rapid expansion but may pressure for quick returns.\n\n**Important Patterns or Themes That Emerged:**\n- **Phased Funding Approach:** The conversation highlighted a phased approach to funding, where early-stage businesses may benefit from bootstrapping and crowdfunding, while later stages may require venture capital or bank loans for scaling.\n- **Balancing Growth and Sustainability:** A recurring theme was the balance between aggressive growth strategies and long-term sustainability, with funding sources having significant implications for operational flexibility and ownership control.\n\n**Essential Conclusions Reached:**\n- A solid business plan is foundational for attracting investors and guiding the business through its growth phases.\n- Entrepreneurs should carefully consider their funding strategies, as they directly influence business trajectory, sustainability, and control.\n- The approach to funding should align with the business vision and growth goals, requiring a strategic balance to ensure long-term stability and success.",
+  "timestamp": 1731793107487
+}
+[2024-11-16T21:38:27.487Z] DEBUG: [NotifyManager] Sending response:
+{
+  "agentId": "director-1",
+  "role": "Summary",
+  "content": "**Core Discussion Topic:**\nThe conversation centers around starting a business, focusing on the necessary steps, challenges, and funding strategies that entrepreneurs should consider.\n\n**Key Insights and Notable Points Raised:**\n1. **Market Research Importance:** Identifying the specific industry and conducting thorough market research on consumer preferences and competitive landscapes is crucial for developing an effective business strategy.\n2. **Challenges in Entrepreneurship:** Entrepreneurs face common challenges such as securing funding, complying with regulations, and establishing a customer base. A detailed business plan is essential to navigate these hurdles.\n3. **Funding Strategies:** Various funding options were discussed, including bootstrapping, crowdfunding, angel investors, venture capital, and small business loans, with an emphasis on how these options vary by business stage.\n4. **Growth Trajectories:** Different funding strategies can lead to distinct growth trajectories. Bootstrapping fosters sustainable growth, while venture capital can facilitate rapid expansion but may pressure for quick returns.\n\n**Important Patterns or Themes That Emerged:**\n- **Phased Funding Approach:** The conversation highlighted a phased approach to funding, where early-stage businesses may benefit from bootstrapping and crowdfunding, while later stages may require venture capital or bank loans for scaling.\n- **Balancing Growth and Sustainability:** A recurring theme was the balance between aggressive growth strategies and long-term sustainability, with funding sources having significant implications for operational flexibility and ownership control.\n\n**Essential Conclusions Reached:**\n- A solid business plan is foundational for attracting investors and guiding the business through its growth phases.\n- Entrepreneurs should carefully consider their funding strategies, as they directly influence business trajectory, sustainability, and control.\n- The approach to funding should align with the business vision and growth goals, requiring a strategic balance to ensure long-term stability and success.",
+  "timestamp": 1731793107487
+}
+[2024-11-16T21:38:27.487Z] DEBUG: [CLI] Received response:
+{
+  "agentId": "director-1",
+  "role": "Summary",
+  "content": "**Core Discussion Topic:**\nThe conversation centers around starting a business, focusing on the necessary steps, challenges, and funding strategies that entrepreneurs should consider.\n\n**Key Insights and Notable Points Raised:**\n1. **Market Research Importance:** Identifying the specific industry and conducting thorough market research on consumer preferences and competitive landscapes is crucial for developing an effective business strategy.\n2. **Challenges in Entrepreneurship:** Entrepreneurs face common challenges such as securing funding, complying with regulations, and establishing a customer base. A detailed business plan is essential to navigate these hurdles.\n3. **Funding Strategies:** Various funding options were discussed, including bootstrapping, crowdfunding, angel investors, venture capital, and small business loans, with an emphasis on how these options vary by business stage.\n4. **Growth Trajectories:** Different funding strategies can lead to distinct growth trajectories. Bootstrapping fosters sustainable growth, while venture capital can facilitate rapid expansion but may pressure for quick returns.\n\n**Important Patterns or Themes That Emerged:**\n- **Phased Funding Approach:** The conversation highlighted a phased approach to funding, where early-stage businesses may benefit from bootstrapping and crowdfunding, while later stages may require venture capital or bank loans for scaling.\n- **Balancing Growth and Sustainability:** A recurring theme was the balance between aggressive growth strategies and long-term sustainability, with funding sources having significant implications for operational flexibility and ownership control.\n\n**Essential Conclusions Reached:**\n- A solid business plan is foundational for attracting investors and guiding the business through its growth phases.\n- Entrepreneurs should carefully consider their funding strategies, as they directly influence business trajectory, sustainability, and control.\n- The approach to funding should align with the business vision and growth goals, requiring a strategic balance to ensure long-term stability and success.",
+  "timestamp": 1731793107487
+}
+[2024-11-16T21:38:27.487Z] DEBUG: CLI: Displaying agent response:
+{
+  "agentId": "director-1",
+  "role": "Summary",
+  "content": "**Core Discussion Topic:**\nThe conversation centers around starting a business, focusing on the necessary steps, challenges, and funding strategies that entrepreneurs should consider.\n\n**Key Insights and Notable Points Raised:**\n1. **Market Research Importance:** Identifying the specific industry and conducting thorough market research on consumer preferences and competitive landscapes is crucial for developing an effective business strategy.\n2. **Challenges in Entrepreneurship:** Entrepreneurs face common challenges such as securing funding, complying with regulations, and establishing a customer base. A detailed business plan is essential to navigate these hurdles.\n3. **Funding Strategies:** Various funding options were discussed, including bootstrapping, crowdfunding, angel investors, venture capital, and small business loans, with an emphasis on how these options vary by business stage.\n4. **Growth Trajectories:** Different funding strategies can lead to distinct growth trajectories. Bootstrapping fosters sustainable growth, while venture capital can facilitate rapid expansion but may pressure for quick returns.\n\n**Important Patterns or Themes That Emerged:**\n- **Phased Funding Approach:** The conversation highlighted a phased approach to funding, where early-stage businesses may benefit from bootstrapping and crowdfunding, while later stages may require venture capital or bank loans for scaling.\n- **Balancing Growth and Sustainability:** A recurring theme was the balance between aggressive growth strategies and long-term sustainability, with funding sources having significant implications for operational flexibility and ownership control.\n\n**Essential Conclusions Reached:**\n- A solid business plan is foundational for attracting investors and guiding the business through its growth phases.\n- Entrepreneurs should carefully consider their funding strategies, as they directly influence business trajectory, sustainability, and control.\n- The approach to funding should align with the business vision and growth goals, requiring a strategic balance to ensure long-term stability and success.",
+  "timestamp": 1731793107487
+}
+[2024-11-16T21:38:27.488Z] DEBUG: CLI: Received response:
+{
+  "agentId": "director-1",
+  "role": "Summary",
+  "content": "**Core Discussion Topic:**\nThe conversation centers around starting a business, focusing on the necessary steps, challenges, and funding strategies that entrepreneurs should consider.\n\n**Key Insights and Notable Points Raised:**\n1. **Market Research Importance:** Identifying the specific industry and conducting thorough market research on consumer preferences and competitive landscapes is crucial for developing an effective business strategy.\n2. **Challenges in Entrepreneurship:** Entrepreneurs face common challenges such as securing funding, complying with regulations, and establishing a customer base. A detailed business plan is essential to navigate these hurdles.\n3. **Funding Strategies:** Various funding options were discussed, including bootstrapping, crowdfunding, angel investors, venture capital, and small business loans, with an emphasis on how these options vary by business stage.\n4. **Growth Trajectories:** Different funding strategies can lead to distinct growth trajectories. Bootstrapping fosters sustainable growth, while venture capital can facilitate rapid expansion but may pressure for quick returns.\n\n**Important Patterns or Themes That Emerged:**\n- **Phased Funding Approach:** The conversation highlighted a phased approach to funding, where early-stage businesses may benefit from bootstrapping and crowdfunding, while later stages may require venture capital or bank loans for scaling.\n- **Balancing Growth and Sustainability:** A recurring theme was the balance between aggressive growth strategies and long-term sustainability, with funding sources having significant implications for operational flexibility and ownership control.\n\n**Essential Conclusions Reached:**\n- A solid business plan is foundational for attracting investors and guiding the business through its growth phases.\n- Entrepreneurs should carefully consider their funding strategies, as they directly influence business trajectory, sustainability, and control.\n- The approach to funding should align with the business vision and growth goals, requiring a strategic balance to ensure long-term stability and success.",
+  "timestamp": 1731793107487
+}
+[2024-11-16T21:38:27.488Z] DEBUG: CLI: Displaying agent response:
+{
+  "agentId": "director-1",
+  "role": "Summary",
+  "content": "**Core Discussion Topic:**\nThe conversation centers around starting a business, focusing on the necessary steps, challenges, and funding strategies that entrepreneurs should consider.\n\n**Key Insights and Notable Points Raised:**\n1. **Market Research Importance:** Identifying the specific industry and conducting thorough market research on consumer preferences and competitive landscapes is crucial for developing an effective business strategy.\n2. **Challenges in Entrepreneurship:** Entrepreneurs face common challenges such as securing funding, complying with regulations, and establishing a customer base. A detailed business plan is essential to navigate these hurdles.\n3. **Funding Strategies:** Various funding options were discussed, including bootstrapping, crowdfunding, angel investors, venture capital, and small business loans, with an emphasis on how these options vary by business stage.\n4. **Growth Trajectories:** Different funding strategies can lead to distinct growth trajectories. Bootstrapping fosters sustainable growth, while venture capital can facilitate rapid expansion but may pressure for quick returns.\n\n**Important Patterns or Themes That Emerged:**\n- **Phased Funding Approach:** The conversation highlighted a phased approach to funding, where early-stage businesses may benefit from bootstrapping and crowdfunding, while later stages may require venture capital or bank loans for scaling.\n- **Balancing Growth and Sustainability:** A recurring theme was the balance between aggressive growth strategies and long-term sustainability, with funding sources having significant implications for operational flexibility and ownership control.\n\n**Essential Conclusions Reached:**\n- A solid business plan is foundational for attracting investors and guiding the business through its growth phases.\n- Entrepreneurs should carefully consider their funding strategies, as they directly influence business trajectory, sustainability, and control.\n- The approach to funding should align with the business vision and growth goals, requiring a strategic balance to ensure long-term stability and success.",
+  "timestamp": 1731793107487
+}
+[2024-11-16T21:38:27.488Z] DEBUG: [NotificationService] Response sent:
+{
+  "agentId": "director-1",
+  "role": "Summary",
+  "content": "**Core Discussion Topic:**\nThe conversation centers around starting a business, focusing on the necessary steps, challenges, and funding strategies that entrepreneurs should consider.\n\n**Key Insights and Notable Points Raised:**\n1. **Market Research Importance:** Identifying the specific industry and conducting thorough market research on consumer preferences and competitive landscapes is crucial for developing an effective business strategy.\n2. **Challenges in Entrepreneurship:** Entrepreneurs face common challenges such as securing funding, complying with regulations, and establishing a customer base. A detailed business plan is essential to navigate these hurdles.\n3. **Funding Strategies:** Various funding options were discussed, including bootstrapping, crowdfunding, angel investors, venture capital, and small business loans, with an emphasis on how these options vary by business stage.\n4. **Growth Trajectories:** Different funding strategies can lead to distinct growth trajectories. Bootstrapping fosters sustainable growth, while venture capital can facilitate rapid expansion but may pressure for quick returns.\n\n**Important Patterns or Themes That Emerged:**\n- **Phased Funding Approach:** The conversation highlighted a phased approach to funding, where early-stage businesses may benefit from bootstrapping and crowdfunding, while later stages may require venture capital or bank loans for scaling.\n- **Balancing Growth and Sustainability:** A recurring theme was the balance between aggressive growth strategies and long-term sustainability, with funding sources having significant implications for operational flexibility and ownership control.\n\n**Essential Conclusions Reached:**\n- A solid business plan is foundational for attracting investors and guiding the business through its growth phases.\n- Entrepreneurs should carefully consider their funding strategies, as they directly influence business trajectory, sustainability, and control.\n- The approach to funding should align with the business vision and growth goals, requiring a strategic balance to ensure long-term stability and success.",
+  "timestamp": 1731793107487
+}
+[2024-11-16T21:38:27.489Z] DEBUG: [NotificationService] Response sent:
+{
+  "agentId": "director-1",
+  "role": "Summary",
+  "content": "**Core Discussion Topic:**\nThe conversation centers around starting a business, focusing on the necessary steps, challenges, and funding strategies that entrepreneurs should consider.\n\n**Key Insights and Notable Points Raised:**\n1. **Market Research Importance:** Identifying the specific industry and conducting thorough market research on consumer preferences and competitive landscapes is crucial for developing an effective business strategy.\n2. **Challenges in Entrepreneurship:** Entrepreneurs face common challenges such as securing funding, complying with regulations, and establishing a customer base. A detailed business plan is essential to navigate these hurdles.\n3. **Funding Strategies:** Various funding options were discussed, including bootstrapping, crowdfunding, angel investors, venture capital, and small business loans, with an emphasis on how these options vary by business stage.\n4. **Growth Trajectories:** Different funding strategies can lead to distinct growth trajectories. Bootstrapping fosters sustainable growth, while venture capital can facilitate rapid expansion but may pressure for quick returns.\n\n**Important Patterns or Themes That Emerged:**\n- **Phased Funding Approach:** The conversation highlighted a phased approach to funding, where early-stage businesses may benefit from bootstrapping and crowdfunding, while later stages may require venture capital or bank loans for scaling.\n- **Balancing Growth and Sustainability:** A recurring theme was the balance between aggressive growth strategies and long-term sustainability, with funding sources having significant implications for operational flexibility and ownership control.\n\n**Essential Conclusions Reached:**\n- A solid business plan is foundational for attracting investors and guiding the business through its growth phases.\n- Entrepreneurs should carefully consider their funding strategies, as they directly influence business trajectory, sustainability, and control.\n- The approach to funding should align with the business vision and growth goals, requiring a strategic balance to ensure long-term stability and success.",
+  "timestamp": 1731793107487
+}
+[2024-11-16T21:38:27.489Z] DEBUG: [NotificationService] Agent state cleared:
+{
+  "agentId": "director-1"
+}
+[2024-11-16T21:38:27.489Z] DEBUG: CLI: Cleaning up response subscription
+[2024-11-16T21:38:27.489Z] DEBUG: [NotifyManager] Unsubscribed all listeners
+[2024-11-16T21:43:28.767Z] ERROR: Failed to initialize CLI application:
 {
   "name": "ExitPromptError"
 }
-[2024-11-16T20:58:02.206Z] ERROR: CLI Error:
+[2024-11-16T21:43:28.768Z] ERROR: CLI Error:
 {
   "name": "ExitPromptError"
 }

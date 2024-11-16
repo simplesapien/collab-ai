@@ -3,48 +3,41 @@ import { System } from './system/core/system.js';
 import { agentConfigs } from './config/agentConfigs.js';
 import { Logger } from './utils/logger.js';
 import { generateId } from './utils/generators.js';
+import { NotifyManager } from './system/support/NotifyManager.js';
 
 export class Application {
     constructor() {
         this.system = new System();
         this.activeConversations = new Map();
-        this.responseCallbacks = new Set();
+        this.notifyManager = new NotifyManager();
         this.thinkingCallback = null;
-        this.notifyResponseListeners = this.notifyResponseListeners.bind(this);
+        Logger.debug('[Application] Initialized with NotifyManager');
     }
 
     onResponse(callback) {
-        this.responseCallbacks.add(callback);
-        return () => this.responseCallbacks.delete(callback);
-    }
-
-    notifyResponseListeners(response) {
-        Logger.debug('🔔 Application notifying listeners of response:', response);
-        this.responseCallbacks.forEach(callback => {
-            try {
-                callback(response);
-            } catch (error) {
-                Logger.error('Error in response callback:', error);
-            }
-        });
+        return this.notifyManager.initialize(callback, this.thinkingCallback);
     }
 
     onAgentThinking(callback) {
-        Logger.debug('Setting up thinking callback');
         this.thinkingCallback = callback;
+        Logger.debug('[Application] Registered thinking callback');
     }
 
     async initialize() {
         try {
             await this.system.initialize(
-                agentConfigs, 
-                this.notifyResponseListeners.bind(this),
-                this.thinkingCallback
+                agentConfigs,
+                (response) => this.notifyManager.notifyResponse(response),
+                (agentId, phase) => {
+                    if (this.thinkingCallback) {
+                        this.thinkingCallback(agentId, phase);
+                    }
+                }
             );
             
-            Logger.info('Application initialized successfully');
+            Logger.info('[Application] Initialized successfully');
         } catch (error) {
-            Logger.error('Failed to initialize application:', error);
+            Logger.error('[Application] Failed to initialize:', error);
             throw error;
         }
     }
@@ -65,32 +58,45 @@ export class Application {
             const enhancedMessage = {
                 agentId: 'user',
                 content: message.content,
-                timestamp: Date.now()
+                timestamp: Date.now(),
+                role: 'user'
             };
 
             Logger.info(`Processing user message for conversation ${conversationId}`);
             
-            // Add debug log before orchestrating discussion
-            Logger.debug('Starting discussion coordination with callback:', !!this.responseCallbacks.size);
+            // Use system's coordinator directly
             const discussionResults = await this.system.coordinator.coordinateDiscussion(
                 conversationId,
                 enhancedMessage
             );
 
+            // Update conversation message count
+            const conversation = this.activeConversations.get(conversationId);
+            if (conversation) {
+                conversation.messageCount++;
+            }
+
             return {
                 conversationId,
-                responses: discussionResults.responses,
+                responses: discussionResults.responses || [],
                 summary: discussionResults.summary
             };
 
         } catch (error) {
             Logger.error('Error processing user message:', error);
+            
+            // Notify error through notification system
+            this.notifyManager.notifyError(error);
+            
             return {
                 conversationId,
+                error: true,
                 responses: [{
                     agentId: 'system',
+                    role: 'System',
                     content: 'I apologize, but I encountered an error processing your message. Please try again.',
-                    error: true
+                    timestamp: Date.now(),
+                    type: 'error'
                 }],
                 summary: null
             };
