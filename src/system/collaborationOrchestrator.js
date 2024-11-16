@@ -13,9 +13,6 @@ export class CollaborationOrchestrator {
         try {
             Logger.info(`[SystemCoordinator] Starting orchestration for conversation: ${conversationId}`);
             
-            // Reset the round counter at the start of a new discussion
-            this.qualityGate.resetRoundCounter();
-            
             // Get or create conversation
             let conversation = this.conversationManager.getConversation(conversationId) || 
                 this.conversationManager.createConversation({
@@ -168,10 +165,16 @@ export class CollaborationOrchestrator {
             // Phase 3: Collaboration Phase
             Logger.info('[SystemCoordinator] Starting collaboration phase...');
             
+            // Reset counter here, right before the collaboration phase starts
+            this.qualityGate.resetRoundCounter();
+            
             while (true) {
-                Logger.debug(`[SystemCoordinator] Starting collaboration round ${this.qualityGate.currentRound + 1}`);
+                // Increment the counter at the START of each collaboration round
+                this.qualityGate.incrementRound();
                 
-                // Check quality gates before continuing
+                Logger.debug(`[SystemCoordinator] Starting collaboration round ${this.qualityGate.currentRound}`);
+                
+                // Quality check now uses the correct round number
                 const qualityCheck = await this.qualityGate.validateCollaborationContinuation(
                     conversation,
                     agentResponses
@@ -256,8 +259,6 @@ export class CollaborationOrchestrator {
                     Logger.error('[SystemCoordinator] Error in collaboration round:', error);
                     break;
                 }
-
-                this.qualityGate.incrementRound();
             }
 
             // Phase 4: Final Summary
