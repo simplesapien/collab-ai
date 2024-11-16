@@ -6,14 +6,13 @@ import { config } from '../../config/config.js';
 import { AgentFactory } from '../../agents/agentFactory.js';
 import { QualityGate } from '../../quality/QualityGate.js';
 import { Coordinator } from './coordinator.js';
+import { AgentManager } from '../support/AgentManager.js';
 
 export class System {
     constructor() {
         this.conversationManager = new ConversationManager(config.conversation);
         this.llmService = new LLMService(config.llm);
-        // Map to store all active agents
-        this.agents = new Map();
-        // Track active conversations
+        this.agentManager = new AgentManager(this.llmService);
         this.activeConversations = new Set();
         this.notifyResponse = null;
         this.qualityGate = new QualityGate(config.collaboration);
@@ -22,31 +21,25 @@ export class System {
 
     async initialize(agentConfigs, notifyCallback) {
         try {
+            // Store callback for notifying UI/client of agent responses
             this.notifyResponse = notifyCallback;
             
-            // Initialize the coordinator with both callbacks
+            // Initialize all agents via AgentManager before creating coordinator
+            await this.agentManager.initializeAgents(agentConfigs);
+            
+            // Create coordinator with initialized agents from AgentManager
             this.coordinator = new Coordinator(
                 this.conversationManager,
-                this.agents,
-                this.qualityGate,
+                this.agentManager,
+                this.qualityGate, 
                 this.notifyResponse,
-                (agentId, phase) => this.notifyAgentThinking(agentId, phase)  // Pass the thinking callback
+                (agentId, phase) => this.notifyAgentThinking(agentId, phase)
             );
-
-            // Create and initialize each agent type
-            for (const [type, config] of Object.entries(agentConfigs)) {
-                const agent = this.initializeAgent(config);
-                this.agents.set(agent.id, agent);
-                Logger.info(`Initialized ${type} agent: ${agent.id}`);
-            }
+            
         } catch (error) {
             Logger.error('Error initializing Coordinator:', error);
             throw error;
         }
-    }
-
-    initializeAgent(agentConfig) {
-        return AgentFactory.createAgent(agentConfig, this.llmService);
     }
 
     async handleMessage(conversationId, message) {
@@ -66,8 +59,8 @@ export class System {
             // Log the incoming message
             this.conversationManager.logMessage(conversationId, message);
 
-            // Get target agent
-            const agent = this.agents.get(message.targetAgentId);
+            // Get target agent from AgentManager instead of direct access
+            const agent = this.agentManager.getAgent(message.targetAgentId);
             if (!agent) {
                 throw new Error(`Agent not found: ${message.targetAgentId}`);
             }
@@ -98,21 +91,11 @@ export class System {
     }
 
     getAgentStatus(agentId) {
-        const agent = this.agents.get(agentId);
-        if (!agent) return null;
-
-        return {
-            id: agent.id,
-            name: agent.name,
-            role: agent.role,
-            status: agent.state.active ? 'active' : 'inactive',
-            lastInteraction: agent.state.lastInteraction,
-            currentTask: agent.state.currentTask
-        };
+        return this.agentManager.getAgentStatus(agentId);
     }
 
     getAllAgentStatuses() {
-        return Array.from(this.agents.values()).map(agent => this.getAgentStatus(agent.id));
+        return this.agentManager.getAllAgentStatuses();
     }
 
     getLLMService() {
