@@ -1,18 +1,18 @@
 import { Logger } from '../../utils/logger.js';
 
 export class Coordinator {
-    constructor(conversationManager, agents, qualityGate, notifyResponse, onAgentThinking) {
+    constructor(conversationManager, agentManager, qualityGate, notifyResponse, onAgentThinking) {
         this.conversationManager = conversationManager;
-        this.agents = agents;
+        this.agentManager = agentManager;
         this.qualityGate = qualityGate;
         this.notifyResponse = notifyResponse;
         this.notifyThinking = onAgentThinking;
         Logger.debug('[Coordinator] Initialized with dependencies');
     }
 
-    async orchestrateDiscussion(conversationId, message) {
+    async coordinateDiscussion(conversationId, message) {
         try {
-            Logger.debug(`[Coordinator] Starting orchestration for conversation: ${conversationId}`, { message });
+            Logger.debug(`[Coordinator] Starting coordination for conversation: ${conversationId}`, { message });
             
             const conversation = await this._initializeConversation(conversationId, message);
             Logger.debug(`[Coordinator] Conversation initialized`, { conversationId });
@@ -83,28 +83,6 @@ export class Coordinator {
         return conversation;
     }
 
-    async _getDirector() {
-        Logger.debug(`[Coordinator] Getting director agent`);
-        const director = this.agents.get('director-1');
-        if (!director) {
-            Logger.error(`[Coordinator] Director agent not found`);
-            throw new Error('Director agent not found');
-        }
-        return director;
-    }
-
-    _getAvailableAgents(directorId) {
-        Logger.debug(`[Coordinator] Getting available agents`, { excludingDirectorId: directorId });
-        const availableAgents = Array.from(this.agents.values())
-            .filter(agent => agent.id !== directorId);
-
-        if (availableAgents.length === 0) {
-            Logger.error(`[Coordinator] No available agents found`);
-            throw new Error('No available agents found for discussion');
-        }
-        return availableAgents;
-    }
-
     // Phase 1: Planning - execute the planning 
     async _executeInitialPlanning(director, message, availableAgents) {
         Logger.debug(`[Coordinator] Executing initial planning`, { messageContent: message.content });
@@ -131,18 +109,6 @@ export class Coordinator {
         }
     }
 
-    // Phase 1: Planning - clean the response
-    _cleanResponse(response, agentId) {
-        const agentPrefixes = {
-            'director-1': /^(?:Director:?\s*)/i,
-            'analyst-1': /^(?:Analyst:?\s*)/i,
-            'critic-1': /^(?:Critic:?\s*)/i,
-            'expert-1': /^(?:Expert:?\s*)/i,
-            'system': /^(?:System:?\s*)/i
-        };
-        return response.replace(agentPrefixes[agentId.toLowerCase()], '').trim();
-    }
-
     // Phase 2: Initial Responses - notify the UI that the agent is thinking
     _notifyAgentThinking(agentId, phase = 'thinking') {
         if (this.notifyThinking) {
@@ -156,153 +122,135 @@ export class Coordinator {
         const responses = [];
         
         for (const participant of plan.participants) {
-            Logger.debug(`[Coordinator] Processing participant response`, { participant });
+            Logger.debug('[Coordinator] Processing participant response', { participant });
             
-            const agent = this.agents.get(participant.id);
+            const agent = this.agentManager.getAgent(participant.id);
             
             if (!agent) {
-                Logger.warn(`[Coordinator] Agent not found for participant`, { agentId: participant.id });
+                Logger.warn('[Coordinator] Agent not found for participant', { agentId: participant.id });
                 continue;
             }
 
             this._notifyAgentThinking(agent.id, 'thinking');
             
             try {
-                Logger.debug(`[Coordinator] Generating response for agent`, { 
-                    agentId: agent.id,
-                    task: participant.task 
-                });
-
-                const response = await agent.generateResponse(
-                    conversation.messages,
+                const response = await this.agentManager.generateAgentResponse(
+                    agent.id,
+                    conversation,
                     participant.task
                 );
 
-                const formattedResponse = {
-                    agentId: agent.id,
-                    role: participant.role,
-                    content: this._cleanResponse(response, agent.id),
-                    timestamp: Date.now()
-                };
-
-                Logger.debug(`[Coordinator] Agent response received`, { 
-                    agentId: agent.id,
-                    responseLength: formattedResponse.content.length 
-                });
+                const formattedResponse = this.agentManager.formatAgentResponse(
+                    response,
+                    agent.id,
+                    participant.role
+                );
 
                 this.conversationManager.logMessage(conversation.id, formattedResponse);
                 responses.push(formattedResponse);
                 
-                if (this.notifyResponse) {
-                    this.notifyResponse(formattedResponse);
-                }
+                this._emitResponse(formattedResponse);
             } catch (error) {
                 Logger.error(`[Coordinator] Error generating response for agent ${agent.id}:`, error);
             }
         }
-
-        Logger.debug(`[Coordinator] Completed initial responses`, { 
-            totalResponses: responses.length 
-        });
 
         return responses;
     }
 
     // Phase 3: Collaboration - execute the collaboration
     async _executeCollaborationPhase(conversation, director, initialResponses) {
-        Logger.info('[SystemCoordinator] Starting collaboration phase...');
+        Logger.info('[Coordinator] Starting collaboration phase...');
         
-        // Reset counter here, right before the collaboration phase starts
         this.qualityGate.resetRoundCounter();
         
         while (true) {
-            // Increment the counter at the START of each collaboration round
             this.qualityGate.incrementRound();
             
-            // Quality check now uses the correct round number
             const qualityCheck = await this.qualityGate.validateCollaborationContinuation(
                 conversation,
                 initialResponses
             );
 
             if (!qualityCheck.shouldContinue) {
-                Logger.info(`[SystemCoordinator] Ending collaboration: ${qualityCheck.reason}`);
+                Logger.info(`[Coordinator] Ending collaboration: ${qualityCheck.reason}`);
                 break;
             }
 
-            // Log the round number to the console
-            Logger.info(`[SystemCoordinator] Collaboration round (after shouldContinue) ${this.qualityGate.currentRound} is continuing`);
-
-            // Get next collaboration plan from director
             const collaborationPlan = await director.planNextAgentInteraction(
                 conversation.messages,
                 initialResponses
             );
 
-            if (!collaborationPlan || 
-                !collaborationPlan.nextAgent || 
-                collaborationPlan.respondTo.includes(collaborationPlan.nextAgent)) {
-                Logger.debug('[SystemCoordinator] Invalid collaboration plan - preventing self-response');
+            if (!this._isValidCollaborationPlan(collaborationPlan)) {
+                Logger.debug('[Coordinator] Invalid collaboration plan - ending phase');
                 break;
             }
 
-            // Get the next agent to respond
             const nextAgentId = `${collaborationPlan.nextAgent.toLowerCase()}-1`;
-            const nextAgent = this.agents.get(nextAgentId);
+            const nextAgent = this.agentManager.getAgent(nextAgentId);
             
             if (!nextAgent) {
-                Logger.error(`[SystemCoordinator] Next agent not found: ${nextAgentId}`);
+                Logger.error('[Coordinator] Next agent not found:', nextAgentId);
                 break;
             }
 
-            // Add validation to ensure the next agent hasn't just responded
-            const lastResponse = initialResponses[initialResponses.length - 1];
-            if (lastResponse && lastResponse.agentId === nextAgentId) {
-                Logger.debug('[SystemCoordinator] Preventing consecutive responses from same agent');
+            if (this.agentManager.isConsecutiveResponse(initialResponses, nextAgentId)) {
+                Logger.debug('[Coordinator] Preventing consecutive responses from same agent');
                 break;
             }
 
             try {
-                // Add this line before generating collaborative response
-                if (this.notifyThinking) {
-                    this.notifyThinking(nextAgentId);
-                }
-
-                const task = `Respond to ${collaborationPlan.respondTo.join(' and ')}'s points: ${collaborationPlan.task}`;
-                const response = await nextAgent.generateResponse(
-                    conversation.messages,
-                    task
+                await this._handleCollaborativeResponse(
+                    nextAgent,
+                    conversation,
+                    collaborationPlan,
+                    initialResponses
                 );
-
-                const collaborativeResponse = {
-                    agentId: nextAgent.id,
-                    role: collaborationPlan.nextAgent,
-                    content: response,
-                    timestamp: Date.now()
-                };
-
-                Logger.debug('[CollaborationOrchestrator] Emitting collaborative response:', collaborativeResponse);
-                if (this.notifyResponse) {
-                    this.notifyResponse(collaborativeResponse);
-                } else {
-                    Logger.warn('[CollaborationOrchestrator] No notification callback for collaborative response');
-                }
-
-                // Only log to conversation manager (don't emit)
-                this.conversationManager.logMessage(conversation.id, {
-                    agentId: nextAgent.id,
-                    content: collaborativeResponse.content,
-                    timestamp: Date.now()
-                });
-                
-                // Add to responses collection
-                initialResponses.push(collaborativeResponse);
             } catch (error) {
-                Logger.error('[SystemCoordinator] Error in collaboration round:', error);
+                Logger.error('[Coordinator] Error in collaboration round:', error);
                 break;
             }
         }
 
         return initialResponses;
+    }
+
+    async _handleCollaborativeResponse(agent, conversation, plan, responses) {
+        this._notifyAgentThinking(agent.id);
+
+        const task = `Respond to ${plan.respondTo.join(' and ')}'s points: ${plan.task}`;
+        const response = await this.agentManager.generateAgentResponse(agent.id, conversation, task);
+
+        const collaborativeResponse = this.agentManager.formatAgentResponse(
+            response,
+            agent.id,
+            plan.nextAgent
+        );
+
+        this._emitResponse(collaborativeResponse);
+        this.conversationManager.logMessage(conversation.id, collaborativeResponse);
+        responses.push(collaborativeResponse);
+    }
+
+    // Helper methods
+    _isValidCollaborationPlan(plan) {
+        return plan && 
+            plan.nextAgent && 
+            !plan.respondTo.includes(plan.nextAgent);
+    }
+    
+    _emitResponse(response) {
+        if (this.notifyResponse) {
+            this.notifyResponse(response);
+        }
+    }
+
+    async _getDirector() {
+        return await this.agentManager.getDirector();
+    }
+
+    _getAvailableAgents(directorId) {
+        return this.agentManager.getAvailableAgents(directorId);
     }
 }
