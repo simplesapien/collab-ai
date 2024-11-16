@@ -1,12 +1,12 @@
 // src/app.js
-import { SystemCoordinator } from './system/systemCoordinator.js';
+import { System } from './system/system.js';
 import { agentConfigs } from './config/agentConfigs.js';
 import { Logger } from './utils/logger.js';
 import { generateId } from './utils/generators.js';
 
 export class Application {
     constructor() {
-        this.systemCoordinator = new SystemCoordinator();
+        this.system = new System();
         this.activeConversations = new Map();
         this.responseCallbacks = new Set();
         this.notifyResponseListeners = this.notifyResponseListeners.bind(this);
@@ -30,7 +30,7 @@ export class Application {
 
     async initialize() {
         try {
-            await this.systemCoordinator.initialize(
+            await this.system.initialize(
                 agentConfigs, 
                 this.notifyResponseListeners.bind(this)
             );
@@ -65,7 +65,7 @@ export class Application {
             
             // Add debug log before orchestrating discussion
             Logger.debug('Starting discussion orchestration with callback:', !!this.responseCallbacks.size);
-            const discussionResults = await this.systemCoordinator.collaborationOrchestrator.orchestrateDiscussion(
+            const discussionResults = await this.system.collaborationOrchestrator.orchestrateDiscussion(
                 conversationId,
                 enhancedMessage
             );
@@ -93,14 +93,14 @@ export class Application {
     getSystemStatus() {
         return {
             activeConversations: this.activeConversations.size,
-            agents: this.systemCoordinator.getAllAgentStatuses(),
+            agents: this.system.getAllAgentStatuses(),
             uptime: process.uptime()
         };
     }
 
     async getCostSummary() {
         try {
-            const costs = this.systemCoordinator.getLLMService().getCostSummary();
+            const costs = this.system.getLLMService().getCostSummary();
             Logger.info('[Application] Current cost summary:', costs);
             return costs;
         } catch (error) {
@@ -111,7 +111,7 @@ export class Application {
 
     async resetCosts() {
         try {
-            this.systemCoordinator.getLLMService().resetCosts();
+            this.system.getLLMService().resetCosts();
             Logger.info('[Application] Cost tracking reset');
         } catch (error) {
             Logger.error('[Application] Error resetting costs:', error);
@@ -122,8 +122,8 @@ export class Application {
     async onAgentThinking(callback) {
         Logger.debug('Setting up thinking callback');
         this.thinkingCallback = callback;
-        if (this.systemCoordinator) {
-            this.systemCoordinator.onAgentThinking = (agentId, phase) => {
+        if (this.system) {
+            this.system.onAgentThinking = (agentId, phase) => {
                 Logger.debug('Thinking callback triggered:', { agentId, phase });
                 if (this.thinkingCallback) {
                     this.thinkingCallback(agentId, phase);

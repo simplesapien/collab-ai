@@ -7,7 +7,7 @@ import { AgentFactory } from '../agents/agentFactory.js';
 import { QualityGate } from '../quality/QualityGate.js';
 import { CollaborationOrchestrator } from './collaborationOrchestrator.js';
 
-export class SystemCoordinator {
+export class System {
     constructor() {
         this.conversationManager = new ConversationManager(config.conversation);
         this.llmService = new LLMService(config.llm);
