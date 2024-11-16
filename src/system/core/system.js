@@ -1,11 +1,11 @@
-// src/system/systemCoordinator.js
-import { ConversationManager } from '../conversation/conversationManager.js';
-import { LLMService } from '../services/llm.js';
-import { Logger } from '../utils/logger.js';
-import { config } from '../config/config.js';
-import { AgentFactory } from '../agents/agentFactory.js';
-import { QualityGate } from '../quality/QualityGate.js';
-import { CollaborationOrchestrator } from './collaborationOrchestrator.js';
+// src/system/system.js
+import { ConversationManager } from '../../conversation/conversationManager.js';
+import { LLMService } from '../../services/llm.js';
+import { Logger } from '../../utils/logger.js';
+import { config } from '../../config/config.js';
+import { AgentFactory } from '../../agents/agentFactory.js';
+import { QualityGate } from '../../quality/QualityGate.js';
+import { Coordinator } from './coordinator.js';
 
 export class System {
     constructor() {
@@ -17,15 +17,15 @@ export class System {
         this.activeConversations = new Set();
         this.notifyResponse = null;
         this.qualityGate = new QualityGate(config.collaboration);
-        this.collaborationOrchestrator = null;
+        this.coordinator = null;
     }
 
     async initialize(agentConfigs, notifyCallback) {
         try {
             this.notifyResponse = notifyCallback;
             
-            // Initialize the collaboration orchestrator with both callbacks
-            this.collaborationOrchestrator = new CollaborationOrchestrator(
+            // Initialize the coordinator with both callbacks
+            this.coordinator = new Coordinator(
                 this.conversationManager,
                 this.agents,
                 this.qualityGate,
@@ -40,7 +40,7 @@ export class System {
                 Logger.info(`Initialized ${type} agent: ${agent.id}`);
             }
         } catch (error) {
-            Logger.error('Error initializing SystemCoordinator:', error);
+            Logger.error('Error initializing Coordinator:', error);
             throw error;
         }
     }
