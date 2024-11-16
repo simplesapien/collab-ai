@@ -9,6 +9,7 @@ export class Application {
         this.system = new System();
         this.activeConversations = new Map();
         this.responseCallbacks = new Set();
+        this.thinkingCallback = null;
         this.notifyResponseListeners = this.notifyResponseListeners.bind(this);
     }
 
@@ -28,11 +29,17 @@ export class Application {
         });
     }
 
+    onAgentThinking(callback) {
+        Logger.debug('Setting up thinking callback');
+        this.thinkingCallback = callback;
+    }
+
     async initialize() {
         try {
             await this.system.initialize(
                 agentConfigs, 
-                this.notifyResponseListeners.bind(this)
+                this.notifyResponseListeners.bind(this),
+                this.thinkingCallback
             );
             
             Logger.info('Application initialized successfully');
@@ -116,19 +123,6 @@ export class Application {
         } catch (error) {
             Logger.error('[Application] Error resetting costs:', error);
             throw error;
-        }
-    }
-
-    async onAgentThinking(callback) {
-        Logger.debug('Setting up thinking callback');
-        this.thinkingCallback = callback;
-        if (this.system) {
-            this.system.onAgentThinking = (agentId, phase) => {
-                Logger.debug('Thinking callback triggered:', { agentId, phase });
-                if (this.thinkingCallback) {
-                    this.thinkingCallback(agentId, phase);
-                }
-            };
         }
     }
 }
