@@ -96,13 +96,14 @@ export class Coordinator {
     async _emitDirectorPlan(plan) {
         Logger.debug(`[Coordinator] Emitting director plan`, { participantCount: plan.participants.length });
         for (const participant of plan.participants) {
-            const directorResponse = {
+            const response = {
                 agentId: 'director-1',
                 role: 'Director',
                 content: `${participant.role}: ${participant.task}`,
                 timestamp: Date.now()
             };
-            this.notifyResponse(directorResponse);
+            this.conversationManager.logMessage(this.currentConversationId, response);
+            this.notifyResponse(response);
         }
     }
 
@@ -136,8 +137,8 @@ export class Coordinator {
                 );
 
                 this.conversationManager.logMessage(conversation.id, formattedResponse);
-                responses.push(formattedResponse);
                 this.notifyResponse(formattedResponse);
+                responses.push(formattedResponse);
             } catch (error) {
                 Logger.error(`[Coordinator] Error generating response for agent ${agent.id}:`, error);
             }
@@ -216,8 +217,8 @@ export class Coordinator {
             plan.nextAgent
         );
 
-        this.notifyResponse(collaborativeResponse);
         this.conversationManager.logMessage(conversation.id, collaborativeResponse);
+        this.notifyResponse(collaborativeResponse);
         responses.push(collaborativeResponse);
     }
 
