@@ -1,7 +1,7 @@
 import express from 'express';
-import { Application } from './app.js';
-import { Logger } from './utils/logger.js';
-import { config } from './config/config.js';
+import { Application } from './src/app.js';
+import { Logger } from './src/utils/logger.js';
+import { config } from './src/config/config.js';
 
 const app = express();
 const port = process.env.PORT || 3000;
