@@ -1,6 +1,6 @@
 // src/conversation/conversationManager.js
-import { Logger } from '../utils/logger.js';
-import { Validators } from '../utils/validators.js';
+import { Logger } from '../../utils/logger.js';
+import { Validators } from '../../utils/validators.js';
 
 export class ConversationManager {
     constructor(config = { maxConversations: 100, maxMessageAge: 24 * 60 * 60 * 1000 }) {
