@@ -1,4 +1,4 @@
-#!/usr/bin/env node
+// src/cli.js
 import { Application } from './app.js';
 import { Logger } from './utils/logger.js';
 import { config } from './config/config.js';

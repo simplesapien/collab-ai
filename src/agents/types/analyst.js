@@ -1,6 +1,6 @@
 // src/agents/analyst.js
-import { BaseAgent } from './baseAgent.js';
-import { Logger } from '../utils/logger.js';
+import { BaseAgent } from '../base/baseAgent.js';
+import { Logger } from '../../utils/logger.js';
 
 export class Analyst extends BaseAgent {
     constructor(config, llmService) {

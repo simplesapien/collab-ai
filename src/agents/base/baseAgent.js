@@ -1,9 +1,10 @@
 // src/agents/baseAgent.js
-import log from '../utils/winstonLogger.js';
-// import { Logger } from '../utils/logger.js';
+import { IAgent } from '../interfaces/agent.js';
+import log from '../../utils/winstonLogger.js';
 
-export class BaseAgent {
+export class BaseAgent extends IAgent {
     constructor(config, llmService) {
+        super();
         this.logger = log;
         this.id = config.id;
         this.name = config.name;

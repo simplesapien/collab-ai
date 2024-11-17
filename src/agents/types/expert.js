@@ -1,6 +1,6 @@
 // src/agents/expert.js
-import { BaseAgent } from './baseAgent.js';
-import { Logger } from '../utils/logger.js';
+import { BaseAgent } from '../base/baseAgent.js';
+import { Logger } from '../../utils/logger.js';
 
 export class Expert extends BaseAgent {
     constructor(config, llmService) {
