@@ -3,7 +3,7 @@ import { System } from './system/core/system.js';
 import { agentConfigs } from './config/agentConfigs.js';
 import { Logger } from './utils/logger.js';
 import { generateId } from './utils/generators.js';
-import { NotifyManager } from './system/support/NotifyManager.js';
+import { NotifyManager } from './system/notification/NotifyManager.js';
 
 export class Application {
     constructor() {
@@ -11,6 +11,7 @@ export class Application {
         this.activeConversations = new Map();
         this.notifyManager = new NotifyManager();
         this.thinkingCallback = null;
+        this.isCancelling = false;
         Logger.debug('[Application] Initialized with NotifyManager');
     }
 
@@ -39,6 +40,9 @@ export class Application {
 
     async processUserMessage(message, conversationId = null) {
         try {
+            // Start new process
+            this.notifyManager.startNewProcess();
+
             Logger.debug('Processing message in app.js:', message);
 
             // Create new conversation if none exists
@@ -65,6 +69,16 @@ export class Application {
                 enhancedMessage
             );
 
+            // Check if the process was cancelled
+            if (discussionResults.cancelled) {
+                return {
+                    conversationId,
+                    responses: [],
+                    summary: null,
+                    cancelled: true
+                };
+            }
+
             // Update conversation message count
             const conversation = this.activeConversations.get(conversationId);
             if (conversation) {
@@ -80,8 +94,10 @@ export class Application {
         } catch (error) {
             Logger.error('Error processing user message:', error);
             
-            // Notify error through notification system
-            this.notifyManager.notifyError(error);
+            // Don't notify error if we're cancelling
+            if (!this.isCancelling) {
+                this.notifyManager.notifyError(error);
+            }
             
             return {
                 conversationId,
@@ -124,6 +140,30 @@ export class Application {
         } catch (error) {
             Logger.error('[Application] Error resetting costs:', error);
             throw error;
+        }
+    }
+
+    async cancelCurrentProcess() {
+        Logger.debug('[Application] Cancelling current process');
+        this.isCancelling = true;
+        
+        try {
+            // Send cancellation notification directly through notify manager
+            this.notifyManager.notifyResponse({
+                agentId: 'system',
+                role: 'System',
+                content: 'Process cancelled. Ready for new input.',
+                type: 'cancellation',
+                timestamp: Date.now()
+            });
+
+            // Then cancel the coordinator process
+            await this.system.coordinator.cancelCurrentProcess();
+        } finally {
+            // Reset cancellation state after a short delay
+            setTimeout(() => {
+                this.isCancelling = false;
+            }, 100);
         }
     }
 }

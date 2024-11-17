@@ -6,12 +6,17 @@ export class Coordinator {
         this.agentManager = agentManager;
         this.qualityGate = qualityGate;
         this.notifyManager = notifyManager;
+        this.isProcessing = false;
+        this.isCancelled = false;
         Logger.debug('[Coordinator] Initialized with dependencies');
     }
 
     async coordinateDiscussion(conversationId, message) {
+        this.isProcessing = true;
+        this.isCancelled = false;
+
         try {
-            Logger.debug(`[Coordinator] Starting coordination for conversation: ${conversationId}`, { message });
+            Logger.debug(`[Coordinator] Starting coordination for conversation: ${conversationId}`);
             
             const conversation = await this._initializeConversation(conversationId, message);
             Logger.debug(`[Coordinator] Conversation initialized`, { conversationId });
@@ -23,21 +28,25 @@ export class Coordinator {
             Logger.debug(`[Coordinator] Available agents retrieved`, { count: availableAgents.length });
             
             // Phase 1: Planning
+            if (this.isCancelled) return;
             Logger.debug(`[Coordinator] Starting planning phase`);
             const plan = await this._executeInitialPlanning(director, message, availableAgents);
             Logger.debug(`[Coordinator] Planning complete`, { plan });
             
             // Phase 2: Initial Responses
+            if (this.isCancelled) return;
             Logger.debug(`[Coordinator] Starting initial responses phase`);
             const agentResponses = await this._executeInitialResponses(conversation, plan);
             Logger.debug(`[Coordinator] Initial responses complete`, { responseCount: agentResponses.length });
             
             // Phase 3: Collaboration
+            if (this.isCancelled) return;
             Logger.debug(`[Coordinator] Starting collaboration phase`);
             const collaborationResults = await this._executeCollaborationPhase(conversation, director, agentResponses);
             Logger.debug(`[Coordinator] Collaboration complete`, { resultCount: collaborationResults.length });
             
             // Phase 4: Final Summary
+            if (this.isCancelled) return;
             this.notifyManager.notifyThinking('director-1', 'synthesizing');
             Logger.debug(`[Coordinator] Starting final summary phase`);
             const finalSummary = await director.synthesizeDiscussion(conversation.messages);
@@ -61,7 +70,21 @@ export class Coordinator {
             };
         } catch (error) {
             Logger.error('[Coordinator] Error orchestrating discussion:', error);
+            
+            // Check if this was a cancellation
+            if (this.isCancelled) {
+                // Don't throw an error for cancellations
+                return {
+                    responses: [],
+                    summary: null,
+                    cancelled: true
+                };
+            }
+            
             throw error;
+        } finally {
+            this.isProcessing = false;
+            this.isCancelled = false;
         }
     }
 
@@ -112,6 +135,12 @@ export class Coordinator {
         const responses = [];
         
         for (const participant of plan.participants) {
+            if (this.isCancelled) {
+                Logger.debug('[Coordinator] Cancelling remaining initial responses');
+                // Don't throw an error, just return collected responses
+                return responses;
+            }
+
             Logger.debug('[Coordinator] Processing participant response', { participant });
             
             const agent = this.agentManager.getAgent(participant.id);
@@ -153,6 +182,12 @@ export class Coordinator {
         this.qualityGate.resetRoundCounter();
         
         while (true) {
+            // Check cancellation at the start of each collaboration round
+            if (this.isCancelled) {
+                Logger.debug('[Coordinator] Cancelling collaboration phase');
+                break;
+            }
+
             const currentRound = this.qualityGate.incrementRound();
             Logger.info(`[Coordinator] Starting collaboration round ${currentRound}`);
             
@@ -242,5 +277,27 @@ export class Coordinator {
 
     _getAvailableAgents(directorId) {
         return this.agentManager.getAvailableAgents(directorId);
+    }
+
+    async cancelCurrentProcess() {
+        if (this.isProcessing) {
+            Logger.debug('[Coordinator] Cancelling current process');
+            this.isCancelled = true;
+            
+            // Mark this as a cancellation type
+            const cancellationResponse = {
+                agentId: 'system',
+                role: 'System',
+                content: 'Process cancelled. Ready for new input.',
+                type: 'cancellation',
+                timestamp: Date.now()
+            };
+            
+            this.notifyManager.notifyResponse(cancellationResponse);
+            this.isProcessing = false;
+            
+            // Return early without throwing an error
+            return;
+        }
     }
 }

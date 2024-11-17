@@ -55,7 +55,7 @@ export class LLMService {
                 const response = await this.openai.chat.completions.create({
                     model: formattedData.model || 'gpt-4o-mini',
                     messages: formattedData.messages,
-                    temperature: this.config.temperature || 0.7
+                    temperature: this.config.temperature || 0.7,
                 });
 
                 // Track costs

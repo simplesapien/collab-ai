@@ -15,6 +15,25 @@ class CLI {
         this.spinner = ora();
         this.agentSpinners = {};
         this.responseHandler = null;
+        
+        // Update the color scheme to make system messages stand out
+        this.colors = {
+            'director-1': chalk.blue,
+            'analyst-1': chalk.green,
+            'critic-1': chalk.yellow,
+            'expert-1': chalk.magenta,
+            'quality-gate': chalk.cyan,
+            'system': chalk.cyan.bold
+        };
+
+        this.icons = {
+            'director-1': '👨‍💼',
+            'analyst-1': '📊',
+            'critic-1': '🔍',
+            'expert-1': '👨‍🔬',
+            'quality-gate': '🔎',
+            'system': '🔄'
+        };
     }
 
     async initialize() {
@@ -56,7 +75,7 @@ class CLI {
                 Logger.warn('CLI: Response subscription system not working properly');
             }
 
-            console.log(chalk.green('✓ System initialized successfully\n'));
+            console.log(`\n${this.icons['system']} ${this.colors['system']('System initialized successfully')}\n`);
 
             console.log(chalk.yellow('Available commands:'));
             console.log(chalk.dim('/status  - Show system status'));
@@ -151,47 +170,58 @@ class CLI {
     }
 
     async startInteractiveSession() {
-        // Add interrupt handler
         let currentProcess = null;
         
         process.on('SIGINT', async () => {
             if (currentProcess) {
-                console.log(chalk.yellow('\n\nStopping current process...'));
-                // Clear all spinners
-                Object.values(this.agentSpinners || {}).forEach(spinner => spinner.stop());
+                process.stdout.clearLine();
+                process.stdout.cursorTo(0);
+                console.log(`\n${this.icons['system']} ${this.colors['system']('Stopping current process...')}`);
+                
+                Object.values(this.agentSpinners || {}).forEach(spinner => {
+                    spinner.stop();
+                    spinner.clear();
+                });
                 this.agentSpinners = {};
-                // Cancel the current conversation in the application
+                
                 await this.app.cancelCurrentProcess();
                 currentProcess = null;
-                // Add a small delay before showing the next prompt
-                setTimeout(() => {
-                    console.log(chalk.dim('\nReady for next input...'));
-                    this.promptUser();
-                }, 500);
             } else {
-                console.log(chalk.yellow('\nUse /quit to exit the application'));
-                this.promptUser();
+                console.log(`\n${this.icons['system']} ${this.colors['system']('Goodbye! 👋')}\n`);
+                process.exit(0);
             }
         });
 
-        while (true) {
-            const { input } = await this.promptUser();
+        try {
+            while (true) {
+                try {
+                    const { input } = await this.promptUser();
 
-            if (input.toLowerCase() === '/quit') {
-                console.log(chalk.yellow('\nGoodbye! 👋\n'));
-                process.exit(0);
-            }
+                    if (input?.toLowerCase() === '/quit') {
+                        console.log(`\n${this.icons['system']} ${this.colors['system']('Goodbye! 👋')}\n`);
+                        process.exit(0);
+                    }
 
-            // Store the current process promise
-            currentProcess = this.handleInput(input);
-            try {
-                await currentProcess;
-            } catch (error) {
-                if (error.message !== 'Process interrupted') {
-                    this.handleError(error);
+                    currentProcess = this.handleInput(input);
+                    await currentProcess;
+                    currentProcess = null;
+                } catch (error) {
+                    if (error?.message?.includes('User force closed')) {
+                        console.log(`\n${this.icons['system']} ${this.colors['system']('Goodbye! 👋')}\n`);
+                        process.exit(0);
+                    }
+                    
+                    if (error.message !== 'Process interrupted') {
+                        this.handleError(error);
+                    }
                 }
             }
-            currentProcess = null;
+        } catch (error) {
+            if (!error?.message?.includes('User force closed')) {
+                this.handleError(error);
+            }
+            console.log(`\n${this.icons['system']} ${this.colors['system']('Goodbye! 👋')}\n`);
+            process.exit(0);
         }
     }
 
@@ -235,7 +265,7 @@ class CLI {
         switch (command.toLowerCase()) {
             case '/status':
                 const status = this.app.getSystemStatus();
-                console.log('\n' + chalk.cyan('System Status:'));
+                console.log(`\n${this.icons['system']} ${this.colors['system']('System Status:')}`);
                 console.log(chalk.dim('Active Conversations:'), status.activeConversations);
                 console.log(chalk.dim('Uptime:'), `${Math.floor(status.uptime / 60)} minutes`);
                 console.log(chalk.dim('Active Agents:'));
@@ -247,7 +277,7 @@ class CLI {
 
             case '/costs':
                 const costs = await this.app.getCostSummary();
-                console.log('\n' + chalk.cyan('Cost Summary:'));
+                console.log(`\n${this.icons['system']} ${this.colors['system']('Cost Summary:')}`);
                 console.log(chalk.dim('Total Cost:'), `$${Number(costs.totalCost).toFixed(4)}`);
                 console.log(chalk.dim('Total Tokens:'), costs.outputTokens + costs.inputTokens);
                 console.log();
@@ -255,43 +285,37 @@ class CLI {
 
             case '/reset':
                 await this.app.resetCosts();
-                console.log(chalk.green('\n✓ Cost tracking reset\n'));
+                console.log(`\n${this.icons['system']} ${this.colors['system']('Cost tracking reset')}\n`);
                 break;
 
             default:
-                console.log(chalk.red('\n❌ Unknown command\n'));
+                console.log(`\n${this.icons['system']} ${this.colors['system']('Unknown command')}\n`);
         }
     }
 
     displayAgentResponse(response) {
+        // Don't display responses if we're in the process of cancelling
+        if (this.app.isCancelling) {
+            return;
+        }
+
         Logger.debug('CLI: Displaying agent response:', response);
         
+        // Special handling for system cancellation messages
+        if (response.type === 'cancellation' || 
+            (response.type === 'system' && response.content.includes('cancelled'))) {
+            console.log(`\n${this.icons['system']} ${this.colors['system'](response.content)}\n`);
+            return;
+        }
+
         // Special handling for round updates
         if (response.type === 'round-update') {
             console.log(chalk.dim('\n' + response.content + '\n'));
             return;
         }
 
-        const colors = {
-            'director-1': chalk.blue,
-            'analyst-1': chalk.green,
-            'critic-1': chalk.yellow,
-            'expert-1': chalk.magenta,
-            'quality-gate': chalk.cyan,
-            'system': chalk.red
-        };
-
-        const icons = {
-            'director-1': '👨‍💼',
-            'analyst-1': '📊',
-            'critic-1': '🔍',
-            'expert-1': '👨‍🔬',
-            'quality-gate': '🔎',
-            'system': '⚙️'
-        };
-
-        const color = colors[response.agentId] || chalk.white;
-        const icon = icons[response.agentId] || '🤖';
+        const color = this.colors[response.agentId] || chalk.white;
+        const icon = this.icons[response.agentId] || '🤖';
         
         // Remove the agent name if it appears at the start of the content
         const agentNames = ['Director:', 'Analyst:', 'Critic:', 'Expert:', 'Quality Gate:', 'System:'];
@@ -317,7 +341,15 @@ class CLI {
     }
 
     handleError(error) {
-        console.log(chalk.red('\n❌ Error:', error.message, '\n'));
+        if (this.app.isCancelling) return;
+        if (error?.message?.includes('User force closed')) return;
+        
+        if (error?.type === 'cancellation' || 
+            (typeof error === 'object' && error?.message?.includes('cancelled'))) {
+            return;
+        }
+        
+        console.log(`\n❌ ${this.colors['system'](`Error: ${error?.message || 'An unknown error occurred'}`)}\n`);
         Logger.error('CLI Error:', error);
     }
 

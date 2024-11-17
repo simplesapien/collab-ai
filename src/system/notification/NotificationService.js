@@ -5,7 +5,13 @@ export class NotificationService extends EventEmitter {
     constructor() {
         super();
         this.activeStates = new Map();
+        this.currentProcessId = null;
         Logger.debug('[NotificationService] Initialized');
+    }
+
+    startNewProcess() {
+        this.currentProcessId = Date.now();
+        return this.currentProcessId;
     }
 
     updateAgentState(agentId, state, metadata = {}) {
@@ -14,11 +20,13 @@ export class NotificationService extends EventEmitter {
             agentId,
             state,
             metadata,
-            timestamp
+            timestamp,
+            processId: this.currentProcessId
         };
         
         this.activeStates.set(agentId, stateUpdate);
         this.emit('agentStateChange', stateUpdate);
+        this.emit('processCancelled', { processId: this.currentProcessId });
         Logger.debug('[NotificationService] Agent state updated:', { agentId, state });
         return stateUpdate;
     }
@@ -72,5 +80,22 @@ export class NotificationService extends EventEmitter {
         this.activeStates.clear();
         this.removeAllListeners();
         Logger.debug('[NotificationService] Service reset');
+    }
+
+    cancelCurrentProcess() {
+        if (this.currentProcessId) {
+            Logger.debug('[NotificationService] Cancelling process:', this.currentProcessId);
+            
+            // Clear all active states
+            this.activeStates.forEach((state, agentId) => {
+                this.clearAgentState(agentId);
+            });
+
+            // Emit cancellation event
+            this.emit('processCancelled', { processId: this.currentProcessId });
+            
+            // Reset process ID
+            this.currentProcessId = null;
+        }
     }
 }
