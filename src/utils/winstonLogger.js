@@ -2,136 +2,136 @@ import winston from 'winston';
 import path from 'path';
 import { fileURLToPath } from 'url';
 
-const logDir = path.join(path.dirname(fileURLToPath(import.meta.url)), '../../logs');
+const logDir = path.join(path.dirname(fileURLToPath(import.meta.url)), '../../logs/winston');
 
-// Custom log categories
-const categories = {
-    AGENT: 'agent',
-    SYSTEM: 'system',
-    COST: 'cost',
-    CONVERSATION: 'conversation',
-    PERFORMANCE: 'performance'
+// Get file and line number for error traces
+const getCallerInfo = () => {
+    const error = new Error();
+    const stack = error.stack.split('\n')[3];
+    const match = stack.match(/\((.+):(\d+):\d+\)$/);
+    return match ? `${path.basename(match[1])}:${match[2]}` : 'unknown';
 };
 
-// Custom format for better readability
-const customFormat = winston.format.printf(({ level, message, timestamp, category, context, metadata, ...rest }) => {
-    const coloredTimestamp = '\x1b[90m' + timestamp + '\x1b[0m';
-    const coloredCategory = category ? `\x1b[95m[${category}]\x1b[0m` : '';
-    const coloredContext = context ? `\x1b[36m[${context}]\x1b[0m` : '';
+// Create format for different log types
+const logFormat = winston.format.printf(({ level, message, timestamp, caller, duration, ...meta }) => {
+    let log = `${timestamp} [${level}]`;
+    if (caller) log += ` (${caller})`;
+    if (duration) log += ` [${duration}ms]`;
+    log += `: ${message}`;
     
-    let log = `${coloredTimestamp} ${level} ${coloredCategory}${coloredContext}: ${message}`;
-    
-    // Add metadata if present
-    if (metadata) {
-        log += '\n' + JSON.stringify(metadata, null, 2)
-            .split('\n')
-            .map(line => '  ' + line)
-            .join('\n');
-    }
-    
-    // Add any remaining data
-    const restData = Object.keys(rest).length > 0 ? rest : null;
-    if (restData) {
-        log += '\n  ' + JSON.stringify(restData, null, 2);
+    if (Object.keys(meta).length > 0) {
+        log += '\n' + JSON.stringify(meta, null, 2);
     }
     
     return log;
 });
 
-// Create separate transports for different log types
-const createLoggerTransports = (category) => [
-    // Main log file
-    new winston.transports.File({
-        filename: path.join(logDir, `${category}.log`),
-        format: winston.format.combine(
-            winston.format.timestamp(),
-            winston.format.json()
-        ),
-        maxsize: 5242880, // 5MB
-        maxFiles: 5
-    }),
-    // Error-specific log file
-    new winston.transports.File({
-        filename: path.join(logDir, `${category}-error.log`),
-        level: 'error',
-        format: winston.format.combine(
-            winston.format.timestamp(),
-            winston.format.json()
-        ),
-        maxsize: 5242880,
-        maxFiles: 5
-    }),
-    // Console output
-    new winston.transports.Console({
-        format: winston.format.combine(
-            winston.format.colorize(),
-            customFormat
-        )
-    })
-];
-
-// Create loggers for each category
-const loggers = {};
-Object.values(categories).forEach(category => {
-    loggers[category] = winston.createLogger({
-        level: 'debug',
-        format: winston.format.combine(
-            winston.format.timestamp({ format: 'YYYY-MM-DD HH:mm:ss' }),
-            winston.format.errors({ stack: true })
-        ),
-        defaultMeta: { category },
-        transports: createLoggerTransports(category)
-    });
+const logger = winston.createLogger({
+    level: 'debug',
+    format: winston.format.combine(
+        winston.format.timestamp({ format: 'YYYY-MM-DD HH:mm:ss' }),
+        logFormat
+    ),
+    transports: [
+        // API calls log
+        new winston.transports.File({
+            filename: path.join(logDir, 'api.log'),
+            level: 'debug',
+            flags: 'w'
+        }),
+        // System flow log
+        new winston.transports.File({
+            filename: path.join(logDir, 'system.log'),
+            level: 'debug',
+            flags: 'w'
+        }),
+        // Error log
+        new winston.transports.File({
+            filename: path.join(logDir, 'error.log'),
+            level: 'error',
+            flags: 'w'
+        }),
+        // Console (errors only)
+        new winston.transports.Console({
+            level: 'error',
+            format: winston.format.combine(
+                winston.format.colorize(),
+                logFormat
+            )
+        })
+    ]
 });
 
-// Performance monitoring
-const startTimer = (context) => {
+// Performance timer utility
+const createTimer = () => {
     const start = process.hrtime();
-    return (operation) => {
+    return () => {
         const [seconds, nanoseconds] = process.hrtime(start);
-        const duration = (seconds * 1000 + nanoseconds / 1000000).toFixed(2);
-        loggers.performance.debug(`Operation completed`, {
-            context,
-            operation,
-            metadata: { durationMs: duration }
+        return (seconds * 1000 + nanoseconds / 1000000).toFixed(2);
+    };
+};
+
+export const log = {
+    // System flow logging
+    trace: (message, meta = {}) => {
+        logger.debug(message, { 
+            caller: getCallerInfo(),
+            ...meta 
         });
-        return duration;
-    };
-};
+    },
 
-// Create contextual logger
-export const createLogger = (context, category = categories.SYSTEM) => {
-    const logger = loggers[category];
+    // API call logging
+    api: {
+        start: (endpoint, payload) => {
+            const timer = createTimer();
+            logger.debug(`API Call Started: ${endpoint}`, {
+                caller: getCallerInfo(),
+                payload
+            });
+            return timer;
+        },
+        end: (endpoint, response, timer) => {
+            logger.debug(`API Call Completed: ${endpoint}`, {
+                caller: getCallerInfo(),
+                duration: timer(),
+                response
+            });
+        }
+    },
+
+    // Error logging
+    error: (message, error = null) => {
+        logger.error(message, {
+            caller: getCallerInfo(),
+            error: error ? {
+                message: error.message,
+                stack: error.stack
+            } : null
+        });
+    },
+
+    // Performance logging
+    perf: (operation, duration) => {
+        logger.debug(`Performance: ${operation}`, {
+            caller: getCallerInfo(),
+            duration
+        });
+    },
+
+    // Standard levels
+    info: (message, meta = {}) => {
+        logger.info(message, {
+            caller: getCallerInfo(),
+            ...meta
+        });
+    },
     
-    return {
-        error: (message, metadata = {}) => logger.error(message, { context, metadata }),
-        warn: (message, metadata = {}) => logger.warn(message, { context, metadata }),
-        info: (message, metadata = {}) => logger.info(message, { context, metadata }),
-        debug: (message, metadata = {}) => logger.debug(message, { context, metadata }),
-        
-        // Special logging methods for your specific needs
-        cost: (metadata) => loggers.cost.info('Cost update', { 
-            context,
-            metadata
-        }),
-        
-        agentAction: (action, metadata = {}) => loggers.agent.debug(`Agent ${action}`, {
-            context,
-            metadata
-        }),
-        
-        conversation: (action, metadata = {}) => loggers.conversation.debug(`Conversation ${action}`, {
-            context,
-            metadata
-        }),
-        
-        // Performance monitoring
-        startTimer: () => startTimer(context)
-    };
+    debug: (message, meta = {}) => {
+        logger.debug(message, {
+            caller: getCallerInfo(),
+            ...meta
+        });
+    }
 };
 
-// Export categories for use in other files
-export const LogCategories = categories;
-
-// Export default logger
-export default createLogger('App'); 
+export default log; 
