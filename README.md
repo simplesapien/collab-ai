@@ -24,8 +24,6 @@ collab-ai
    ├─ config
    │  ├─ agentConfigs.js
    │  └─ config.js
-   ├─ quality
-   │  └─ QualityGate.js
    ├─ services
    │  ├─ costTracker.js
    │  ├─ llm.js
@@ -35,10 +33,12 @@ collab-ai
    │  ├─ core
    │  │  ├─ coordinator.js
    │  │  └─ system.js
+   │  ├─ quality
+   │  │  └─ QualityGate.js
    │  └─ support
    │     ├─ AgentManager.js
-   │     ├─ ChatManager.js
    │     ├─ ConversationManager.js
+   │     ├─ NotificationService.js
    │     └─ NotifyManager.js
    └─ utils
       ├─ generators.js

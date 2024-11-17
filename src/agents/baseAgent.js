@@ -1,8 +1,9 @@
 // src/agents/baseAgent.js
-import { Logger } from '../utils/logger.js';
+import { createLogger, LogCategories } from '../utils/winstonLogger.js';
 
 export class BaseAgent {
     constructor(config, llmService) {
+        this.logger = createLogger(config.id, LogCategories.AGENT);
         this.id = config.id;
         this.name = config.name;
         this.role = config.role || config.type;
@@ -19,14 +20,23 @@ export class BaseAgent {
     }
 
     async generateResponse(context, prompt) {
+        const end = this.logger.startTimer()('generateResponse');
         try {
             const validatedContext = this.validateContext(context);
-            Logger.debug(`${this.role} generating response with context:`, validatedContext);
+            this.logger.agentAction('generating_response', {
+                context: validatedContext,
+                prompt
+            });
             
             this.updateState(validatedContext, prompt);
             
             const systemPrompt = this.constructSystemPrompt();
-            Logger.debug(`Generating response for ${this.role} using LLM service with role:`, this.role);
+            this.logger.agentAction('generating_response', {
+                systemPrompt: systemPrompt,
+                userPrompt: prompt,
+                context: validatedContext,
+                agentType: this.role
+            });
             
             const response = await this.llm.makeModelRequest({
                 systemPrompt: systemPrompt,
@@ -38,7 +48,7 @@ export class BaseAgent {
             this.updateMemory(prompt, response);
             return response;
         } catch (error) {
-            Logger.error(`Error generating response for agent ${this.id}:`, error);
+            this.logger.error('Response generation failed', { error });
             throw error;
         }
     }
@@ -60,7 +70,7 @@ export class BaseAgent {
 
     async respondToAgent(previousResponse, task) {
         try {
-            Logger.debug(`[${this.role}] Starting response to ${previousResponse.role}`, {
+            this.logger.agentAction('responding_to', {
                 respondingTo: previousResponse.agentId,
                 task: task,
                 previousResponse: previousResponse.response
@@ -84,8 +94,11 @@ export class BaseAgent {
             
             Previous context: ${this.getRelevantHistory()}`;
 
-            Logger.debug(`[${this.role}] Constructed system prompt for agent response`, {
-                systemPrompt: systemPrompt
+            this.logger.agentAction('generating_response', {
+                systemPrompt: systemPrompt,
+                userPrompt: previousResponse.response,
+                context: [],
+                agentType: this.role
             });
             
             const response = await this.llm.makeModelRequest({
@@ -98,14 +111,14 @@ export class BaseAgent {
             // Track the interaction in memory
             this.updateMemory(previousResponse.response, response, previousResponse.role);
             
-            Logger.debug(`[${this.role}] Generated response to ${previousResponse.role}`, {
+            this.logger.agentAction('generated_response', {
                 originalMessage: previousResponse.response,
                 generatedResponse: response
             });
 
             return response;
         } catch (error) {
-            Logger.error(`[${this.role}] Error responding to ${previousResponse.role}:`, error);
+            this.logger.error('Error responding to agent', { error });
             throw error;
         }
     }
@@ -162,19 +175,27 @@ export class BaseAgent {
     }
 
     validateContext(context) {
-        Logger.debug('Validating context:', context);
+        this.logger.agentAction('validating_context', {
+            context: context
+        });
         
         if (!context) {
-            Logger.debug('Context was null/undefined, using empty array');
+            this.logger.agentAction('context_was_null_or_undefined', {
+                context: context
+            });
             return [];
         }
         
         if (Array.isArray(context)) {
-            Logger.debug('Context is already an array');
+            this.logger.agentAction('context_is_already_an_array', {
+                context: context
+            });
             return context;
         }
         
-        Logger.debug('Converting single message to array');
+        this.logger.agentAction('converting_single_message_to_array', {
+            context: context
+        });
         return [context];
     }
 }
