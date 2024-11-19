@@ -1,58 +1,93 @@
-import { Logger } from '../../utils/logger.js';
+import { log } from '../../utils/winstonLogger.js';
 import { PlanningPhase } from './phases/planning.js';
 
 export class Coordinator {
     constructor(conversationManager, agentManager, qualityGate, notifyManager) {
-        this.conversationManager = conversationManager;
-        this.agentManager = agentManager;
-        this.qualityGate = qualityGate;
-        this.notifyManager = notifyManager;
-        this.isProcessing = false;
-        this.isCancelled = false;
-        this.planningPhase = new PlanningPhase(this);
-        Logger.debug('[Coordinator] Initialized with dependencies');
+        const eventId = log.event.emit('init', 'Coordinator');
+        try {
+            this.conversationManager = conversationManager;
+            this.agentManager = agentManager;
+            this.qualityGate = qualityGate;
+            this.notifyManager = notifyManager;
+            this.isProcessing = false;
+            this.isCancelled = false;
+            this.planningPhase = new PlanningPhase(this);
+            
+            log.state.change('Coordinator', 'uninitialized', 'ready');
+            log.event.complete(eventId);
+        } catch (error) {
+            log.error('Coordinator initialization failed', error);
+            log.event.complete(eventId, 'failed');
+            throw error;
+        }
     }
 
     async coordinateDiscussion(conversationId, message) {
+        const eventId = log.event.emit('coordinateDiscussion', 'Coordinator', {
+            conversationId,
+            messageLength: message?.content?.length
+        });
+        const startTime = Date.now();
+
         this.isProcessing = true;
         this.isCancelled = false;
 
         try {
-            Logger.debug(`[Coordinator] Starting coordination for conversation: ${conversationId}`);
+            log.debug('Starting coordination', { 
+                conversationId,
+                messagePreview: message?.content?.substring(0, 50)
+            });
             
             const conversation = await this._initializeConversation(conversationId, message);
-            Logger.debug(`[Coordinator] Conversation initialized`, { conversationId });
-
             const director = await this._getDirector();
-            Logger.debug(`[Coordinator] Director retrieved`, { directorId: director.id });
-
             const availableAgents = this._getAvailableAgents(director.id);
-            Logger.debug(`[Coordinator] Available agents retrieved`, { count: availableAgents.length });
             
+            log.debug('Initial setup complete', {
+                conversationId,
+                directorId: director.id,
+                availableAgentCount: availableAgents.length
+            });
+
             // Phase 1: Planning
-            if (this.isCancelled) return;
+            if (this.isCancelled) {
+                log.debug('Process cancelled during planning phase');
+                return;
+            }
             const plan = await this.planningPhase.execute(director, message, availableAgents);
             
             // Phase 2: Initial Responses
-            if (this.isCancelled) return;
-            Logger.debug(`[Coordinator] Starting initial responses phase`);
+            if (this.isCancelled) {
+                log.debug('Process cancelled during initial responses phase');
+                return;
+            }
             const agentResponses = await this._executeInitialResponses(conversation, plan);
-            Logger.debug(`[Coordinator] Initial responses complete`, { responseCount: agentResponses.length });
             
             // Phase 3: Collaboration
-            if (this.isCancelled) return;
-            Logger.debug(`[Coordinator] Starting collaboration phase`);
-            const collaborationResults = await this._executeCollaborationPhase(conversation, director, agentResponses);
-            Logger.debug(`[Coordinator] Collaboration complete`, { resultCount: collaborationResults.length });
-            
-            // Phase 4: Final Summary
-            if (this.isCancelled) return;
-            this.notifyManager.notifyThinking('director-1', 'synthesizing');
-            Logger.debug(`[Coordinator] Starting final summary phase`);
-            const finalSummary = await director.synthesizeDiscussion(conversation.messages);
-            Logger.debug(`[Coordinator] Final summary complete`, { summary: finalSummary });
+            if (this.isCancelled) {
+                log.debug('Process cancelled during collaboration phase');
+                return;
+            }
+            const collaborationResults = await this._executeCollaborationPhase(
+                conversation, 
+                director, 
+                agentResponses
+            );
 
-            // Emit final summary to the UI if the callback is provided
+            // Phase 4: Final Summary
+            if (this.isCancelled) {
+                log.debug('Process cancelled during final summary phase');
+                return;
+            }
+            
+            this.notifyManager.notifyThinking('director-1', 'synthesizing');
+            const finalSummary = await director.synthesizeDiscussion(conversation.messages);
+
+            log.perf.measure('discussion-coordination', Date.now() - startTime, {
+                phases: 4,
+                responseCount: agentResponses.length,
+                summaryLength: finalSummary?.length
+            });
+
             if (this.notifyManager.notifyResponse) {
                 const summaryResponse = {
                     agentId: 'director-1',
@@ -60,20 +95,26 @@ export class Coordinator {
                     content: finalSummary,
                     timestamp: Date.now()
                 };
-                Logger.debug('[CollaborationOrchestrator] Emitting final summary:', summaryResponse);
                 this.notifyManager.notifyResponse(summaryResponse);
             }
+
+            log.event.complete(eventId, 'completed', {
+                planParticipants: plan.participants.length,
+                responseCount: agentResponses.length,
+                summaryGenerated: !!finalSummary
+            });
+
             return {
                 plan: plan.participants,
                 responses: agentResponses,
                 summary: finalSummary
             };
+
         } catch (error) {
-            Logger.error('[Coordinator] Error orchestrating discussion:', error);
+            log.error('Discussion coordination failed', error);
             
-            // Check if this was a cancellation
             if (this.isCancelled) {
-                // Don't throw an error for cancellations
+                log.event.complete(eventId, 'cancelled');
                 return {
                     responses: [],
                     summary: null,
@@ -81,6 +122,7 @@ export class Coordinator {
                 };
             }
             
+            log.event.complete(eventId, 'failed');
             throw error;
         } finally {
             this.isProcessing = false;
@@ -89,25 +131,41 @@ export class Coordinator {
     }
 
     async _initializeConversation(conversationId, message) {
-        Logger.debug(`[Coordinator] Initializing conversation`, { conversationId });
-        const conversation = this.conversationManager.getConversation(conversationId) || 
-            this.conversationManager.createConversation({
-                id: conversationId,
-                messages: []
+        const eventId = log.event.emit('initializeConversation', 'Coordinator', {
+            conversationId
+        });
+        const startTime = Date.now();
+
+        try {
+            const conversation = this.conversationManager.getConversation(conversationId) || 
+                this.conversationManager.createConversation({
+                    id: conversationId,
+                    messages: []
+                });
+
+            this.conversationManager.logMessage(conversationId, {
+                agentId: 'user',
+                content: message.content,
+                timestamp: Date.now()
             });
 
-        this.conversationManager.logMessage(conversationId, {
-            agentId: 'user',
-            content: message.content,
-            timestamp: Date.now()
-        });
+            log.perf.measure('conversation-initialization', Date.now() - startTime, {
+                conversationId,
+                isNew: !this.conversationManager.getConversation(conversationId)
+            });
 
-        return conversation;
+            log.event.complete(eventId);
+            return conversation;
+        } catch (error) {
+            log.error('Conversation initialization failed', error);
+            log.event.complete(eventId, 'failed');
+            throw error;
+        }
     }
 
     // Phase 1: Planning - execute the planning 
     async _executeInitialPlanning(director, message, availableAgents) {
-        Logger.debug(`[Coordinator] Executing initial planning`, { messageContent: message.content });
+        log.debug(`[Coordinator] Executing initial planning`, { messageContent: message.content });
         this.notifyManager.notifyThinking('director-1', 'planning');
         const plan = await director.planInitialAgentTasks(message.content, availableAgents);
         await this._emitDirectorPlan(plan, this.conversationManager.getCurrentConversationId());
@@ -116,7 +174,7 @@ export class Coordinator {
 
     // Phase 1: Planning - emit the plan to the UI
     async _emitDirectorPlan(plan, conversationId) {
-        Logger.debug(`[Coordinator] Emitting director plan`, { participantCount: plan.participants.length });
+        log.debug(`[Coordinator] Emitting director plan`, { participantCount: plan.participants.length });
         for (const participant of plan.participants) {
             const response = {
                 agentId: 'director-1',
@@ -131,21 +189,21 @@ export class Coordinator {
 
     // Phase 2: Initial Responses - execute the responses
     async _executeInitialResponses(conversation, plan) {
-        Logger.debug(`[Coordinator] Executing initial responses for ${conversation.id}`);
+        log.debug(`[Coordinator] Executing initial responses for ${conversation.id}`);
         const responses = [];
         
         for (const participant of plan.participants) {
             if (this.isCancelled) {
-                Logger.debug('[Coordinator] Cancelling remaining initial responses');
+                log.debug('[Coordinator] Cancelling remaining initial responses');
                 // Don't throw an error, just return collected responses
                 return responses;
             }
 
-            Logger.debug('[Coordinator] Processing participant response', { participant });
+            log.debug('[Coordinator] Processing participant response', { participant });
             
             const agent = this.agentManager.getAgent(participant.id);
             if (!agent) {
-                Logger.warn('[Coordinator] Agent not found for participant', { agentId: participant.id });
+                log.warn('[Coordinator] Agent not found for participant', { agentId: participant.id });
                 continue;
             }
 
@@ -168,7 +226,7 @@ export class Coordinator {
                 this.notifyManager.notifyResponse(formattedResponse);
                 responses.push(formattedResponse);
             } catch (error) {
-                Logger.error(`[Coordinator] Error generating response for agent ${agent.id}:`, error);
+                log.error(`[Coordinator] Error generating response for agent ${agent.id}:`, error);
             }
         }
 
@@ -177,13 +235,13 @@ export class Coordinator {
 
     // Phase 3: Collaboration - execute the collaboration
     async _executeCollaborationPhase(conversation, director, initialResponses) {
-        Logger.info('[Coordinator] Starting collaboration phase...');
+        log.info('[Coordinator] Starting collaboration phase...');
         
         this.qualityGate.resetRoundCounter();
         
         while (true) {
             if (this.isCancelled) {
-                Logger.debug('[Coordinator] Cancelling collaboration phase');
+                log.debug('[Coordinator] Cancelling collaboration phase');
                 break;
             }
 
@@ -194,14 +252,14 @@ export class Coordinator {
                 initialResponses
             );
 
-            Logger.debug('[Coordinator] Quality check result:', {
+            log.debug('[Coordinator] Quality check result:', {
                 shouldContinue: qualityCheck.shouldContinue,
                 reason: qualityCheck.reason,
                 round: currentRound
             });
 
             if (!qualityCheck.shouldContinue) {
-                Logger.info(`[Coordinator] Ending collaboration: ${qualityCheck.reason}`);
+                log.info(`[Coordinator] Ending collaboration: ${qualityCheck.reason}`);
                 break;
             }
 
@@ -211,7 +269,7 @@ export class Coordinator {
             );
 
             if (!this._isValidCollaborationPlan(collaborationPlan)) {
-                Logger.debug('[Coordinator] Invalid collaboration plan - ending phase');
+                log.debug('[Coordinator] Invalid collaboration plan - ending phase');
                 break;
             }
 
@@ -219,12 +277,12 @@ export class Coordinator {
             const nextAgent = this.agentManager.getAgent(nextAgentId);
             
             if (!nextAgent) {
-                Logger.error('[Coordinator] Next agent not found:', nextAgentId);
+                log.error('[Coordinator] Next agent not found:', nextAgentId);
                 break;
             }
 
             if (this.agentManager.isConsecutiveResponse(initialResponses, nextAgentId)) {
-                Logger.debug('[Coordinator] Preventing consecutive responses from same agent');
+                log.debug('[Coordinator] Preventing consecutive responses from same agent');
                 break;
             }
 
@@ -236,7 +294,7 @@ export class Coordinator {
                     initialResponses
                 );
             } catch (error) {
-                Logger.error('[Coordinator] Error in collaboration round:', error);
+                log.error('[Coordinator] Error in collaboration round:', error);
                 break;
             }
         }
@@ -279,7 +337,7 @@ export class Coordinator {
 
     async cancelCurrentProcess() {
         if (this.isProcessing) {
-            Logger.debug('[Coordinator] Cancelling current process');
+            log.debug('[Coordinator] Cancelling current process');
             this.isCancelled = true;
             
             // Mark this as a cancellation type

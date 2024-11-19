@@ -1,4 +1,4 @@
-import { Logger } from '../utils/logger.js';
+import { log } from '../utils/winstonLogger.js';
 
 export class CostTracker {
     constructor() {
@@ -27,6 +27,13 @@ export class CostTracker {
     }
 
     trackRequest(inputTokens, outputTokens) {
+        const eventId = log.event.emit('trackCost', 'CostTracker', {
+            inputTokens,
+            outputTokens
+        });
+
+        const startTime = Date.now();
+
         try {
             this.costs.inputTokens += inputTokens;
             this.costs.outputTokens += outputTokens;
@@ -37,7 +44,7 @@ export class CostTracker {
             
             this.costs.totalCost += requestCost;
 
-            Logger.debug('[CostTracker] Request tracked:', {
+            log.debug('Request cost tracked', {
                 inputTokens,
                 outputTokens,
                 requestCost: requestCost.toFixed(6),
@@ -46,12 +53,24 @@ export class CostTracker {
 
             this.notifyListeners();
 
+            log.perf.measure('cost-calculation', Date.now() - startTime, {
+                inputTokens,
+                outputTokens,
+                totalCost: this.costs.totalCost
+            });
+
+            log.event.complete(eventId, 'completed', {
+                requestCost,
+                totalCost: this.costs.totalCost
+            });
+
             return {
                 requestCost,
                 totalCost: this.costs.totalCost
             };
         } catch (error) {
-            Logger.error('[CostTracker] Error tracking request:', error);
+            log.error('Cost tracking failed', error);
+            log.event.complete(eventId, 'failed');
             throw error;
         }
     }
@@ -72,6 +91,6 @@ export class CostTracker {
             outputTokens: 0,
             totalCost: 0
         };
-        Logger.info('[CostTracker] Costs reset to zero');
+        log.info('[CostTracker] Costs reset to zero');
     }
 } 

@@ -1,83 +1,121 @@
 // src/agents/critic.js
 import { BaseAgent } from '../base/baseAgent.js';
-import { Logger } from '../../utils/logger.js';
+import { log } from '../../utils/winstonLogger.js';
 
 export class Critic extends BaseAgent {
     constructor(config, llmService) {
         super({ ...config, role: 'Critic' }, llmService);
         this.critiques = new Map();
+        log.state.change('Critic', 'uninitialized', 'ready', { 
+            agentId: this.id,
+            config 
+        });
     }
 
     async evaluateProposal(context, proposal) {
+        const eventId = log.event.emit('evaluateProposal', 'Critic', {
+            agentId: this.id,
+            contextLength: context?.length
+        });
+        const startTime = Date.now();
+
         try {
-            Logger.debug(`${this.role} evaluating proposal:`, proposal);
-            Logger.debug('Incoming context:', context);
+            log.debug('Starting proposal evaluation', { 
+                proposalLength: proposal.length,
+                contextSize: context?.length
+            });
             
-            const validatedContext = this.validateContext(context);
-            Logger.debug('Validated context:', validatedContext);
-
-            const systemPrompt = `As ${this.name}, evaluate the following proposal:
-            Consider: feasibility, potential risks, and areas for improvement.
+            log.state.change('Critic', 'idle', 'evaluating', { agentId: this.id });
             
-            Important Guidelines:
-            - Limit response to 3-4 sentences total
-            - Include one key strength
-            - Include one main risk/challenge
-            - Provide one actionable recommendation
-            - Be constructive and specific
-            
-            Recent evaluations: ${this.getRecentCritiques()}`;
-
+            const llmStartTime = Date.now();
             const response = await this.llm.makeModelRequest({
-                systemPrompt: systemPrompt,
+                systemPrompt: this.constructSystemPrompt(),
                 userPrompt: proposal,
-                context: validatedContext,
+                context: this.validateContext(context),
                 agentType: this.role
+            });
+            log.perf.measure('llm-request', Date.now() - llmStartTime, {
+                method: 'evaluateProposal',
+                proposalLength: proposal.length
             });
 
             this.storeCritique(proposal, response);
+
+            log.perf.measure('evaluationCompletion', Date.now() - startTime, {
+                agentId: this.id,
+                proposalLength: proposal.length
+            });
+
+            log.state.change('Critic', 'evaluating', 'completed', { agentId: this.id });
+            log.event.complete(eventId);
             return response;
+
         } catch (error) {
-            Logger.error('Error in Critic.evaluateProposal:', error);
+            log.error('Evaluation failed', error);
+            log.state.change('Critic', 'evaluating', 'failed', { agentId: this.id });
+            log.event.complete(eventId, 'failed');
             throw error;
         }
     }
 
     async provideFeedback(context, target) {
+        const eventId = log.event.emit('provideFeedback', 'Critic', {
+            agentId: this.id,
+            contextLength: context?.length
+        });
+        const startTime = Date.now();
+
         try {
-            console.log(`${this.role} providing feedback for:`, target);
-            console.log('Incoming context:', context);
+            log.state.change('Critic', 'idle', 'providing-feedback', { agentId: this.id });
             
             const validatedContext = this.validateContext(context);
-            console.log('Validated context:', validatedContext);
-
-            const systemPrompt = `Provide constructive feedback for the following discussion points.
-            Focus on improvement opportunities while maintaining a balanced perspective.`;
-            
-            return await this.llm.makeModelRequest({
-                systemPrompt: systemPrompt,
+            const response = await this.llm.makeModelRequest({
+                systemPrompt: this.constructSystemPrompt(),
                 userPrompt: `Review and provide feedback on: ${target}`,
                 context: validatedContext,
                 agentType: this.role
             });
+
+            log.perf.measure('feedbackCompletion', Date.now() - startTime, {
+                agentId: this.id,
+                targetLength: target.length
+            });
+
+            log.state.change('Critic', 'providing-feedback', 'completed', { agentId: this.id });
+            log.event.complete(eventId);
+            return response;
+
         } catch (error) {
-            Logger.error('Error in Critic.provideFeedback:', error);
+            log.error('Feedback generation failed', error);
+            log.state.change('Critic', 'providing-feedback', 'failed', { agentId: this.id });
+            log.event.complete(eventId, 'failed');
             throw error;
         }
     }
 
     storeCritique(proposal, response) {
-        const key = Date.now();
-        this.critiques.set(key, {
-            proposal,
-            response,
-            timestamp: key
+        const eventId = log.event.emit('storeCritique', 'Critic', { 
+            agentId: this.id 
         });
 
-        // Maintain reasonable history
-        const keys = Array.from(this.critiques.keys()).sort();
-        while (keys.length > 15) {
-            this.critiques.delete(keys.shift());
+        try {
+            const key = Date.now();
+            this.critiques.set(key, {
+                proposal,
+                response,
+                timestamp: key
+            });
+
+            // Maintain history limit
+            const keys = Array.from(this.critiques.keys()).sort();
+            while (keys.length > 15) {
+                this.critiques.delete(keys.shift());
+            }
+
+            log.event.complete(eventId);
+        } catch (error) {
+            log.error('Failed to store critique', error);
+            log.event.complete(eventId, 'failed');
         }
     }
 

@@ -1,9 +1,15 @@
-import { Logger } from '../utils/logger.js';
+import { log } from '../utils/winstonLogger.js';
 
 export class MessageFormatter {
     static formatMessages(params) {
+        const eventId = log.event.emit('formatMessages', 'MessageFormatter', {
+            hasSystemPrompt: !!params.systemPrompt,
+            contextLength: params.context?.length
+        });
+        const startTime = Date.now();
+
         try {
-            Logger.debug('[MessageFormatter] Starting formatMessages with params:', {
+            log.debug('Starting message formatting', {
                 hasSystemPrompt: !!params.systemPrompt,
                 hasUserPrompt: !!params.userPrompt,
                 contextLength: params.context?.length,
@@ -19,7 +25,7 @@ export class MessageFormatter {
             } = params;
 
             if (!systemPrompt) {
-                Logger.error('[MessageFormatter] System prompt is missing');
+                log.error('[MessageFormatter] System prompt is missing');
                 throw new Error('System prompt is required');
             }
 
@@ -27,7 +33,7 @@ export class MessageFormatter {
             
             try {
                 const model = this._getModelForAgent(agentType, modelConfig);
-                Logger.debug('[MessageFormatter] Selected model:', model);
+                log.debug('[MessageFormatter] Selected model:', model);
                 
                 const sanitizedContext = context.map(msg => {
                     try {
@@ -37,7 +43,7 @@ export class MessageFormatter {
                             agentId: msg.agentId || 'assistant'
                         };
                     } catch (error) {
-                        Logger.error('[MessageFormatter] Error sanitizing context message:', {
+                        log.error('[MessageFormatter] Error sanitizing context message:', {
                             error,
                             message: msg
                         });
@@ -48,7 +54,7 @@ export class MessageFormatter {
                     }
                 });
 
-                Logger.debug('[MessageFormatter] Sanitized context length:', sanitizedContext.length);
+                log.debug('[MessageFormatter] Sanitized context length:', sanitizedContext.length);
 
                 const messages = [
                     { role: "system", content: systemPrompt },
@@ -59,7 +65,7 @@ export class MessageFormatter {
                                 content: msg.content
                             };
                         } catch (error) {
-                            Logger.error('[MessageFormatter] Error mapping context to messages:', {
+                            log.error('[MessageFormatter] Error mapping context to messages:', {
                                 error,
                                 message: msg
                             });
@@ -72,8 +78,16 @@ export class MessageFormatter {
                     { role: "user", content: sanitizedUserPrompt }
                 ].filter(msg => msg.content && msg.content.trim() !== '');
 
-                Logger.debug('[MessageFormatter] Final formatted message count:', messages.length);
+                log.debug('[MessageFormatter] Final formatted message count:', messages.length);
 
+                log.perf.measure('message-formatting', Date.now() - startTime, {
+                    messageCount: messages.length,
+                    contextSize: sanitizedContext.length
+                });
+
+                log.event.complete(eventId, 'completed', {
+                    messageCount: messages.length
+                });
                 return {
                     messages,
                     sanitizedContext,
@@ -83,34 +97,35 @@ export class MessageFormatter {
                 };
 
             } catch (error) {
-                Logger.error('[MessageFormatter] Error in message formatting:', {error, params});
+                log.error('[MessageFormatter] Error in message formatting:', {error, params});
                 throw new Error(`Failed to format messages: ${error.message}`);
             }
 
         } catch (error) {
-            Logger.error('[MessageFormatter] Critical error in formatMessages:', {error, params});
+            log.error('[MessageFormatter] Critical error in formatMessages:', {error, params});
             throw error;
         }
     }
 
     static _getModelForAgent(agentType, modelConfig) {
         try {
-            Logger.debug('[MessageFormatter] Getting model for agent:', {
+            log.debug('Getting model for agent', {
                 agentType,
-                hasModelConfig: !!modelConfig
+                hasModelConfig: !!modelConfig,
+                availableModels: modelConfig?.modelsByAgent
             });
 
             const { modelsByAgent, defaultModel } = modelConfig;
             
             if (!agentType) {
-                Logger.debug('[MessageFormatter] No agent type, using default model:', defaultModel);
+                log.debug('[MessageFormatter] No agent type, using default model:', defaultModel);
                 return defaultModel;
             }
             
             const agentKey = agentType.toLowerCase();
             const selectedModel = modelsByAgent?.[agentKey] || defaultModel;
             
-            Logger.debug('[MessageFormatter] Selected model for agent:', {
+            log.debug('[MessageFormatter] Selected model for agent:', {
                 agentType,
                 agentKey,
                 selectedModel
@@ -119,7 +134,7 @@ export class MessageFormatter {
             return selectedModel;
 
         } catch (error) {
-            Logger.error('[MessageFormatter] Error getting model for agent:', {
+            log.error('[MessageFormatter] Error getting model for agent:', {
                 error,
                 agentType,
                 modelConfig
@@ -130,13 +145,13 @@ export class MessageFormatter {
 
     static parseResponse(content) {
         try {
-            Logger.debug('[MessageFormatter] Parsing response:', {
+            log.debug('[MessageFormatter] Parsing response:', {
                 contentType: typeof content,
                 contentLength: content?.length
             });
 
             if (typeof content !== 'string') {
-                Logger.debug('[MessageFormatter] Content is not a string, returning as-is');
+                log.debug('[MessageFormatter] Content is not a string, returning as-is');
                 return content;
             }
 
@@ -144,10 +159,10 @@ export class MessageFormatter {
             if (trimmedContent.startsWith('{') || trimmedContent.startsWith('[')) {
                 try {
                     const parsedContent = JSON.parse(trimmedContent);
-                    Logger.debug('[MessageFormatter] Successfully parsed JSON content');
+                    log.debug('[MessageFormatter] Successfully parsed JSON content');
                     return parsedContent;
                 } catch (error) {
-                    Logger.warn('[MessageFormatter] Failed to parse content as JSON:', {
+                    log.warn('[MessageFormatter] Failed to parse content as JSON:', {
                         error,
                         content: trimmedContent.substring(0, 100) + '...' // Log first 100 chars
                     });
@@ -155,11 +170,11 @@ export class MessageFormatter {
                 }
             }
             
-            Logger.debug('[MessageFormatter] Content is not JSON, returning as-is');
+            log.debug('[MessageFormatter] Content is not JSON, returning as-is');
             return content;
 
         } catch (error) {
-            Logger.error('[MessageFormatter] Critical error parsing response:', {
+            log.error('[MessageFormatter] Critical error parsing response:', {
                 error,
                 contentType: typeof content
             });

@@ -1,59 +1,87 @@
 // src/agents/expert.js
 import { BaseAgent } from '../base/baseAgent.js';
-import { Logger } from '../../utils/logger.js';
+import { log } from '../../utils/winstonLogger.js';
 
 export class Expert extends BaseAgent {
     constructor(config, llmService) {
         super({ ...config, role: 'Expert' }, llmService);
         this.expertise = config.knowledgeBase;
         this.insights = new Map();
+        
+        log.info('Expert initialized', {
+            agentId: this.id,
+            expertise: this.expertise
+        });
     }
 
     async provideExpertise(context, query) {
+        const eventId = log.event.emit('provideExpertise', 'Expert', {
+            agentId: this.id,
+            contextLength: context?.length
+        });
+        const startTime = Date.now();
+
         try {
-            Logger.debug(`${this.role} providing expertise for query:`, query);
-            Logger.debug('Incoming context:', context);
+            log.state.change('Expert', 'idle', 'analyzing', { agentId: this.id });
             
             const validatedContext = this.validateContext(context);
-            Logger.debug('Validated context:', validatedContext);
-
-            const systemPrompt = `As ${this.name}, provide expert insight on the following query:
-            Draw from your expertise in: ${this.expertise.join(', ')}.
-            Provide detailed, authoritative information while maintaining clarity.
-            
-            Important: Keep your response focused and under 3-4 sentences.
-            Focus on the most important points only.
-            
-            Recent insights: ${this.getRecentInsights()}`;
-
             const response = await this.llm.makeModelRequest({
-                systemPrompt: systemPrompt,
+                systemPrompt: this.constructSystemPrompt(),
                 userPrompt: query,
                 context: validatedContext,
                 agentType: this.role
             });
             
             this.storeInsight(query, response);
+
+            log.perf.measure('expertiseGeneration', Date.now() - startTime, {
+                agentId: this.id,
+                queryLength: query.length,
+                domain: this.determineDomain(query)
+            });
+
+            log.state.change('Expert', 'analyzing', 'completed', { agentId: this.id });
+            log.event.complete(eventId, 'completed', { 
+                responseLength: response.length,
+                domain: this.determineDomain(query),
+                duration: Date.now() - startTime
+            });
             return response;
+
         } catch (error) {
-            Logger.error('Error in Expert.provideExpertise:', error);
+            log.error('Expertise generation failed', error);
+            log.state.change('Expert', 'analyzing', 'failed', { agentId: this.id });
+            log.event.complete(eventId, 'failed');
             throw error;
         }
     }
 
     storeInsight(query, response) {
-        const key = Date.now();
-        this.insights.set(key, {
-            query,
-            response,
-            timestamp: key,
-            domain: this.determineDomain(query)
+        const eventId = log.event.emit('storeInsight', 'Expert', { 
+            agentId: this.id 
         });
 
-        // Maintain history
-        const keys = Array.from(this.insights.keys()).sort();
-        while (keys.length > 25) {
-            this.insights.delete(keys.shift());
+        try {
+            const key = Date.now();
+            const domain = this.determineDomain(query);
+            
+            this.insights.set(key, {
+                query,
+                response,
+                timestamp: key,
+                domain
+            });
+
+            // Maintain history limit
+            const keys = Array.from(this.insights.keys()).sort();
+            while (keys.length > 25) {
+                this.insights.delete(keys.shift());
+            }
+
+            log.event.complete(eventId);
+        } catch (error) {
+            log.error('Failed to store insight', error);
+            log.event.complete(eventId, 'failed');
         }
     }
 
@@ -65,12 +93,23 @@ export class Expert extends BaseAgent {
     }
 
     determineDomain(query) {
-        // Simple domain determination based on keyword matching
-        for (const domain of this.expertise) {
-            if (query.toLowerCase().includes(domain.toLowerCase())) {
-                return domain;
+        const eventId = log.event.emit('determineDomain', 'Expert', { 
+            agentId: this.id 
+        });
+
+        try {
+            for (const domain of this.expertise) {
+                if (query.toLowerCase().includes(domain.toLowerCase())) {
+                    log.event.complete(eventId);
+                    return domain;
+                }
             }
+            log.event.complete(eventId);
+            return 'General';
+        } catch (error) {
+            log.error('Domain determination failed', error);
+            log.event.complete(eventId, 'failed');
+            return 'Unknown';
         }
-        return 'General';
     }
 }

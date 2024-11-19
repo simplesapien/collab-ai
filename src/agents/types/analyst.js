@@ -1,6 +1,6 @@
 // src/agents/analyst.js
 import { BaseAgent } from '../base/baseAgent.js';
-import { Logger } from '../../utils/logger.js';
+import { log } from '../../utils/winstonLogger.js';
 
 export class Analyst extends BaseAgent {
     constructor(config, llmService) {
@@ -9,84 +9,76 @@ export class Analyst extends BaseAgent {
     }
 
     async analyzeInformation(message, context = []) {
+        const eventId = log.event.emit('analyzeInformation', 'Analyst', {
+            agentId: this.id,
+            contextLength: context?.length
+        });
+        const startTime = Date.now();
+
         try {
-            Logger.debug(`${this.role} analyzing message:`, message);
-            Logger.debug('Incoming context:', context);
+            log.state.change('Analyst', 'idle', 'analyzing', { agentId: this.id });
             
             const validatedContext = this.validateContext(context);
-            Logger.debug('Validated context:', validatedContext);
-
-            Logger.debug('Raw incoming message:', message);
             const userPrompt = typeof message === 'object' 
                 ? (message.content || message.text || JSON.stringify(message))
                 : message;
-            Logger.debug('Processed user prompt:', userPrompt);
-
-            const systemPrompt = `You are ${this.name}, ${this.role}. ${this.personality}
-            
-            Analyze this message using your expertise in: ${this.knowledgeBase.join(', ')}
-            
-            Focus on:
-            1. Key implications and potential impacts
-            2. Data-driven insights
-            3. Actionable recommendations
-            
-            Keep your response focused and under 2 sentences.
-            Do not prefix your response with your role name.`;
 
             const response = await this.llm.makeModelRequest({
-                systemPrompt: systemPrompt,
+                systemPrompt: this.constructSystemPrompt(),
                 userPrompt: userPrompt,
                 context: validatedContext,
                 agentType: this.role
             });
             
             this.storeAnalysis(userPrompt, response);
+
+            log.perf.measure('analysisCompletion', Date.now() - startTime, {
+                agentId: this.id,
+                messageType: typeof message
+            });
+
+            log.state.change('Analyst', 'analyzing', 'completed', { agentId: this.id });
+            log.event.complete(eventId);
             return response;
+
         } catch (error) {
-            Logger.error('Error in Analyst.analyzeInformation:', error);
+            log.error('Analysis failed', error);
+            log.state.change('Analyst', 'analyzing', 'failed', { agentId: this.id });
+            log.event.complete(eventId, 'failed');
             throw error;
         }
     }
 
-    // Unused
-    // async provideSummaryStatistics(context) {
-    //     try {
-    //         console.log(`${this.role} providing summary statistics`);
-    //         console.log('Incoming context:', context);
-            
-    //         const validatedContext = this.validateContext(context);
-    //         console.log('Validated context:', validatedContext);
-
-    //         const systemPrompt = `Provide key statistical insights from the discussion.
-    //         Focus on quantifiable elements and data-driven observations.`;
-            
-    //         const response = await this.llm.makeModelRequest({
-    //             systemPrompt: systemPrompt,
-    //             userPrompt: "Summarize the key statistical insights from the discussion.",
-    //             context: validatedContext,
-    //             agentType: this.role
-    //         });
-
-    //         return response;
-    //     } catch (error) {
-    //         Logger.error('Error in Analyst.provideSummaryStatistics:', error);
-    //         throw error;
-    //     }
-    // }
-
     storeAnalysis(prompt, response) {
-        const key = Date.now();
-        this.analyses.set(key, {
-            prompt,
-            response,
-            timestamp: key
+        const eventId = log.event.emit('storeAnalysis', 'Analyst', { 
+            agentId: this.id,
+            promptLength: prompt.length,
+            responseLength: response.length
         });
 
-        // Keep only recent analyses
-        const keys = Array.from(this.analyses.keys()).sort();
-        while (keys.length > 20) {
-            this.analyses.delete(keys.shift());
+        try {
+            log.debug('Storing analysis', { 
+                timestamp: Date.now(),
+                promptPreview: prompt.substring(0, 50)
+            });
+            
+            const key = Date.now();
+            this.analyses.set(key, {
+                prompt,
+                response,
+                timestamp: key
+            });
+
+            // Maintain history limit
+            const keys = Array.from(this.analyses.keys()).sort();
+            while (keys.length > 20) {
+                this.analyses.delete(keys.shift());
+            }
+
+            log.event.complete(eventId);
+        } catch (error) {
+            log.error('Failed to store analysis', error);
+            log.event.complete(eventId, 'failed');
         }
     }
 

@@ -1,6 +1,6 @@
 // src/cli.js
 import { Application } from './app.js';
-import { Logger } from './utils/logger.js';
+import { log } from './utils/winstonLogger.js';
 import { config } from './config/config.js';
 import inquirer from 'inquirer';
 import chalk from 'chalk';
@@ -38,9 +38,6 @@ class CLI {
 
     async initialize() {
         try {
-            // Set logging level from config
-            Logger.setLevel(config.system.logLevel);
-            
             // Clear screen and show welcome message
             clear();
             console.log(
@@ -63,16 +60,16 @@ class CLI {
             console.log(chalk.dim('3. Press') + chalk.red(' Ctrl+C ') + chalk.dim('at any time to stop the current process\n'));
 
             // Add debug logging for app initialization
-            Logger.debug('CLI: Initializing application');
+            log.debug('CLI: Initializing application');
             await this.app.initialize();
             
             // Verify response subscription is working
             const testUnsubscribe = this.app.onResponse(() => {});
             if (typeof testUnsubscribe === 'function') {
-                Logger.debug('CLI: Response subscription system verified');
+                log.debug('CLI: Response subscription system verified');
                 testUnsubscribe();
             } else {
-                Logger.warn('CLI: Response subscription system not working properly');
+                log.warn('CLI: Response subscription system not working properly');
             }
 
             console.log(`\n${this.icons['system']} ${this.colors['system']('System initialized successfully')}\n`);
@@ -86,7 +83,7 @@ class CLI {
             
             // Set up thinking indicators for each agent
             this.app.onAgentThinking((agentId, phase) => {
-                Logger.debug(`CLI: Agent thinking update:`, { agentId, phase });
+                log.debug('CLI: Agent thinking update:', { agentId, phase });
                 
                 // Stop existing spinner for this agent if it exists
                 if (this.agentSpinners[agentId]) {
@@ -137,7 +134,7 @@ class CLI {
 
             // Set up the single response handler
             this.responseHandler = (response) => {
-                Logger.debug('CLI: Received response:', response);
+                log.debug('CLI: Received response:', response);
                 
                 // Clear spinner BEFORE handling the response
                 if (this.agentSpinners[response.agentId]) {
@@ -164,7 +161,7 @@ class CLI {
             // Start the interactive session
             await this.startInteractiveSession();
         } catch (error) {
-            Logger.error('Failed to initialize CLI application:', error);
+            log.error('Failed to initialize CLI application:', error);
             this.handleError(error);
         }
     }
@@ -299,7 +296,7 @@ class CLI {
             return;
         }
 
-        Logger.debug('CLI: Displaying agent response:', response);
+        log.debug('CLI: Displaying agent response:', response);
         
         // Special handling for system cancellation messages
         if (response.type === 'cancellation' || 
@@ -350,13 +347,13 @@ class CLI {
         }
         
         console.log(`\n❌ ${this.colors['system'](`Error: ${error?.message || 'An unknown error occurred'}`)}\n`);
-        Logger.error('CLI Error:', error);
+        log.error('CLI Error:', error);
     }
 
     // Add new method to handle agent state updates
     updateAgentState(stateUpdate) {
         const { agentId, state } = stateUpdate;
-        Logger.debug('[CLI] Agent state update:', stateUpdate);
+        log.debug('[CLI] Agent state update:', stateUpdate);
         
         // Update display or handle state change as needed
         if (this.agentSpinners[agentId]) {

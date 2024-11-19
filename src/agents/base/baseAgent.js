@@ -1,9 +1,15 @@
-// src/agents/baseAgent.js
+// src/agents/base/baseAgent.js
 import { IAgent } from '../interfaces/agent.js';
+import { log } from '../../utils/winstonLogger.js';
 
 export class BaseAgent extends IAgent {
     constructor(config, llmService) {
         super();
+        const eventId = log.event.emit('init', 'BaseAgent', { 
+            agentType: config.type,
+            agentId: config.id 
+        });
+
         this.id = config.id;
         this.name = config.name;
         this.role = config.role || config.type;
@@ -17,13 +23,27 @@ export class BaseAgent extends IAgent {
             currentTask: null,
             active: true
         };
+
+        log.state.change('Agent', 'initializing', 'ready', { 
+            agentId: this.id,
+            role: this.role 
+        });
+        log.event.complete(eventId);
     }
 
     async generateResponse(context, prompt) {
+        const eventId = log.event.emit('generateResponse', this.role, { 
+            agentId: this.id 
+        });
+        const startTime = Date.now();
+
         try {
+            log.state.change('Agent', 'idle', 'generating', { 
+                agentId: this.id 
+            });
+
             const validatedContext = this.validateContext(context);
             this.updateState(validatedContext, prompt);
-            
             const systemPrompt = this.constructSystemPrompt();
             
             const response = await this.llm.makeModelRequest({
@@ -34,8 +54,24 @@ export class BaseAgent extends IAgent {
             });
             
             this.updateMemory(prompt, response);
+
+            log.perf.measure('responseGeneration', Date.now() - startTime, {
+                agentId: this.id,
+                contextSize: context?.length
+            });
+
+            log.state.change('Agent', 'generating', 'completed', { 
+                agentId: this.id 
+            });
+            log.event.complete(eventId);
             return response;
+
         } catch (error) {
+            log.error(`${this.role} response generation failed`, error);
+            log.state.change('Agent', 'generating', 'failed', { 
+                agentId: this.id 
+            });
+            log.event.complete(eventId, 'failed');
             throw error;
         }
     }
@@ -47,7 +83,8 @@ export class BaseAgent extends IAgent {
         Previous context: ${this.getRelevantHistory()}
         
         Core Guidelines:
-        - Respond in 1-2 sharp, specific sentences
+        - Respond in 1 sharp, specific sentence
+        - Keep your responses to 10 words or less.
         - Build directly on the previous message's key point
         - Focus on immediate, practical next steps
         - Don't over abstract concepts. Focus on concrete, actionable guidance
@@ -113,18 +150,29 @@ export class BaseAgent extends IAgent {
     }
 
     updateMemory(prompt, response, respondingTo = null) {
-        const key = Date.now();
-        this.memory.set(key, { 
-            prompt, 
-            response,
-            respondingTo,
-            timestamp: key 
+        const eventId = log.event.emit('updateMemory', this.role, { 
+            agentId: this.id 
         });
-        
-        // Cleanup old memories
-        const keys = Array.from(this.memory.keys()).sort();
-        while (keys.length > 50) {
-            this.memory.delete(keys.shift());
+
+        try {
+            const key = Date.now();
+            this.memory.set(key, { 
+                prompt, 
+                response,
+                respondingTo,
+                timestamp: key 
+            });
+            
+            // Cleanup old memories
+            const keys = Array.from(this.memory.keys()).sort();
+            while (keys.length > 50) {
+                this.memory.delete(keys.shift());
+            }
+
+            log.event.complete(eventId);
+        } catch (error) {
+            log.error(`${this.role} memory update failed`, error);
+            log.event.complete(eventId, 'failed');
         }
     }
 
@@ -133,8 +181,14 @@ export class BaseAgent extends IAgent {
     }
 
     clearMemory() {
+        const eventId = log.event.emit('clearMemory', this.role, { 
+            agentId: this.id 
+        });
+
         this.memory.clear();
         this.state.conversationHistory = [];
+        
+        log.event.complete(eventId);
     }
 
     getModel() {
@@ -143,17 +197,27 @@ export class BaseAgent extends IAgent {
     }
 
     validateContext(context) {
- 
-        if (!context) {
+        const eventId = log.event.emit('validateContext', this.role, { 
+            agentId: this.id 
+        });
 
-            return [];
+        try {
+            if (!context) {
+                log.event.complete(eventId);
+                return [];
+            }
+            
+            if (Array.isArray(context)) {
+                log.event.complete(eventId);
+                return context;
+            }
+            
+            log.event.complete(eventId);
+            return [context];
+        } catch (error) {
+            log.error(`${this.role} context validation failed`, error);
+            log.event.complete(eventId, 'failed');
+            throw error;
         }
-        
-        if (Array.isArray(context)) {
-
-            return context;
-        }
-        
-        return [context];
     }
 }

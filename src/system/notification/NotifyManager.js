@@ -3,30 +3,64 @@ import { log } from '../../utils/winstonLogger.js';
 
 export class NotifyManager {
     constructor() {
-        this.notificationService = new NotificationService();
-        this.subscriptions = new Map();
-        this.currentProcessId = null;
         const eventId = log.event.emit('init', 'NotifyManager');
-        log.event.complete(eventId);
+        const startTime = Date.now();
+
+        try {
+            this.notificationService = new NotificationService();
+            this.subscriptions = new Map();
+            this.currentProcessId = null;
+
+            log.state.change('NotifyManager', 'initializing', 'ready');
+            log.perf.measure('notify-manager-init', Date.now() - startTime);
+            log.event.complete(eventId, 'completed');
+        } catch (error) {
+            log.error('NotifyManager initialization failed', error);
+            log.event.complete(eventId, 'failed');
+            throw error;
+        }
     }
 
     initialize(responseCallback, thinkingCallback) {
-        const eventId = log.event.emit('initialize', 'NotifyManager');
-        
+        const eventId = log.event.emit('initialize', 'NotifyManager', {
+            hasResponseCallback: !!responseCallback,
+            hasThinkingCallback: !!thinkingCallback
+        });
+        const startTime = Date.now();
+
         try {
+            log.debug('Setting up notification listeners', {
+                responseCallback: !!responseCallback,
+                thinkingCallback: !!thinkingCallback
+            });
+
             const responseListener = (response) => {
-                if (responseCallback) responseCallback(response);
-                log.event.handled(eventId, 'responseListener');
+                if (responseCallback) {
+                    responseCallback(response);
+                    log.debug('Response callback executed', {
+                        agentId: response?.agentId,
+                        type: response?.type
+                    });
+                }
             };
 
             const thinkingListener = (stateUpdate) => {
                 if (thinkingCallback) {
                     thinkingCallback(stateUpdate.agentId, stateUpdate.state);
+                    log.debug('Thinking callback executed', {
+                        agentId: stateUpdate.agentId,
+                        state: stateUpdate.state
+                    });
                 }
             };
 
             const errorListener = (error) => {
                 if (!responseCallback) return;
+
+                log.debug('Processing error notification', {
+                    errorType: error?.type,
+                    agentId: error?.agentId
+                });
 
                 if (error?.type === 'cancellation' || error?.message?.includes('cancelled')) {
                     responseCallback({
@@ -61,15 +95,21 @@ export class NotifyManager {
             this.subscriptions.set('agentStateChange', thinkingListener);
             this.subscriptions.set('error', errorListener);
 
+            log.perf.measure('notification-setup', Date.now() - startTime, {
+                listenerCount: this.subscriptions.size
+            });
+
             log.event.complete(eventId, 'completed', { 
                 listeners: ['response', 'agentStateChange', 'error'] 
             });
 
             return () => {
+                const cleanupEventId = log.event.emit('cleanup', 'NotifyManager');
                 this.notificationService.removeListener('response', responseListener);
                 this.notificationService.removeListener('agentStateChange', thinkingListener);
                 this.notificationService.removeListener('error', errorListener);
                 this.subscriptions.clear();
+                log.event.complete(cleanupEventId);
             };
         } catch (error) {
             log.error('NotifyManager initialization failed', error);
@@ -79,10 +119,26 @@ export class NotifyManager {
     }
 
     notifyResponse(response) {
-        const eventId = log.event.emit('notifyResponse', 'NotifyManager', { agentId: response?.agentId });
+        const eventId = log.event.emit('notifyResponse', 'NotifyManager', { 
+            agentId: response?.agentId,
+            responseType: response?.type || 'standard'
+        });
+        const startTime = Date.now();
+
         try {
+            log.debug('Processing notification response', {
+                agentId: response?.agentId,
+                type: response?.type
+            });
+
             this.notificationService.sendResponse(response);
-            log.event.complete(eventId);
+
+            log.perf.measure('response-notification', Date.now() - startTime, {
+                agentId: response?.agentId,
+                type: response?.type
+            });
+
+            log.event.complete(eventId, 'completed');
         } catch (error) {
             log.error('Error sending response', error);
             this.notificationService.sendError(error, response?.agentId);
@@ -91,10 +147,26 @@ export class NotifyManager {
     }
 
     notifyThinking(agentId, phase = 'thinking') {
-        const eventId = log.event.emit('notifyThinking', 'NotifyManager', { agentId, phase });
+        const eventId = log.event.emit('notifyThinking', 'NotifyManager', { 
+            agentId, 
+            phase 
+        });
+        const startTime = Date.now();
+
         try {
+            log.debug('Updating agent thinking state', {
+                agentId,
+                phase
+            });
+
             this.notificationService.updateAgentState(agentId, phase);
-            log.event.complete(eventId);
+
+            log.perf.measure('thinking-notification', Date.now() - startTime, {
+                agentId,
+                phase
+            });
+
+            log.event.complete(eventId, 'completed');
         } catch (error) {
             log.error('Error updating agent state', error);
             this.notificationService.sendError(error, agentId);
@@ -102,40 +174,26 @@ export class NotifyManager {
         }
     }
 
-    notifyError(error, agentId = null) {
-        const eventId = log.event.emit('notifyError', 'NotifyManager', { agentId });
-        try {
-            if (error?.type === 'cancellation' || error?.message?.includes('cancelled')) {
-                this.notificationService.sendResponse({
-                    agentId: 'system',
-                    role: 'System',
-                    content: 'Process cancelled. Ready for new input.',
-                    type: 'cancellation',
-                    timestamp: Date.now()
-                });
-                log.event.complete(eventId, 'cancelled');
-                return;
-            }
-
-            const errorObj = error instanceof Error ? error : new Error(error?.message || error || 'Unknown error');
-            this.notificationService.sendError({ error: errorObj, agentId: agentId || 'system' });
-            log.event.complete(eventId);
-        } catch (err) {
-            log.error('Error in notifyError', err);
-            this.notificationService.sendResponse({
-                agentId: 'system',
-                role: 'System',
-                content: 'An unexpected error occurred',
-                type: 'error',
-                error: { message: 'An unexpected error occurred' },
-                timestamp: Date.now()
-            });
-            log.event.complete(eventId, 'failed');
-        }
-    }
-
     startNewProcess() {
-        this.currentProcessId = this.notificationService.startNewProcess();
-        return this.currentProcessId;
+        const eventId = log.event.emit('startNewProcess', 'NotifyManager');
+        const startTime = Date.now();
+
+        try {
+            this.currentProcessId = this.notificationService.startNewProcess();
+            
+            log.perf.measure('process-start', Date.now() - startTime, {
+                processId: this.currentProcessId
+            });
+
+            log.event.complete(eventId, 'completed', {
+                processId: this.currentProcessId
+            });
+
+            return this.currentProcessId;
+        } catch (error) {
+            log.error('Failed to start new process', error);
+            log.event.complete(eventId, 'failed');
+            throw error;
+        }
     }
 }

@@ -1,36 +1,88 @@
-import { Logger } from '../../utils/logger.js';
+import { log } from '../../utils/winstonLogger.js';
 
 export class QualityGate {
     constructor() {
-        this.thresholds = {
-            minLength: 50,
-            maxLength: 2000,
-            coherenceScore: 0.7,
-            relevanceScore: 0.75,
-            topicDriftThreshold: 0.3,
-            responseTimeMs: 10000,
-            currentRound: 0,
-            maxRounds: 3,
-            fastCheckTimeoutMs: 1000,
-            deepCheckTimeoutMs: 10000,
-        };
+        const eventId = log.event.emit('init', 'QualityGate');
+        const startTime = Date.now();
 
-        Logger.debug(`[QualityGate] Initialized with max rounds: ${this.thresholds.maxRounds}`);
+        try {
+            this.thresholds = {
+                minLength: 50,
+                maxLength: 2000,
+                coherenceScore: 0.7,
+                relevanceScore: 0.75,
+                topicDriftThreshold: 0.3,
+                responseTimeMs: 10000,
+                currentRound: 0,
+                maxRounds: 3,
+                fastCheckTimeoutMs: 1000,
+                deepCheckTimeoutMs: 10000,
+            };
+
+            log.debug('Quality gate initialized', {
+                maxRounds: this.thresholds.maxRounds,
+                thresholds: this.thresholds
+            });
+
+            log.perf.measure('quality-gate-init', Date.now() - startTime);
+            log.event.complete(eventId, 'completed');
+        } catch (error) {
+            log.error('Quality gate initialization failed', error);
+            log.event.complete(eventId, 'failed');
+            throw error;
+        }
     }
 
     async performQualityCheck(conversation, agentResponses) {
-        Logger.debug(`[QualityGate] Performing quality check - Round ${this.thresholds.currentRound}/${this.thresholds.maxRounds}`);
+        const eventId = log.event.emit('performQualityCheck', 'QualityGate', {
+            round: this.thresholds.currentRound,
+            maxRounds: this.thresholds.maxRounds,
+            responseCount: agentResponses.length
+        });
+        const startTime = Date.now();
 
-        if (this.thresholds.currentRound > this.thresholds.maxRounds) {
-            Logger.info(`[QualityGate] Max rounds (${this.thresholds.maxRounds}) reached at round ${this.thresholds.currentRound}`);
-            return {
-                shouldContinue: false,
-                reason: 'MAX_ROUNDS_REACHED'
-            };
+        try {
+            log.debug('Starting quality check', {
+                round: this.thresholds.currentRound,
+                maxRounds: this.thresholds.maxRounds,
+                responseCount: agentResponses.length
+            });
+
+            if (this.thresholds.currentRound > this.thresholds.maxRounds) {
+                log.debug('Max rounds reached', {
+                    currentRound: this.thresholds.currentRound,
+                    maxRounds: this.thresholds.maxRounds
+                });
+
+                log.event.complete(eventId, 'completed', {
+                    reason: 'MAX_ROUNDS_REACHED'
+                });
+
+                return {
+                    shouldContinue: false,
+                    reason: 'MAX_ROUNDS_REACHED'
+                };
+            }
+
+            const metrics = await this._analyzeResponseQuality(conversation, agentResponses);
+            const result = this._validateMetrics(metrics);
+
+            log.perf.measure('quality-check', Date.now() - startTime, {
+                round: this.thresholds.currentRound,
+                metrics
+            });
+
+            log.event.complete(eventId, 'completed', {
+                shouldContinue: result.shouldContinue,
+                reason: result.reason
+            });
+
+            return result;
+        } catch (error) {
+            log.error('Quality check failed', error);
+            log.event.complete(eventId, 'failed');
+            throw error;
         }
-
-        const metrics = await this._analyzeResponseQuality(conversation, agentResponses);
-        return this._validateMetrics(metrics);
     }
 
     async _analyzeResponseQuality(conversation, agentResponses) {
@@ -46,7 +98,7 @@ export class QualityGate {
 
     _validateMetrics(metrics) {
         if (metrics.topicDrift > 0.3) {
-            Logger.info('[QualityGate] Stopping due to topic drift');
+            log.info('[QualityGate] Stopping due to topic drift');
             return {
                 shouldContinue: false,
                 reason: 'TOPIC_DRIFT'
@@ -54,7 +106,7 @@ export class QualityGate {
         }
 
         if (metrics.consensusReached) {
-            Logger.info('[QualityGate] Stopping due to consensus reached');
+            log.info('[QualityGate] Stopping due to consensus reached');
             return {
                 shouldContinue: false,
                 reason: 'CONSENSUS_REACHED'
@@ -68,15 +120,40 @@ export class QualityGate {
     }
 
     async performFastChecks(agentResponses) {
-        return {
-            passed: true,
-            reason: null,
-            metrics: {
-                length: this._validateResponseLength(agentResponses),
-                format: this._validateResponseFormat(agentResponses),
-                safety: this._performSafetyCheck(agentResponses)
-            }
-        };
+        const eventId = log.event.emit('performFastChecks', 'QualityGate', {
+            responseCount: agentResponses.length
+        });
+        const startTime = Date.now();
+
+        try {
+            log.debug('Starting fast checks', {
+                responseCount: agentResponses.length
+            });
+
+            const result = {
+                passed: true,
+                reason: null,
+                metrics: {
+                    length: this._validateResponseLength(agentResponses),
+                    format: this._validateResponseFormat(agentResponses),
+                    safety: this._performSafetyCheck(agentResponses)
+                }
+            };
+
+            log.perf.measure('fast-checks', Date.now() - startTime, {
+                metrics: result.metrics
+            });
+
+            log.event.complete(eventId, 'completed', {
+                passed: result.passed
+            });
+
+            return result;
+        } catch (error) {
+            log.error('Fast checks failed', error);
+            log.event.complete(eventId, 'failed');
+            throw error;
+        }
     }
 
     async performDeepChecks(conversation, agentResponses) {
@@ -111,13 +188,13 @@ export class QualityGate {
     resetRoundCounter() {
         const oldValue = this.thresholds.currentRound;
         this.thresholds.currentRound = 0;
-        Logger.info(`[QualityGate] Round counter reset from ${oldValue} to ${this.thresholds.currentRound}`);
+        log.info(`[QualityGate] Round counter reset from ${oldValue} to ${this.thresholds.currentRound}`);
     }
 
     incrementRound() {
         const oldValue = this.thresholds.currentRound;
         this.thresholds.currentRound++;
-        Logger.info(`[QualityGate] Round counter incremented from ${oldValue} to ${this.thresholds.currentRound}`);
+        log.info(`[QualityGate] Round counter incremented from ${oldValue} to ${this.thresholds.currentRound}`);
         return this.thresholds.currentRound;
     }
 

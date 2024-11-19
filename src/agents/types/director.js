@@ -1,16 +1,24 @@
 // src/agents/director.js
 import { BaseAgent } from '../base/baseAgent.js';
-import { Logger } from '../../utils/logger.js';
+import { log } from '../../utils/winstonLogger.js';
 
 export class Director extends BaseAgent {
     constructor(config, llmService) {
         super({ ...config, role: 'Director' }, llmService);
         this.activeParticipants = new Set();
+        log.state.change('Director', 'uninitialized', 'ready', { config });
     }
 
     async planInitialAgentTasks(message, availableAgents) {
+        const eventId = log.event.emit('planInitialAgentTasks', 'Director', {
+            messageLength: typeof message === 'object' ? message.content.length : message.length,
+            availableAgentCount: availableAgents.length
+        });
+
         try {
-            Logger.debug('[Director] planInitialAgentTasks - starting with:', { 
+            const startTime = Date.now();
+            
+            log.debug('Starting initial agent task planning', { 
                 message, 
                 agentCount: availableAgents.length 
             });
@@ -21,11 +29,11 @@ export class Director extends BaseAgent {
                 return map;
             }, {});
 
-            Logger.debug('[Director] planInitialAgentTasks - created agent map:', agentMap);
+            log.debug('Created agent map', { agentMap });
             
             // Handle message object or string
             const userPrompt = typeof message === 'object' ? message.content : message;
-            Logger.debug('[Director] planInitialAgentTasks - processed user prompt:', userPrompt);
+            log.debug('Processed user prompt', { userPrompt });
 
             const systemPrompt = `As the Director, analyze the following message and determine:
             1. Which of these available agents should participate: ${availableAgents.map(a => a.role).join(', ')}
@@ -48,20 +56,25 @@ export class Director extends BaseAgent {
                 ]
             }`;
 
-            Logger.debug('[Director] planInitialAgentTasks - making LLM request...');
+            log.debug('Making LLM request');
+            const llmStartTime = Date.now();
             const response = await this.llm.makeModelRequest({
                 systemPrompt: systemPrompt,
                 userPrompt: userPrompt,
                 context: [], 
                 agentType: this.role
             });
-            Logger.debug('[Director] planInitialAgentTasks - received LLM response:', response);
-            
+            log.perf.measure('llm-request', Date.now() - llmStartTime, {
+                method: 'planInitialAgentTasks',
+                promptLength: userPrompt.length,
+                responseLength: response.length
+            });
+
             // Parse and validate the response
             let plan;
             try {
                 plan = typeof response === 'string' ? JSON.parse(response) : response;
-                Logger.debug('[Director] planInitialAgentTasks - parsed initial plan:', plan);
+                log.debug('Parsed initial plan', { plan });
                 
                 if (!plan.participants || !Array.isArray(plan.participants)) {
                     throw new Error('Invalid plan structure: missing or invalid participants array');
@@ -69,17 +82,17 @@ export class Director extends BaseAgent {
                 
                 // Ensure IDs match our system's IDs
                 plan.participants = plan.participants.map(participant => {
-                    Logger.debug('[Director] planInitialAgentTasks - mapping participant:', participant);
+                    log.debug('Mapping participant', { participant });
                     return {
                         ...participant,
                         id: agentMap[participant.role.toLowerCase()] || participant.id
                     };
                 });
 
-                Logger.debug('[Director] planInitialAgentTasks - final processed plan:', plan);
+                log.debug('Final processed plan', { plan });
             } catch (e) {
-                Logger.error('[Director] planInitialAgentTasks - Error processing plan:', e.message);
-                Logger.error('[Director] Failed to process orchestration plan:', { error: e, plan });
+                log.error('Error processing plan', { error: e.message });
+                log.error('Failed to process orchestration plan', { error: e, plan });
                 
                 // Fallback plan with default participant
                 plan = {
@@ -89,19 +102,31 @@ export class Director extends BaseAgent {
                         task: 'Analyze the user message and provide initial insights.'
                     }]
                 };
-                Logger.warn('[Director] planInitialAgentTasks - using fallback plan:', plan);
+                log.warn('Using fallback plan', { plan });
             }
+
+            log.event.complete(eventId, 'completed', { plan });
+            log.perf.measure('planInitialAgentTasks', Date.now() - startTime, {
+                participantCount: plan.participants.length
+            });
 
             return plan;
         } catch (error) {
-            Logger.error('[Director] planInitialAgentTasks - CRITICAL ERROR:', error);
+            log.event.complete(eventId, 'failed', { error: error.message });
+            log.error('Critical error in planInitialAgentTasks', error);
             throw error;
         }
     }
 
     async planNextAgentInteraction(messages, previousResponses) {
+        const eventId = log.event.emit('planNextAgentInteraction', 'Director', {
+            messageCount: messages.length,
+            previousResponseCount: previousResponses.length
+        });
+
         try {
-            Logger.debug('[Director] planNextAgentInteraction - starting with:', {
+            const startTime = Date.now();
+            log.debug('Planning next agent interaction', {
                 messagesCount: messages.length,
                 previousResponsesCount: previousResponses.length
             });
@@ -138,7 +163,8 @@ export class Director extends BaseAgent {
 
             const userPrompt = `Return a JSON object selecting the next agent from [${availableRoles.join(', ')}] and their task.`;
 
-            Logger.debug('[Director] planNextAgentInteraction - making LLM request...');
+            log.debug('Making LLM request');
+            const llmStartTime = Date.now();
             const response = await this.llm.makeModelRequest({
                 systemPrompt: systemPrompt,
                 userPrompt: userPrompt,
@@ -146,11 +172,14 @@ export class Director extends BaseAgent {
                 agentType: this.role,
                 forceJsonResponse: true  // Add this flag if your LLM service supports it
             });
-            Logger.debug('[Director] planNextAgentInteraction - received LLM response:', response);
-            
+            log.perf.measure('llm-request', Date.now() - llmStartTime, {
+                method: 'planNextAgentInteraction',
+                contextLength: messages.length
+            });
+
             let plan;
             try {
-                Logger.debug('[Director] Attempting to parse LLM response into JSON');
+                log.debug('Attempting to parse LLM response into JSON');
                 let jsonStr = response;
                 
                 // Handle various markdown code block formats
@@ -163,58 +192,69 @@ export class Director extends BaseAgent {
                 
                 plan = typeof jsonStr === 'string' ? JSON.parse(jsonStr) : jsonStr;
                 
-                Logger.debug('[Director] planNextAgentInteraction - parsed plan:', plan);
+                log.debug('Parsed plan', { plan });
                 
                 // Validate nextAgent
                 const validRoles = ['Analyst', 'Critic', 'Expert'];
-                Logger.debug('[Director] planNextAgentInteraction - validating nextAgent:', plan.nextAgent);
-                if (!validRoles.includes(plan.nextAgent)) {
-                    Logger.error('[Director] Invalid agent role received from LLM:', plan.nextAgent);
+                log.debug('Validating nextAgent', { nextAgent: plan['nextAgent'] });
+                if (!validRoles.includes(plan['nextAgent'])) {
+                    log.error('Invalid agent role received from LLM', { nextAgent: plan['nextAgent'] });
                     return null;
                 }
 
                 // Validate respondTo
-                Logger.debug('[Director] planNextAgentInteraction - validating respondTo:', plan.respondTo);
-                if (!plan.respondTo.every(role => formattedResponses.map(r => r.role).includes(role))) {
-                    Logger.error('[Director] Invalid respondTo role received from LLM:', plan.respondTo);
+                log.debug('Validating respondTo', { respondTo: plan['respondTo'] });
+                if (!plan['respondTo'].every(role => formattedResponses.map(r => r.role).includes(role))) {
+                    log.error('Invalid respondTo role received from LLM', { respondTo: plan['respondTo'] });
                     return null;
                 }
-                Logger.debug('[Director] planNextAgentInteraction - validation successful');
+                log.debug('Validation successful');
 
                 // Add additional validation before returning the plan
-                if (plan.nextAgent && plan.respondTo) {
+                if (plan['nextAgent'] && plan['respondTo']) {
                     const lastResponse = formattedResponses[formattedResponses.length - 1];
                     
                     // Debug the comparison
-                    Logger.debug('[Director] Comparing roles:', {
-                        nextAgent: plan.nextAgent,
+                    log.debug('Comparing roles', {
+                        nextAgent: plan['nextAgent'],
                         lastResponseRole: lastResponse?.role,
                         lastResponseAgentId: lastResponse?.agentId
                     });
                     
                     // Compare the actual roles, ensuring case-insensitive comparison
-                    if (plan.nextAgent.toLowerCase() === lastResponse?.role?.toLowerCase()) {
-                        Logger.warn('[Director] Invalid plan - agent would speak twice in a row');
+                    if (plan['nextAgent'].toLowerCase() === lastResponse?.role?.toLowerCase()) {
+                        log.warn('Invalid plan - agent would speak twice in a row');
                         return null;
                     }
                 }
 
             } catch (e) {
-                Logger.error('[Director] planNextAgentInteraction - Error parsing plan:', e);
+                log.error('Error parsing plan', { error: e });
                 return null;
             }
 
-            Logger.debug('[Director] planNextAgentInteraction - returning final plan:', plan);
+            log.debug('Returning final plan', { plan });
+            log.event.complete(eventId, 'completed', { plan });
+            log.perf.measure('planNextAgentInteraction', Date.now() - startTime, {
+                success: !!plan
+            });
+
             return plan;
         } catch (error) {
-            Logger.error('[Director] planNextAgentInteraction - CRITICAL ERROR:', error);
+            log.event.complete(eventId, 'failed', { error: error.message });
+            log.error('Error in planNextAgentInteraction', error);
             return null;
         }
     }
 
     async synthesizeDiscussion(context) {
+        const eventId = log.event.emit('synthesizeDiscussion', 'Director', {
+            contextLength: context?.length
+        });
+
         try {
-            Logger.debug(`[Director] synthesizeDiscussion started with:`, {
+            const startTime = Date.now();
+            log.debug('Starting discussion synthesis', {
                 contextLength: context?.length,
                 messages: context
             });
@@ -242,7 +282,7 @@ export class Director extends BaseAgent {
                 };
             });
 
-            Logger.debug('[Director] Synthesizing discussion with formatted messages:', formattedMessages);
+            log.debug('Synthesizing discussion with formatted messages', { formattedMessages });
             
             const systemPrompt = `As the Director, provide a concise synthesis of this conversation.
 
@@ -257,17 +297,31 @@ export class Director extends BaseAgent {
 
             Keep the summary clear and focused. Prioritize meaningful insights over comprehensive coverage.`;
             
+            const llmStartTime = Date.now();
             const response = await this.llm.makeModelRequest({
                 systemPrompt: systemPrompt,
                 userPrompt: "Provide a comprehensive synthesis of the discussion.",
                 context: [],
                 agentType: this.role
             });
+            log.perf.measure('llm-request', Date.now() - llmStartTime, {
+                method: 'synthesizeDiscussion',
+                messageCount: formattedMessages.length
+            });
 
-            Logger.debug(`[Director] Generated summary:`, response);
+            log.debug('Generated summary', { response });
+            
+            log.event.complete(eventId, 'completed', { 
+                summaryLength: response.length 
+            });
+            log.perf.measure('synthesizeDiscussion', Date.now() - startTime, {
+                messageCount: formattedMessages.length
+            });
+
             return response;
         } catch (error) {
-            Logger.error('[Director] Error in synthesizeDiscussion:', error);
+            log.event.complete(eventId, 'failed', { error: error.message });
+            log.error('Error in synthesizeDiscussion', error);
             throw error;
         }
     }

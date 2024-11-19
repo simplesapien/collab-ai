@@ -2,7 +2,7 @@ import winston from 'winston';
 import path from 'path';
 import { fileURLToPath } from 'url';
 
-const logDir = path.join(path.dirname(fileURLToPath(import.meta.url)), '../../logs/winston');
+const logDir = path.join(path.dirname(fileURLToPath(import.meta.url)), '../../logs');
 
 // Custom log levels
 const logLevels = {

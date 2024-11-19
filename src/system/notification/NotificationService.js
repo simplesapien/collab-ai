@@ -3,55 +3,106 @@ import { log } from '../../utils/winstonLogger.js';
 
 export class NotificationService extends EventEmitter {
     constructor() {
-        super();
-        this.activeStates = new Map();
-        this.currentProcessId = null;
-        
-        log.state.change('NotificationService', 'initializing', 'ready');
-        log.info('NotificationService initialized');
+        const eventId = log.event.emit('init', 'NotificationService');
+        const startTime = Date.now();
+
+        try {
+            super();
+            this.activeStates = new Map();
+            this.currentProcessId = null;
+            
+            log.state.change('NotificationService', 'initializing', 'ready');
+            
+            log.perf.measure('notification-service-init', Date.now() - startTime);
+            log.event.complete(eventId, 'completed');
+        } catch (error) {
+            log.error('NotificationService initialization failed', error);
+            log.event.complete(eventId, 'failed');
+            throw error;
+        }
     }
 
     startNewProcess() {
+        const eventId = log.event.emit('processStart', 'NotificationService');
         const startTime = Date.now();
-        this.currentProcessId = startTime;
-        
-        const eventId = log.event.emit('processStart', 'NotificationService', {
-            processId: this.currentProcessId
-        });
-        log.state.change('Process', 'idle', 'active', { processId: this.currentProcessId });
-        
-        log.event.complete(eventId);
-        return this.currentProcessId;
+
+        try {
+            this.currentProcessId = Date.now();
+            
+            log.debug('Starting new process', { 
+                processId: this.currentProcessId 
+            });
+            
+            log.state.change('Process', 'idle', 'active', { 
+                processId: this.currentProcessId 
+            });
+            
+            log.perf.measure('process-start', Date.now() - startTime, {
+                processId: this.currentProcessId
+            });
+            
+            log.event.complete(eventId, 'completed', {
+                processId: this.currentProcessId
+            });
+            return this.currentProcessId;
+        } catch (error) {
+            log.error('Process start failed', error);
+            log.event.complete(eventId, 'failed');
+            throw error;
+        }
     }
 
     updateAgentState(agentId, state, metadata = {}) {
+        const eventId = log.event.emit('updateAgentState', 'NotificationService', {
+            agentId,
+            state
+        });
         const startTime = Date.now();
-        const stateUpdate = {
-            agentId,
-            state,
-            metadata,
-            timestamp: startTime,
-            processId: this.currentProcessId
-        };
-        
-        const previousState = this.activeStates.get(agentId)?.state || 'unknown';
-        this.activeStates.set(agentId, stateUpdate);
-        
-        this.emit('agentStateChange', stateUpdate);
-        
-        log.state.change('Agent', previousState, state, {
-            agentId,
-            processId: this.currentProcessId,
-            metadata
-        });
 
-        log.perf.measure('stateUpdate', Date.now() - startTime, {
-            agentId,
-            state,
-            processId: this.currentProcessId
-        });
-        
-        return stateUpdate;
+        try {
+            log.debug('Updating agent state', {
+                agentId,
+                state,
+                metadata,
+                processId: this.currentProcessId
+            });
+
+            const stateUpdate = {
+                agentId,
+                state,
+                metadata,
+                timestamp: startTime,
+                processId: this.currentProcessId
+            };
+            
+            const previousState = this.activeStates.get(agentId)?.state || 'unknown';
+            this.activeStates.set(agentId, stateUpdate);
+            
+            this.emit('agentStateChange', stateUpdate);
+            
+            log.state.change('Agent', previousState, state, {
+                agentId,
+                processId: this.currentProcessId,
+                metadata
+            });
+
+            log.perf.measure('state-update', Date.now() - startTime, {
+                agentId,
+                state,
+                processId: this.currentProcessId
+            });
+            
+            log.event.complete(eventId, 'completed', {
+                agentId,
+                previousState,
+                newState: state
+            });
+            return stateUpdate;
+        } catch (error) {
+            log.error('Agent state update failed', error);
+            log.event.complete(eventId, 'failed');
+            throw error;
+        }
     }
 
     sendResponse(response) {

@@ -1,5 +1,5 @@
 // src/services/llm.js
-import { Logger } from '../utils/logger.js';
+import { log } from '../utils/winstonLogger.js';
 import { RateLimiter } from './rateLimiter.js';
 import { MessageFormatter } from './messageFormatter.js';
 import { CostTracker } from './costTracker.js';
@@ -10,26 +10,40 @@ dotenv.config();
 
 export class LLMService {
     constructor(config = { maxRetries: 3, timeout: 10000 }) {
-        this.config = config;
-        this.requestQueue = [];
-        this.rateLimiter = new RateLimiter({
-            limit: config.rateLimit?.limit || 50,
-            interval: config.rateLimit?.interval || 60000
-        });
-        this.costTracker = new CostTracker();
-        
-        // Initialize OpenAI client
-        this.openai = new OpenAI({
-            apiKey: process.env.OPENAI_API_KEY
-        });
+        const eventId = log.event.emit('init', 'LLMService', { config });
+        try {
+            this.config = config;
+            this.requestQueue = [];
+            this.rateLimiter = new RateLimiter({
+                limit: config.rateLimit?.limit || 50,
+                interval: config.rateLimit?.interval || 60000
+            });
+            this.costTracker = new CostTracker();
+            
+            // Initialize OpenAI client
+            this.openai = new OpenAI({
+                apiKey: process.env.OPENAI_API_KEY
+            });
+            log.state.change('LLMService', 'uninitialized', 'ready', { config });
+            log.event.complete(eventId);
+        } catch (error) {
+            log.error('LLMService initialization failed', error);
+            log.event.complete(eventId, 'failed');
+            throw error;
+        }
     }
 
     async makeModelRequest(params) {
+        const eventId = log.event.emit('makeModelRequest', 'LLMService', {
+            agentType: params.agentType,
+            contextLength: params.context?.length
+        });
+        const startTime = Date.now();
+
         let attempts = 0;
-        
         while (attempts < this.config.maxRetries) {
             try {
-                Logger.debug('[LLMService] makeModelRequest params:', params);
+                log.debug('Starting LLM request', { params });
                 await this.rateLimiter.checkLimit();
 
                 // Get recent context in a more conversational format
@@ -66,13 +80,21 @@ export class LLMService {
                     );
                 }
 
-                Logger.debug('[LLMService] API Response:', response);
+                log.perf.measure('llm-api-call', Date.now() - startTime, {
+                    model: formattedData.model,
+                    promptTokens: response.usage?.prompt_tokens,
+                    completionTokens: response.usage?.completion_tokens
+                });
 
+                log.event.complete(eventId, 'completed', {
+                    attempts,
+                    tokens: response.usage
+                });
                 return MessageFormatter.parseResponse(response.choices[0].message.content);
 
             } catch (error) {
                 attempts++;
-                Logger.warn(`[LLMService] Request failed (attempt ${attempts}):`, error);
+                log.warn('LLM request failed', { attempt: attempts, error: error.message });
                 if (attempts === this.config.maxRetries) {
                     throw error;
                 }
@@ -94,26 +116,26 @@ export class LLMService {
     }
 
     _getModelForAgent(agentType) {
-        Logger.debug('[LLMService] Getting model for agent:', {
+        log.debug('[LLMService] Getting model for agent:', {
             agentType,
             availableModels: this.config.modelsByAgent,
             defaultModel: this.config.defaultModel
         });
 
         if (!agentType) {
-            Logger.debug('[LLMService] No agent type provided, using default model:', this.config.defaultModel);
+            log.debug('[LLMService] No agent type provided, using default model:', this.config.defaultModel);
             return this.config.defaultModel;
         }
         
         const agentKey = agentType.toLowerCase();
-        Logger.debug('[LLMService] Looking up model for agent type:', {
+        log.debug('[LLMService] Looking up model for agent type:', {
             agentKey,
             modelMapping: this.config.modelsByAgent,
             selectedModel: this.config.modelsByAgent?.[agentKey]
         });
         
         const model = this.config.modelsByAgent?.[agentKey] || this.config.defaultModel;
-        Logger.debug(`[LLMService] Final model selection for ${agentKey}:`, model);
+        log.debug(`[LLMService] Final model selection for ${agentKey}:`, model);
         
         return model;
     }
