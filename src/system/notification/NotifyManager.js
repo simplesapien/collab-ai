@@ -1,18 +1,22 @@
-import { Logger } from '../../utils/logger.js';
 import { NotificationService } from './NotificationService.js';
+import { log } from '../../utils/winstonLogger.js';
 
 export class NotifyManager {
     constructor() {
         this.notificationService = new NotificationService();
         this.subscriptions = new Map();
         this.currentProcessId = null;
-        Logger.debug('[NotifyManager] Initialized');
+        const eventId = log.event.emit('init', 'NotifyManager');
+        log.event.complete(eventId);
     }
 
     initialize(responseCallback, thinkingCallback) {
+        const eventId = log.event.emit('initialize', 'NotifyManager');
+        
         try {
             const responseListener = (response) => {
                 if (responseCallback) responseCallback(response);
+                log.event.handled(eventId, 'responseListener');
             };
 
             const thinkingListener = (stateUpdate) => {
@@ -57,6 +61,10 @@ export class NotifyManager {
             this.subscriptions.set('agentStateChange', thinkingListener);
             this.subscriptions.set('error', errorListener);
 
+            log.event.complete(eventId, 'completed', { 
+                listeners: ['response', 'agentStateChange', 'error'] 
+            });
+
             return () => {
                 this.notificationService.removeListener('response', responseListener);
                 this.notificationService.removeListener('agentStateChange', thinkingListener);
@@ -64,30 +72,38 @@ export class NotifyManager {
                 this.subscriptions.clear();
             };
         } catch (error) {
-            Logger.error('[NotifyManager] Error during initialization:', error);
-            return () => {};
+            log.error('NotifyManager initialization failed', error);
+            log.event.complete(eventId, 'failed');
+            throw error;
         }
     }
 
     notifyResponse(response) {
+        const eventId = log.event.emit('notifyResponse', 'NotifyManager', { agentId: response?.agentId });
         try {
             this.notificationService.sendResponse(response);
+            log.event.complete(eventId);
         } catch (error) {
-            Logger.error('[NotifyManager] Error sending response:', error);
+            log.error('Error sending response', error);
             this.notificationService.sendError(error, response?.agentId);
+            log.event.complete(eventId, 'failed');
         }
     }
 
     notifyThinking(agentId, phase = 'thinking') {
+        const eventId = log.event.emit('notifyThinking', 'NotifyManager', { agentId, phase });
         try {
             this.notificationService.updateAgentState(agentId, phase);
+            log.event.complete(eventId);
         } catch (error) {
-            Logger.error('[NotifyManager] Error updating agent state:', error);
+            log.error('Error updating agent state', error);
             this.notificationService.sendError(error, agentId);
+            log.event.complete(eventId, 'failed');
         }
     }
 
     notifyError(error, agentId = null) {
+        const eventId = log.event.emit('notifyError', 'NotifyManager', { agentId });
         try {
             if (error?.type === 'cancellation' || error?.message?.includes('cancelled')) {
                 this.notificationService.sendResponse({
@@ -97,13 +113,15 @@ export class NotifyManager {
                     type: 'cancellation',
                     timestamp: Date.now()
                 });
+                log.event.complete(eventId, 'cancelled');
                 return;
             }
 
             const errorObj = error instanceof Error ? error : new Error(error?.message || error || 'Unknown error');
             this.notificationService.sendError({ error: errorObj, agentId: agentId || 'system' });
+            log.event.complete(eventId);
         } catch (err) {
-            Logger.error('[NotifyManager] Error in notifyError:', err);
+            log.error('Error in notifyError', err);
             this.notificationService.sendResponse({
                 agentId: 'system',
                 role: 'System',
@@ -112,6 +130,7 @@ export class NotifyManager {
                 error: { message: 'An unexpected error occurred' },
                 timestamp: Date.now()
             });
+            log.event.complete(eventId, 'failed');
         }
     }
 

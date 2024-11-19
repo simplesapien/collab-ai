@@ -1,11 +1,11 @@
 // src/system/system.js
-import { ConversationManager } from '../support/ConversationManager.js';
-import { LLMService } from '../../services/llm.js';
-import { Logger } from '../../utils/logger.js';
-import { config } from '../../config/config.js';
-import { QualityGate } from '../quality/QualityGate.js';
-import { Coordinator } from './coordinator.js';
-import { AgentManager } from '../support/AgentManager.js';
+import { ConversationManager } from './support/ConversationManager.js';
+import { LLMService } from '../services/llm.js';
+import { Logger } from '../utils/logger.js';
+import { config } from '../config/config.js';
+import { QualityGate } from './quality/QualityGate.js';
+import { Coordinator } from './coordination/coordinator.js';
+import { AgentManager } from './support/AgentManager.js';
 
 export class System {
     constructor() {
@@ -13,7 +13,7 @@ export class System {
         this.agentManager = null;
         this.conversationManager = null;
         this.llmService = null;
-        this.qualityGate = new QualityGate(config);
+        this.qualityGate = new QualityGate();
     }
 
     async initialize(agentConfigs, notifyManager) {
@@ -22,7 +22,6 @@ export class System {
             this.llmService = new LLMService();
             this.agentManager = new AgentManager(this.llmService);
             this.conversationManager = new ConversationManager();
-            this.qualityGate = new QualityGate(this.llmService);
 
             // Initialize coordinator with notifyManager
             this.coordinator = new Coordinator(

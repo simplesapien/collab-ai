@@ -12,11 +12,15 @@ collab-ai
    ├─ .DS_Store
    ├─ agents
    │  ├─ agentFactory.js
-   │  ├─ analyst.js
-   │  ├─ baseAgent.js
-   │  ├─ critic.js
-   │  ├─ director.js
-   │  ├─ expert.js
+   │  ├─ base
+   │  │  └─ baseAgent.js
+   │  ├─ interfaces
+   │  │  └─ agent.js
+   │  ├─ types
+   │  │  ├─ analyst.js
+   │  │  ├─ critic.js
+   │  │  ├─ director.js
+   │  │  └─ expert.js
    │  └─ unused-functions
    │     └─ functions.js
    ├─ app.js
@@ -33,16 +37,18 @@ collab-ai
    │  ├─ core
    │  │  ├─ coordinator.js
    │  │  └─ system.js
+   │  ├─ notification
+   │  │  ├─ NotificationService.js
+   │  │  └─ NotifyManager.js
    │  ├─ quality
    │  │  └─ QualityGate.js
    │  └─ support
    │     ├─ AgentManager.js
-   │     ├─ ConversationManager.js
-   │     ├─ NotificationService.js
-   │     └─ NotifyManager.js
+   │     └─ ConversationManager.js
    └─ utils
       ├─ generators.js
       ├─ logger.js
-      └─ validators.js
+      ├─ validators.js
+      └─ winstonLogger.js
 
 ```

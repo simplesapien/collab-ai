@@ -1,5 +1,5 @@
 // src/app.js
-import { System } from './system/core/system.js';
+import { System } from './system/system.js';
 import { agentConfigs } from './config/agentConfigs.js';
 import { Logger } from './utils/logger.js';
 import { generateId } from './utils/generators.js';

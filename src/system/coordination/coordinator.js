@@ -1,4 +1,5 @@
 import { Logger } from '../../utils/logger.js';
+import { PlanningPhase } from './phases/planning.js';
 
 export class Coordinator {
     constructor(conversationManager, agentManager, qualityGate, notifyManager) {
@@ -8,6 +9,7 @@ export class Coordinator {
         this.notifyManager = notifyManager;
         this.isProcessing = false;
         this.isCancelled = false;
+        this.planningPhase = new PlanningPhase(this);
         Logger.debug('[Coordinator] Initialized with dependencies');
     }
 
@@ -29,9 +31,7 @@ export class Coordinator {
             
             // Phase 1: Planning
             if (this.isCancelled) return;
-            Logger.debug(`[Coordinator] Starting planning phase`);
-            const plan = await this._executeInitialPlanning(director, message, availableAgents);
-            Logger.debug(`[Coordinator] Planning complete`, { plan });
+            const plan = await this.planningPhase.execute(director, message, availableAgents);
             
             // Phase 2: Initial Responses
             if (this.isCancelled) return;
@@ -182,16 +182,14 @@ export class Coordinator {
         this.qualityGate.resetRoundCounter();
         
         while (true) {
-            // Check cancellation at the start of each collaboration round
             if (this.isCancelled) {
                 Logger.debug('[Coordinator] Cancelling collaboration phase');
                 break;
             }
 
             const currentRound = this.qualityGate.incrementRound();
-            Logger.info(`[Coordinator] Starting collaboration round ${currentRound}`);
             
-            const qualityCheck = await this.qualityGate.validateCollaborationContinuation(
+            const qualityCheck = await this.qualityGate.performQualityCheck(
                 conversation,
                 initialResponses
             );
@@ -299,5 +297,30 @@ export class Coordinator {
             // Return early without throwing an error
             return;
         }
+    }
+
+    // New boilerplate methods for future phases
+    async _planNextCollaborationRound(director, conversation, currentResponses) {
+        // To be implemented in Phase 2
+        return {
+            ...await director.planNextAgentInteraction(conversation.messages, currentResponses),
+            complexity: await this._assessDiscussionComplexity(conversation),
+            stage: await this._determineDiscussionStage(conversation)
+        };
+    }
+
+    async _assessDiscussionComplexity(conversation) {
+        // To be implemented in Phase 3
+        return 'medium';
+    }
+
+    async _determineDiscussionStage(conversation) {
+        // To be implemented in Phase 3
+        return 'collaboration';
+    }
+
+    _validatePlanComplexity(plan) {
+        // To be implemented in Phase 3
+        return true;
     }
 }

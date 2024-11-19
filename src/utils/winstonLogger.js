@@ -4,7 +4,31 @@ import { fileURLToPath } from 'url';
 
 const logDir = path.join(path.dirname(fileURLToPath(import.meta.url)), '../../logs/winston');
 
-// Get file and line number for error traces
+// Custom log levels
+const logLevels = {
+    levels: {
+        error: 0,
+        warn: 1,
+        event: 2,
+        state: 3,
+        perf: 4,
+        quality: 5,
+        info: 6,
+        debug: 7
+    },
+    colors: {
+        error: 'red',
+        warn: 'yellow',
+        event: 'cyan',
+        state: 'blue',
+        perf: 'magenta',
+        quality: 'green',
+        info: 'white',
+        debug: 'gray'
+    }
+};
+
+// Get caller information for stack traces
 const getCallerInfo = () => {
     const error = new Error();
     const stack = error.stack.split('\n')[3];
@@ -12,10 +36,11 @@ const getCallerInfo = () => {
     return match ? `${path.basename(match[1])}:${match[2]}` : 'unknown';
 };
 
-// Create format for different log types
-const logFormat = winston.format.printf(({ level, message, timestamp, caller, duration, ...meta }) => {
-    let log = `${timestamp} [${level}]`;
+// Custom format for logs
+const logFormat = winston.format.printf(({ level, message, timestamp, caller, eventId, duration, ...meta }) => {
+    let log = `${timestamp} [${level.toUpperCase()}]`;
     if (caller) log += ` (${caller})`;
+    if (eventId) log += ` [Event:${eventId}]`;
     if (duration) log += ` [${duration}ms]`;
     log += `: ${message}`;
     
@@ -26,23 +51,24 @@ const logFormat = winston.format.printf(({ level, message, timestamp, caller, du
     return log;
 });
 
+// Initialize Winston logger
 const logger = winston.createLogger({
-    level: 'debug',
+    levels: logLevels.levels,
     format: winston.format.combine(
         winston.format.timestamp({ format: 'YYYY-MM-DD HH:mm:ss' }),
         logFormat
     ),
     transports: [
-        // API calls log
+        // Events log
         new winston.transports.File({
-            filename: path.join(logDir, 'api.log'),
-            level: 'debug',
+            filename: path.join(logDir, 'events.log'),
+            level: 'event',
             flags: 'w'
         }),
-        // System flow log
+        // System state log
         new winston.transports.File({
-            filename: path.join(logDir, 'system.log'),
-            level: 'debug',
+            filename: path.join(logDir, 'state.log'),
+            level: 'state',
             flags: 'w'
         }),
         // Error log
@@ -51,50 +77,143 @@ const logger = winston.createLogger({
             level: 'error',
             flags: 'w'
         }),
-        // Console (errors only)
+        // Console output (all levels in development)
         new winston.transports.Console({
             level: 'error',
             format: winston.format.combine(
-                winston.format.colorize(),
+                winston.format.colorize({ colors: logLevels.colors }),
                 logFormat
             )
+        }),
+        new winston.transports.File({
+            filename: path.join(logDir, 'performance.log'),
+            level: 'perf',
+            flags: 'w'
+        }),
+        new winston.transports.File({
+            filename: path.join(logDir, 'quality.log'),
+            level: 'quality',
+            flags: 'w'
         })
     ]
 });
 
-// Performance timer utility
-const createTimer = () => {
-    const start = process.hrtime();
-    return () => {
-        const [seconds, nanoseconds] = process.hrtime(start);
-        return (seconds * 1000 + nanoseconds / 1000000).toFixed(2);
-    };
-};
+// Enhanced event tracking map with more metadata
+const eventTracker = new Map();
 
 export const log = {
-    // System flow logging
-    trace: (message, meta = {}) => {
-        logger.debug(message, { 
-            caller: getCallerInfo(),
-            ...meta 
-        });
+    event: {
+        emit: (eventName, sourceId, payload = {}) => {
+            const eventId = `${sourceId}-${Date.now()}`;
+            eventTracker.set(eventId, {
+                name: eventName,
+                source: sourceId,
+                startTime: Date.now(),
+                status: 'emitted',
+                handlers: [],
+                steps: [{
+                    action: 'emit',
+                    timestamp: Date.now(),
+                    metadata: payload
+                }]
+            });
+            
+            logger.log('event', `Event Emitted: ${eventName}`, {
+                eventId,
+                source: sourceId,
+                payload,
+                caller: getCallerInfo()
+            });
+            
+            return eventId;
+        },
+
+        handled: (eventId, handlerId, result = {}) => {
+            const event = eventTracker.get(eventId);
+            if (event) {
+                event.handlers.push(handlerId);
+                event.steps.push({
+                    action: 'handled',
+                    timestamp: Date.now(),
+                    handler: handlerId,
+                    result
+                });
+                
+                logger.log('event', `Event Handled`, {
+                    eventId,
+                    handler: handlerId,
+                    result,
+                    duration: Date.now() - event.startTime,
+                    caller: getCallerInfo()
+                });
+            } else {
+                logger.warn(`Orphaned event handler detected`, {
+                    eventId,
+                    handler: handlerId,
+                    caller: getCallerInfo()
+                });
+            }
+        },
+
+        complete: (eventId, status = 'completed', metadata = {}) => {
+            const event = eventTracker.get(eventId);
+            if (event) {
+                const duration = Date.now() - event.startTime;
+                event.steps.push({
+                    action: 'complete',
+                    timestamp: Date.now(),
+                    status,
+                    metadata
+                });
+                
+                logger.log('event', `Event Chain ${status}`, {
+                    eventId,
+                    name: event.name,
+                    handlers: event.handlers,
+                    duration,
+                    steps: event.steps,
+                    caller: getCallerInfo()
+                });
+                
+                // Performance metrics
+                logger.log('perf', `Event Chain Performance`, {
+                    eventId,
+                    duration,
+                    handlerCount: event.handlers.length,
+                    stepCount: event.steps.length
+                });
+                
+                eventTracker.delete(eventId);
+            }
+        }
     },
 
-    // API call logging
-    api: {
-        start: (endpoint, payload) => {
-            const timer = createTimer();
-            logger.debug(`API Call Started: ${endpoint}`, {
-                caller: getCallerInfo(),
-                payload
+    state: {
+        change: (component, fromState, toState, metadata = {}) => {
+            const stateEvent = {
+                component,
+                from: fromState,
+                to: toState,
+                timestamp: Date.now(),
+                ...metadata
+            };
+            
+            logger.log('state', `State Change in ${component}`, {
+                ...stateEvent,
+                caller: getCallerInfo()
             });
-            return timer;
-        },
-        end: (endpoint, response, timer) => {
-            logger.debug(`API Call Completed: ${endpoint}`, {
-                caller: getCallerInfo(),
-                duration: timer(),
-                response
+            
+            return stateEvent;
+        }
+    },
+
+    perf: {
+        measure: (operation, duration, metadata = {}) => {
+            logger.log('perf', `Performance Measurement`, {
+                operation,
+                duration,
+                ...metadata,
+                caller: getCallerInfo()
             });
         }
     },
@@ -110,22 +229,21 @@ export const log = {
         });
     },
 
-    // Performance logging
-    perf: (operation, duration) => {
-        logger.debug(`Performance: ${operation}`, {
+    // Standard levels
+    warn: (message, meta = {}) => {
+        logger.warn(message, {
             caller: getCallerInfo(),
-            duration
+            ...meta
         });
     },
 
-    // Standard levels
     info: (message, meta = {}) => {
         logger.info(message, {
             caller: getCallerInfo(),
             ...meta
         });
     },
-    
+
     debug: (message, meta = {}) => {
         logger.debug(message, {
             caller: getCallerInfo(),
