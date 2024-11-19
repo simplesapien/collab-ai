@@ -4,8 +4,7 @@ collab-ai
 ├─ (server).js
 ├─ .DS_Store
 ├─ README.md
-├─ flowchart.txt
-├─ newstructure.txt
+├─ flowchart.md
 ├─ package-lock.json
 ├─ package.json
 └─ src
@@ -28,26 +27,34 @@ collab-ai
    ├─ config
    │  ├─ agentConfigs.js
    │  └─ config.js
+   ├─ scripts
+   │  ├─ logAnalyzer.js
+   │  ├─ logMonitor.js
+   │  └─ reportGenerator.js
    ├─ services
    │  ├─ costTracker.js
    │  ├─ llm.js
    │  ├─ messageFormatter.js
    │  └─ rateLimiter.js
    ├─ system
-   │  ├─ core
+   │  ├─ coordination
    │  │  ├─ coordinator.js
-   │  │  └─ system.js
+   │  │  └─ phases
+   │  │     ├─ collaboration.js
+   │  │     ├─ planning.js
+   │  │     ├─ response.js
+   │  │     └─ summary.js
    │  ├─ notification
    │  │  ├─ NotificationService.js
    │  │  └─ NotifyManager.js
    │  ├─ quality
    │  │  └─ QualityGate.js
-   │  └─ support
-   │     ├─ AgentManager.js
-   │     └─ ConversationManager.js
+   │  ├─ support
+   │  │  ├─ AgentManager.js
+   │  │  └─ ConversationManager.js
+   │  └─ system.js
    └─ utils
       ├─ generators.js
-      ├─ logger.js
       ├─ validators.js
       └─ winstonLogger.js
 

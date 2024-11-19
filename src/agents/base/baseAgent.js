@@ -83,8 +83,7 @@ export class BaseAgent extends IAgent {
         Previous context: ${this.getRelevantHistory()}
         
         Core Guidelines:
-        - Respond in 1 sharp, specific sentence
-        - Keep your responses to 10 words or less.
+        - Respond in 2 sharp, specific sentence
         - Build directly on the previous message's key point
         - Focus on immediate, practical next steps
         - Don't over abstract concepts. Focus on concrete, actionable guidance
