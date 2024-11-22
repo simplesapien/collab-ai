@@ -1,119 +1,165 @@
 // src/agents/director.js
-import { BaseAgent } from '../base/baseAgent.js';
-import { log } from '../../utils/winstonLogger.js';
+import { BaseAgent } from '../../base/baseAgent.js';
+import { log } from '../../../utils/logger.js';
 
 export class Director extends BaseAgent {
     constructor(config, llmService) {
-        super({ ...config, role: 'Director' }, llmService);
-        this.activeParticipants = new Set();
+        super(config, llmService);
         log.state.change('Director', 'uninitialized', 'ready', { config });
     }
 
-    async planInitialAgentTasks(message, availableAgents) {
-        const eventId = log.event.emit('planInitialAgentTasks', 'Director', {
-            messageLength: typeof message === 'object' ? message.content.length : message.length,
-            availableAgentCount: availableAgents.length
-        });
-
+    async parseAndAnalyze(message) {
+        const eventId = log.event.emit('parseAndAnalyze', 'Director', { messageLength: message.length });
         try {
             const startTime = Date.now();
-            
-            log.debug('Starting initial agent task planning', { 
-                message, 
-                agentCount: availableAgents.length 
+            log.debug('Parsing and analyzing user message', { message });
+
+            const systemPrompt = `Extract key points, entities, and sentiment from the following message:
+            "${message}"
+            Respond in a strict JSON format like this:
+            {
+                "keyPoints": ["point1", "point2"],
+                "entities": ["entity1", "entity2"],
+                "sentiment": "positive/negative/neutral"
+            }`;
+
+            const parsedData = await this.llm.makeModelRequest({
+                systemPrompt: systemPrompt,
+                userPrompt: message,
+                context: [],
+                agentType: this.role
             });
+
+            log.event.complete(eventId, 'completed', { parsedData });
+            log.perf.measure('parseAndAnalyze', Date.now() - startTime, { messageLength: message.length });
+            return parsedData;
+        } catch (error) {
+            log.event.complete(eventId, 'failed', { error: error.message });
+            log.error('Error in parseAndAnalyze', error);
+            throw error;
+        }
+    }
+
+    async understandProblem(parsedData) {
+        const eventId = log.event.emit('understandProblem', 'Director', { parsedData });
+        try {
+            const startTime = Date.now();
+            log.debug('Understanding the problem from parsed data', { parsedData });
+
+            const systemPrompt = `Identify the main problem or goal from the following parsed data:
+            Key Points: ${parsedData.keyPoints.join(', ')}
+            Entities: ${parsedData.entities.join(', ')}
+            Sentiment: ${parsedData.sentiment}
+            Respond with a concise problem statement.`;
+
+            const response = await this.llm.makeModelRequest({
+                systemPrompt: systemPrompt,
+                userPrompt: '',
+                context: [],
+                agentType: this.role
+            });
+
+            const problem = response.trim();
+            log.debug('Identified problem', { problem });
+            log.event.complete(eventId, 'completed', { problem });
+            log.perf.measure('understandProblem', Date.now() - startTime, { parsedData });
+            return problem;
+        } catch (error) {
+            log.event.complete(eventId, 'failed', { error: error.message });
+            log.error('Error in understandProblem', error);
+            throw error;
+        }
+    }
+
+    async decomposeTask(problem) {
+        const eventId = log.event.emit('decomposeTask', 'Director', { problem });
+        try {
+            const startTime = Date.now();
+            log.debug('Decomposing problem into tasks', { problem });
+
+            const systemPrompt = `Break down the following problem into smaller, specific tasks:
+            "${problem}"
+            Respond in a strict JSON format like this:
+            {
+                "tasks": ["task1", "task2", "task3"]
+            }`;
+
+            const response = await this.llm.makeModelRequest({
+                systemPrompt: systemPrompt,
+                userPrompt: problem,
+                context: [],
+                agentType: this.role
+            });
+
+            let tasks;
+            try {
+                const decomposed = response;
+                tasks = decomposed.tasks;
+                log.debug('Decomposed tasks', { tasks });
+            } catch (e) {
+                log.error('Error parsing LLM response', { error: e.message });
+                throw new Error('Failed to parse LLM response as JSON.');
+            }
+
+            log.event.complete(eventId, 'completed', { tasks });
+            log.perf.measure('decomposeTask', Date.now() - startTime, { problem });
+            return tasks;
+        } catch (error) {
+            log.event.complete(eventId, 'failed', { error: error.message });
+            log.error('Error in decomposeTask', error);
+            throw error;
+        }
+    }
+
+    async planInitialAgentTasks(message, availableAgents) {
+        const eventId = log.event.emit('planInitialAgentTasks', 'Director');
+        
+        try {
+            const startTime = Date.now();
+            const userPrompt = typeof message === 'object' ? message.content : message;
+            
+            // Parse and analyze
+            const parsedData = await this.parseAndAnalyze(userPrompt);
+            const problem = await this.understandProblem(parsedData);
+            const tasks = await this.decomposeTask(problem);
             
             // Create a mapping of agent roles to their IDs
             const agentMap = availableAgents.reduce((map, agent) => {
                 map[agent.role.toLowerCase()] = agent.id;
                 return map;
             }, {});
-
-            log.debug('Created agent map', { agentMap });
             
-            // Handle message object or string
-            const userPrompt = typeof message === 'object' ? message.content : message;
-            log.debug('Processed user prompt', { userPrompt });
-
-            const systemPrompt = `As the Director, analyze the following message and determine:
-            1. Which of these available agents should participate: ${availableAgents.map(a => a.role).join(', ')}
-            2. What specific aspect each agent should address
-            
-            Important Guidelines:
-            - Assign clear, focused tasks that can be answered in 2-3 sentences
-            - Each task should focus on one specific aspect
-            - Tasks should be complementary, not overlapping
-            - Use EXACTLY these role names: ${availableAgents.map(a => a.role).join(', ')}
-            
-            Respond in a strict JSON format like this:
-            {
-                "participants": [
-                    {
-                        "id": "${availableAgents[0]?.id || 'analyst-1'}",
-                        "role": "${availableAgents[0]?.role || 'Analyst'}",
-                        "task": "specific focused task description"
-                    }
-                ]
-            }`;
-
-            log.debug('Making LLM request');
-            const llmStartTime = Date.now();
-            const response = await this.llm.makeModelRequest({
-                systemPrompt: systemPrompt,
-                userPrompt: userPrompt,
-                context: [], 
-                agentType: this.role
-            });
-            log.perf.measure('llm-request', Date.now() - llmStartTime, {
-                method: 'planInitialAgentTasks',
-                promptLength: userPrompt.length,
-                responseLength: response.length
-            });
-
-            // Parse and validate the response
-            let plan;
-            try {
-                plan = typeof response === 'string' ? JSON.parse(response) : response;
-                log.debug('Parsed initial plan', { plan });
-                
-                if (!plan.participants || !Array.isArray(plan.participants)) {
-                    throw new Error('Invalid plan structure: missing or invalid participants array');
-                }
-                
-                // Ensure IDs match our system's IDs
-                plan.participants = plan.participants.map(participant => {
-                    log.debug('Mapping participant', { participant });
-                    return {
-                        ...participant,
-                        id: agentMap[participant.role.toLowerCase()] || participant.id
-                    };
-                });
-
-                log.debug('Final processed plan', { plan });
-            } catch (e) {
-                log.error('Error processing plan', { error: e.message });
-                log.error('Failed to process orchestration plan', { error: e, plan });
-                
-                // Fallback plan with default participant
-                plan = {
-                    participants: [{
-                        id: availableAgents[0]?.id || 'analyst-1',
-                        role: availableAgents[0]?.role || 'Analyst',
-                        task: 'Analyze the user message and provide initial insights.'
-                    }]
+            // Assign tasks to agents based on their roles and capabilities
+            const participants = tasks.map((task, index) => {
+                const agentRole = availableAgents[index % availableAgents.length].role;
+                const agentId = agentMap[agentRole.toLowerCase()] || availableAgents[index % availableAgents.length].id;
+                return {
+                    id: agentId,
+                    role: agentRole,
+                    task: task
                 };
-                log.warn('Using fallback plan', { plan });
-            }
-
-            log.event.complete(eventId, 'completed', { plan });
-            log.perf.measure('planInitialAgentTasks', Date.now() - startTime, {
-                participantCount: plan.participants.length
             });
-
+            
+            // Ensure participants array is not empty
+            if (participants.length === 0) {
+                participants.push({
+                    id: availableAgents[0].id,
+                    role: availableAgents[0].role,
+                    task: 'Please analyze the user message and provide insights.'
+                });
+            }
+            
+            const plan = {
+                participants: participants,
+                analysis: parsedData
+            };
+            
+            log.debug('Final processed plan', { plan });
+            log.event.complete(eventId, 'completed', { plan });
+            log.perf.measure('planInitialAgentTasks', Date.now() - startTime, { participantCount: plan.participants.length });
             return plan;
         } catch (error) {
             log.event.complete(eventId, 'failed', { error: error.message });
-            log.error('Critical error in planInitialAgentTasks', error);
             throw error;
         }
     }
@@ -326,4 +372,43 @@ export class Director extends BaseAgent {
         }
     }
 
+}
+
+export class InsightManager {
+    constructor() {
+        this.insights = new Map(); // conversationId -> insights[]
+        log.state.change('InsightManager', 'uninitialized', 'ready');
+    }
+
+    addInsight(conversationId, insight) {
+        const eventId = log.event.emit('addInsight', 'InsightManager', { conversationId });
+        
+        try {
+            if (!this.insights.has(conversationId)) {
+                this.insights.set(conversationId, []);
+            }
+
+            const enhancedInsight = {
+                ...insight,
+                timestamp: Date.now(),
+                id: `${conversationId}-insight-${this.insights.get(conversationId).length}`
+            };
+
+            this.insights.get(conversationId).push(enhancedInsight);
+            log.event.complete(eventId, 'completed', { insightId: enhancedInsight.id });
+            return enhancedInsight;
+        } catch (error) {
+            log.event.complete(eventId, 'failed', { error: error.message });
+            throw error;
+        }
+    }
+
+    getInsights(conversationId) {
+        return this.insights.get(conversationId) || [];
+    }
+
+    getRecentInsights(conversationId, limit = 5) {
+        const insights = this.getInsights(conversationId);
+        return insights.slice(-limit);
+    }
 }

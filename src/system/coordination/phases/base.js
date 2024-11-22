@@ -1,4 +1,4 @@
-import { log } from '../../../utils/winstonLogger.js';
+import { log } from '../../../utils/logger.js';
 
 // Base class for all phases
 // This class is used to simplify the logging and performance metrics for each phase

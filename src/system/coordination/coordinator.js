@@ -1,15 +1,16 @@
-import { log } from '../../utils/winstonLogger.js';
+import { log } from '../../utils/logger.js';
 import { PlanningPhase } from './phases/planning.js';
 import { ResponsePhase } from './phases/response.js';
 import { CollaborationPhase } from './phases/collaboration.js';
 import { SummaryPhase } from './phases/summary.js';
 
 export class Coordinator {
-    constructor(conversationManager, agentManager, qualityGate, notifyManager) {
+    constructor(conversationManager, agentManager, qualityGate, notifyManager, insightManager) {
         this.conversationManager = conversationManager;
         this.agentManager = agentManager;
         this.qualityGate = qualityGate;
         this.notifyManager = notifyManager;
+        this.insightManager = insightManager;
         this.isProcessing = false;
         this.isCancelled = false;
 
@@ -35,6 +36,22 @@ export class Coordinator {
             // Execute phases
             const plan = await this.phases.planning.execute(director, message, availableAgents);
             const responses = await this.phases.response.execute(conversation, plan);
+
+            // Store insights every reseponse from the responses in the InsightManager
+            for (const response of responses) {
+                await this.insightManager.addInsight(
+                    conversationId, 
+                    {
+                        content: response.content,
+                        type: 'response'
+                    },
+                    'response-phase'
+                );
+            }
+
+            const storedInsights = this.insightManager.getInsights(conversationId);
+            log.debug('Stored insights', { storedInsights });
+
             await this.phases.collaboration.execute(conversation, director, responses);
             const summary = await this.phases.summary.execute(conversation, director);
 

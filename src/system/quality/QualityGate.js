@@ -1,4 +1,4 @@
-import { log } from '../../utils/winstonLogger.js';
+import { log } from '../../utils/logger.js';
 
 export class QualityGate {
     constructor() {
@@ -163,6 +163,11 @@ export class QualityGate {
             consensusStatus: await this._checkConsensusStatus(agentResponses),
             responseCoherence: await this._analyzeCoherence(agentResponses)
         };
+    }
+
+    async validateInsight(insight) {
+        // Implementation coming Later
+        return { passed: true };
     }
 
     _validateResponseLength(responses) {

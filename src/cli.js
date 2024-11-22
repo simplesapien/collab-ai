@@ -1,6 +1,6 @@
 // src/cli.js
 import { Application } from './app.js';
-import { log } from './utils/winstonLogger.js';
+import { log } from './utils/logger.js';
 import { config } from './config/config.js';
 import inquirer from 'inquirer';
 import chalk from 'chalk';

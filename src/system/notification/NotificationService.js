@@ -1,5 +1,5 @@
 import { EventEmitter } from 'events';
-import { log } from '../../utils/winstonLogger.js';
+import { log } from '../../utils/logger.js';
 
 export class NotificationService extends EventEmitter {
     constructor() {

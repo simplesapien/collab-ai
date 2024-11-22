@@ -1,11 +1,12 @@
 // src/system/system.js
 import { ConversationManager } from './support/ConversationManager.js';
-import { LLMService } from '../services/llm.js';
-import { log } from '../utils/winstonLogger.js';
+import { LLMService } from '../services/LLMService.js';
+import { log } from '../utils/logger.js';
 import { config } from '../config/config.js';
 import { QualityGate } from './quality/QualityGate.js';
 import { Coordinator } from './coordination/coordinator.js';
 import { AgentManager } from './support/AgentManager.js';
+import { InsightManager } from './support/InsightManager.js';
 
 export class System {
     constructor() {
@@ -18,6 +19,7 @@ export class System {
             this.conversationManager = null;
             this.llmService = null;
             this.qualityGate = new QualityGate();
+            this.insightManager = new InsightManager(this.qualityGate);
 
             log.state.change('System', 'uninitialized', 'ready');
             log.perf.measure('system-init', Date.now() - startTime);
@@ -50,7 +52,8 @@ export class System {
                 this.conversationManager,
                 this.agentManager,
                 this.qualityGate,
-                notifyManager
+                notifyManager,
+                this.insightManager
             );
 
             // Initialize agents

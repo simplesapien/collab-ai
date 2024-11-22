@@ -1,7 +1,7 @@
 // src/app.js
 import { System } from './system/system.js';
 import { agentConfigs } from './config/agentConfigs.js';
-import { log } from './utils/winstonLogger.js';
+import { log } from './utils/logger.js';
 import { generateId } from './utils/generators.js';
 import { NotifyManager } from './system/notification/NotifyManager.js';
 

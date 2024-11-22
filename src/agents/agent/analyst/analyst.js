@@ -1,6 +1,6 @@
-// src/agents/analyst.js
-import { BaseAgent } from '../base/baseAgent.js';
-import { log } from '../../utils/winstonLogger.js';
+// src/agents/agent/analyst/analyst.js
+import { BaseAgent } from '../../base/baseAgent.js';
+import { log } from '../../../utils/logger.js';
 
 export class Analyst extends BaseAgent {
     constructor(config, llmService) {

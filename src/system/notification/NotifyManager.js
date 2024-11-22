@@ -1,5 +1,5 @@
 import { NotificationService } from './NotificationService.js';
-import { log } from '../../utils/winstonLogger.js';
+import { log } from '../../utils/logger.js';
 
 export class NotifyManager {
     constructor() {

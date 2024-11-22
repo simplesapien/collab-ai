@@ -1,6 +1,6 @@
 // src/agents/critic.js
-import { BaseAgent } from '../base/baseAgent.js';
-import { log } from '../../utils/winstonLogger.js';
+import { BaseAgent } from '../../base/baseAgent.js';
+import { log } from '../../../utils/logger.js';
 
 export class Critic extends BaseAgent {
     constructor(config, llmService) {

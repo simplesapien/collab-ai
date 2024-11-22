@@ -1,5 +1,5 @@
 import { AgentFactory } from '../../agents/agentFactory.js';
-import { log } from '../../utils/winstonLogger.js';
+import { log } from '../../utils/logger.js';
 
 export class AgentManager {
     constructor(llmService) {

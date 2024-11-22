@@ -1,4 +1,4 @@
-import { log } from '../utils/winstonLogger.js';
+import { log } from './logger.js';
 
 export class RateLimiter {
     constructor(config = { limit: 50, interval: 60000 }) {

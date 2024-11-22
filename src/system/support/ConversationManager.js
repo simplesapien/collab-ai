@@ -1,6 +1,7 @@
 // src/conversation/conversationManager.js
-import { log } from '../../utils/winstonLogger.js';
+import { log } from '../../utils/logger.js';
 import { Validators } from '../../utils/validators.js';
+import { InsightManager } from './InsightManager.js';
 
 export class ConversationManager {
     constructor(config = { maxConversations: 100, maxMessageAge: 24 * 60 * 60 * 1000 }) {
@@ -12,6 +13,7 @@ export class ConversationManager {
             this.config = config;
             this.metadata = new Map();
             this.currentConversationId = null;
+            this.insightManager = new InsightManager();
 
             log.debug('Conversation manager initialized', {
                 maxConversations: config.maxConversations,
@@ -210,7 +212,7 @@ export class ConversationManager {
             const now = Date.now();
             let removedCount = 0;
             
-            // Remove old conversations
+            // Remove old conversations and their insights
             for (const [id, meta] of this.metadata.entries()) {
                 if (now - meta.lastUpdated > this.config.maxMessageAge) {
                     log.debug('Removing expired conversation', {
@@ -219,6 +221,7 @@ export class ConversationManager {
                     });
                     this.conversations.delete(id);
                     this.metadata.delete(id);
+                    this.insightManager.insights.delete(id);
                     removedCount++;
                 }
             }
@@ -236,6 +239,7 @@ export class ConversationManager {
                     });
                     this.conversations.delete(oldestId);
                     this.metadata.delete(oldestId);
+                    this.insightManager.insights.delete(oldestId);
                     removedCount++;
                 }
             }
@@ -385,5 +389,13 @@ export class ConversationManager {
             log.event.complete(eventId, 'failed');
             throw error;
         }
+    }
+
+    addInsight(conversationId, insight) {
+        return this.insightManager.addInsight(conversationId, insight);
+    }
+
+    getRecentInsights(conversationId, limit) {
+        return this.insightManager.getRecentInsights(conversationId, limit);
     }
 }

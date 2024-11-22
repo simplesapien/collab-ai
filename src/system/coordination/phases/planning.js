@@ -1,4 +1,4 @@
-import { log } from '../../../utils/winstonLogger.js';
+import { log } from '../../../utils/logger.js';
 import { Phase } from './base.js';
 
 export class PlanningPhase extends Phase {

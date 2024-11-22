@@ -1,4 +1,4 @@
-import { log } from '../../../utils/winstonLogger.js';
+import { log } from '../../../utils/logger.js';
 import { Phase } from './base.js';
 
 export class ResponsePhase extends Phase {
@@ -43,7 +43,7 @@ export class ResponsePhase extends Phase {
                             participant.task
                         );
 
-                        log.info('Raw agent response:', {
+                        log.debug('Raw agent response:', {
                             agentId: agent.id,
                             content: response,
                             conversationId: conversation.id
@@ -55,7 +55,7 @@ export class ResponsePhase extends Phase {
                             participant.role
                         );
 
-                        log.info('Formatted agent response:', {
+                        log.debug('Formatted agent response:', {
                             agentId: agent.id,
                             role: participant.role,
                             content: formattedResponse.content,

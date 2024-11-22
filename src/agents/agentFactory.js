@@ -1,8 +1,8 @@
-import { Analyst } from './types/analyst.js';
-import { Critic } from './types/critic.js';
-import { Director } from './types/director.js';
-import { Expert } from './types/expert.js';
-import { log } from '../utils/winstonLogger.js';
+import { Analyst } from './agent/analyst/analyst.js';
+import { Critic } from './agent/critic/critic.js';
+import { Director } from './agent/director/director.js';
+import { Expert } from './agent/expert/expert.js';
+import { log } from '../utils/logger.js';
 
 export class AgentFactory {
     static createAgent(config, llmService) {

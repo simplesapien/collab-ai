@@ -1,4 +1,4 @@
-import { log } from '../utils/winstonLogger.js';
+import { log } from './logger.js';
 
 export class MessageFormatter {
     static formatMessages(params) {

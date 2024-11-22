@@ -1,8 +1,21 @@
 import winston from 'winston';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import fs from 'fs';
 
 const logDir = path.join(path.dirname(fileURLToPath(import.meta.url)), '../../logs');
+
+// Ensure log directory exists and clean existing logs
+if (!fs.existsSync(logDir)) {
+    fs.mkdirSync(logDir, { recursive: true });
+} else {
+    // Delete existing log files
+    fs.readdirSync(logDir).forEach(file => {
+        if (file.endsWith('.log')) {
+            fs.unlinkSync(path.join(logDir, file));
+        }
+    });
+}
 
 // Custom log levels
 const logLevels = {
@@ -60,22 +73,22 @@ const logger = winston.createLogger({
     ),
     transports: [
         // Events log
-        new winston.transports.File({
-            filename: path.join(logDir, 'events.log'),
-            level: 'event',
-            flags: 'w'
-        }),
-        // System state log
-        new winston.transports.File({
-            filename: path.join(logDir, 'state.log'),
-            level: 'state',
-            flags: 'w'
-        }),
+        // new winston.transports.File({
+        //     filename: path.join(logDir, 'events.log'),
+        //     level: 'event',
+        //     flags: 'w'
+        // }),
+        // // System state log
+        // new winston.transports.File({
+        //     filename: path.join(logDir, 'state.log'),
+        //     level: 'state',
+        //     flags: 'w'
+        // }),
         // Error log
         new winston.transports.File({
             filename: path.join(logDir, 'error.log'),
             level: 'error',
-            flags: 'w'
+            flags: 'a'
         }),
         // Console output (all levels in development)
         new winston.transports.Console({
@@ -85,15 +98,20 @@ const logger = winston.createLogger({
                 logFormat
             )
         }),
+        // new winston.transports.File({
+        //     filename: path.join(logDir, 'performance.log'),
+        //     level: 'perf',
+        //     flags: 'w'
+        // }),
+        // new winston.transports.File({
+        //     filename: path.join(logDir, 'quality.log'),
+        //     level: 'quality',
+        //     flags: 'w'
+        // }),
         new winston.transports.File({
-            filename: path.join(logDir, 'performance.log'),
-            level: 'perf',
-            flags: 'w'
-        }),
-        new winston.transports.File({
-            filename: path.join(logDir, 'quality.log'),
-            level: 'quality',
-            flags: 'w'
+            filename: path.join(logDir, 'debug.log'),
+            level: 'debug',
+            flags: 'a'
         })
     ]
 });
