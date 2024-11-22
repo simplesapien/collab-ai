@@ -9,13 +9,11 @@ export class Phase {
     }
 
     async executeWithLogging(operation, metadata = {}) {
-        const eventId = log.event.emit('execute', this.phaseName, metadata);
         const startTime = Date.now();
 
         try {
             if (this.coordinator.isCancelled) {
                 log.debug(`Process cancelled during ${this.phaseName}`);
-                log.event.complete(eventId, 'cancelled', metadata);
                 return null;
             }
 
@@ -30,13 +28,11 @@ export class Phase {
                 } : {})
             };
 
-            log.perf.measure(`${this.phaseName}-execution`, Date.now() - startTime, finalMetadata);
-            log.event.complete(eventId, 'completed', finalMetadata);
-            
+            // log.perf.measure(`${this.phaseName}-execution`, Date.now() - startTime, finalMetadata);
+            log.debug(`${this.phaseName} execution completed`, finalMetadata);            
             return result;
         } catch (error) {
             log.error(`${this.phaseName} execution failed`, error);
-            log.event.complete(eventId, 'failed', metadata);
             throw error;
         }
     }

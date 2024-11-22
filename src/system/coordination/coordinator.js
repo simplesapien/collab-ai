@@ -1,8 +1,8 @@
-import { log } from '../../utils/logger.js';
 import { PlanningPhase } from './phases/planning.js';
 import { ResponsePhase } from './phases/response.js';
 import { CollaborationPhase } from './phases/collaboration.js';
 import { SummaryPhase } from './phases/summary.js';
+import { log } from '../../utils/logger.js';
 
 export class Coordinator {
     constructor(conversationManager, agentManager, qualityGate, notifyManager, insightManager) {
@@ -23,7 +23,6 @@ export class Coordinator {
     }
 
     async coordinateDiscussion(conversationId, message) {
-        const eventId = log.event.emit('coordinateDiscussion', 'Coordinator');
         this.isProcessing = true;
         this.isCancelled = false;
 
@@ -33,34 +32,22 @@ export class Coordinator {
             const director = await this.phases.planning._getDirector();
             const availableAgents = this.phases.planning._getAvailableAgents(director.id);
 
-            // Execute phases
-            const plan = await this.phases.planning.execute(director, message, availableAgents);
-            const responses = await this.phases.response.execute(conversation, plan);
-
-            // Store insights every reseponse from the responses in the InsightManager
-            for (const response of responses) {
-                await this.insightManager.addInsight(
-                    conversationId, 
-                    {
-                        content: response.content,
-                        type: 'response'
-                    },
-                    'response-phase'
-                );
-            }
-
+            // Retrieve insights from the InsightManager
             const storedInsights = this.insightManager.getInsights(conversationId);
             log.debug('Stored insights', { storedInsights });
 
-            await this.phases.collaboration.execute(conversation, director, responses);
+            // Execute phases
+            const plan = await this.phases.planning.execute(director, message, availableAgents, storedInsights.length ? storedInsights : null);
+            const responses = await this.phases.response.execute(conversation, plan);
+            const collaboration = await this.phases.collaboration.execute(conversation, director, responses);
             const summary = await this.phases.summary.execute(conversation, director);
 
-            log.event.complete(eventId, 'completed');
-            return { plan: plan.participants, responses, summary };
+            // Store insights from all phases into the InsightManager
+            await this.insightManager.storeInsights(conversationId, plan, responses, collaboration, summary);
 
+            return { plan: plan.participants, responses, summary };
         } catch (error) {
-            log.error('Discussion coordination failed', error);
-            log.event.complete(eventId, this.isCancelled ? 'cancelled' : 'failed');
+            log.error('Error in coordinateDiscussion', { error });
             return this.isCancelled ? { responses: [], summary: null, cancelled: true } : null;
         } finally {
             this.isProcessing = false;

@@ -8,15 +8,16 @@ export class Director extends BaseAgent {
         log.state.change('Director', 'uninitialized', 'ready', { config });
     }
 
-    async parseAndAnalyze(message) {
+    async parseAndAnalyze(message, storedInsights) {
         const eventId = log.event.emit('parseAndAnalyze', 'Director', { messageLength: message.length });
         try {
             const startTime = Date.now();
             log.debug('Parsing and analyzing user message', { message });
 
             const systemPrompt = `Extract key points, entities, and sentiment from the following message:
-            "${message}"
-            Respond in a strict JSON format like this:
+            "${message}". As well as the following previous messages in this array if there are any: [${ storedInsights ? storedInsights.map(insight => insight.content).join('\n') : '' }].
+
+            Respond in a strict JSON format like this. Use as many key points and entities as you need:
             {
                 "keyPoints": ["point1", "point2"],
                 "entities": ["entity1", "entity2"],
@@ -30,6 +31,7 @@ export class Director extends BaseAgent {
                 agentType: this.role
             });
 
+            log.debug('Parsed data in Director.js', { parsedData });
             log.event.complete(eventId, 'completed', { parsedData });
             log.perf.measure('parseAndAnalyze', Date.now() - startTime, { messageLength: message.length });
             return parsedData;
@@ -60,7 +62,7 @@ export class Director extends BaseAgent {
             });
 
             const problem = response.trim();
-            log.debug('Identified problem', { problem });
+            log.debug('Identified problem in Director.js', { problem });
             log.event.complete(eventId, 'completed', { problem });
             log.perf.measure('understandProblem', Date.now() - startTime, { parsedData });
             return problem;
@@ -77,7 +79,7 @@ export class Director extends BaseAgent {
             const startTime = Date.now();
             log.debug('Decomposing problem into tasks', { problem });
 
-            const systemPrompt = `Break down the following problem into smaller, specific tasks:
+            const systemPrompt = `Break down the following problem into smaller, specific tasks. Limit yourself to 3 tasks:
             "${problem}"
             Respond in a strict JSON format like this:
             {
@@ -95,7 +97,7 @@ export class Director extends BaseAgent {
             try {
                 const decomposed = response;
                 tasks = decomposed.tasks;
-                log.debug('Decomposed tasks', { tasks });
+                log.debug('Decomposed tasks in Director.js', { tasks });
             } catch (e) {
                 log.error('Error parsing LLM response', { error: e.message });
                 throw new Error('Failed to parse LLM response as JSON.');
@@ -111,7 +113,7 @@ export class Director extends BaseAgent {
         }
     }
 
-    async planInitialAgentTasks(message, availableAgents) {
+    async planInitialAgentTasks(message, availableAgents, storedInsights) {
         const eventId = log.event.emit('planInitialAgentTasks', 'Director');
         
         try {
@@ -119,7 +121,7 @@ export class Director extends BaseAgent {
             const userPrompt = typeof message === 'object' ? message.content : message;
             
             // Parse and analyze
-            const parsedData = await this.parseAndAnalyze(userPrompt);
+            const parsedData = await this.parseAndAnalyze(userPrompt, storedInsights);
             const problem = await this.understandProblem(parsedData);
             const tasks = await this.decomposeTask(problem);
             

@@ -6,24 +6,12 @@ export class PlanningPhase extends Phase {
         super(coordinator, 'PlanningPhase');
     }
 
-    async execute(director, message, availableAgents) {
+    async execute(director, message, availableAgents, storedInsights) {
         return this.executeWithLogging(
             async () => {
-                log.info('Planning phase received user message:', {
-                    content: message.content,
-                    messageLength: message.content?.length
-                });
 
                 this.coordinator.notifyManager.notifyThinking('director-1', 'planning');
-                const plan = await director.planInitialAgentTasks(message.content, availableAgents);
-                
-                log.info('Director generated plan:', {
-                    participantCount: plan.participants.length,
-                    participants: plan.participants.map(p => ({
-                        role: p.role,
-                        task: p.task
-                    }))
-                });
+                const plan = await director.planInitialAgentTasks(message.content, availableAgents, storedInsights);
 
                 await this._emitDirectorPlan(plan, this.coordinator.conversationManager.getCurrentConversationId());
                 return plan;
@@ -45,13 +33,6 @@ export class PlanningPhase extends Phase {
                         content: `${participant.role}: ${participant.task}`,
                         timestamp: Date.now()
                     };
-
-                    log.info('Director task assignment:', {
-                        role: participant.role,
-                        task: participant.task,
-                        conversationId
-                    });
-
                     this.coordinator.conversationManager.logMessage(conversationId, response);
                     this.coordinator.notifyManager.notifyResponse(response);
                 }

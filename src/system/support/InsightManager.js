@@ -81,6 +81,42 @@ export class InsightManager {
 
         return limit ? insights.slice(-limit) : insights;
     }
+    
+    // Store insights every reseponse from the responses in the InsightManager
+    async storeInsights(conversationId, plan, responses, collaboration, summary) {
+        for (const response of responses) {
+            await this.addInsight(
+                conversationId, 
+                {
+                    content: response.content,
+                    type: 'response'
+                },
+                'response-phase'
+            );
+        }
+
+        // Store insights from the collaboration in the InsightManager
+        for (const insight of collaboration.collaborativeResponses) {
+            await this.addInsight(
+                conversationId,
+                {
+                    content: insight.content,
+                    type: 'collaboration'
+                },
+                'collaboration-phase'
+            );
+        }
+
+        // Store insights from the summary in the InsightManager
+        await this.addInsight(
+            conversationId, 
+            {
+                content: summary,
+                type: 'summary'
+            },
+            'summary-phase'
+        );
+    }
 
     getRecentInsights(conversationId, limit = 5) {
         return this.getInsights(conversationId, { limit });

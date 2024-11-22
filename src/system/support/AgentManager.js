@@ -204,6 +204,7 @@ export class AgentManager {
             });
 
             log.event.complete(eventId, 'completed');
+            log.debug('Formatted agent response (AgentManager)', { formattedResponse });
             return formattedResponse;
         } catch (error) {
             log.error('Response formatting failed', error);

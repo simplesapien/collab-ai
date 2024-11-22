@@ -4,6 +4,7 @@ import { Phase } from './base.js';
 export class ResponsePhase extends Phase {
     constructor(coordinator) {
         super(coordinator, 'ResponsePhase');
+        this.internalData = {}
     }
 
     async execute(conversation, plan) {
@@ -11,43 +12,25 @@ export class ResponsePhase extends Phase {
             async () => {
                 const responses = [];
                 
-                log.info('Starting initial responses phase:', {
-                    participantCount: plan.participants.length,
-                    conversationId: conversation.id
-                });
-                
                 for (const participant of plan.participants) {
                     if (this.coordinator.isCancelled) {
-                        log.debug('Cancelling remaining responses');
                         return responses;
                     }
 
                     const agent = this.coordinator.agentManager.getAgent(participant.id);
                     if (!agent) {
-                        log.warn('Agent not found for participant', { agentId: participant.id });
+                        log.debug('Agent not found for participant', { agentId: participant.id });
                         continue;
                     }
 
                     this.coordinator.notifyManager.notifyThinking(agent.id, 'thinking');
                     
                     try {
-                        log.debug('Generating response for agent:', {
-                            agentId: agent.id,
-                            role: participant.role,
-                            task: participant.task
-                        });
-
                         const response = await this.coordinator.agentManager.generateAgentResponse(
                             agent.id,
                             conversation,
                             participant.task
                         );
-
-                        log.debug('Raw agent response:', {
-                            agentId: agent.id,
-                            content: response,
-                            conversationId: conversation.id
-                        });
 
                         const formattedResponse = this.coordinator.agentManager.formatAgentResponse(
                             response,

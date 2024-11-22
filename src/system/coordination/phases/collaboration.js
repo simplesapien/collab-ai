@@ -11,7 +11,7 @@ export class CollaborationPhase extends Phase {
         return this.executeWithLogging(
             async () => {
                 const collaborativeResponses = [];
-                log.info('Starting collaboration phase...');
+                log.debug('Starting collaboration phase...');
                 this.coordinator.qualityGate.resetRoundCounter();
                 
                 while (true) {
@@ -20,21 +20,15 @@ export class CollaborationPhase extends Phase {
                         break;
                     }
 
-                    const currentRound = this.coordinator.qualityGate.incrementRound();
+                    this.coordinator.qualityGate.incrementRound();
                     
                     const qualityCheck = await this.coordinator.qualityGate.performQualityCheck(
                         conversation,
                         initialResponses
-                    );
-
-                    log.debug('Quality check result:', {
-                        shouldContinue: qualityCheck.shouldContinue,
-                        reason: qualityCheck.reason,
-                        round: currentRound
-                    });
+                    )
 
                     if (!qualityCheck.shouldContinue) {
-                        log.info(`Ending collaboration: ${qualityCheck.reason}`);
+                        log.debug(`Ending collaboration: ${qualityCheck.reason}`);
                         break;
                     }
 
@@ -119,7 +113,7 @@ export class CollaborationPhase extends Phase {
                 plan.nextAgent
             );
 
-            log.info('Formatted collaborative response:', {
+            log.debug('Formatted collaborative response:', {
                 agentId: agent.id,
                 role: plan.nextAgent,
                 content: collaborativeResponse.content,
