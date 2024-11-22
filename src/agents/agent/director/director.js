@@ -1,123 +1,18 @@
 // src/agents/director.js
 import { BaseAgent } from '../../base/baseAgent.js';
 import { log } from '../../../utils/logger.js';
+import { config } from '../../../config/config.js';
 
 export class Director extends BaseAgent {
     constructor(config, llmService) {
         super(config, llmService);
-        log.state.change('Director', 'uninitialized', 'ready', { config });
-    }
-
-    async parseAndAnalyze(message, storedInsights) {
-        const eventId = log.event.emit('parseAndAnalyze', 'Director', { messageLength: message.length });
-        try {
-            const startTime = Date.now();
-            log.debug('Parsing and analyzing user message', { message });
-
-            const systemPrompt = `Extract key points, entities, and sentiment from the following message:
-            "${message}". As well as the following previous messages in this array if there are any: [${ storedInsights ? storedInsights.map(insight => insight.content).join('\n') : '' }].
-
-            Respond in a strict JSON format like this. Use as many key points and entities as you need:
-            {
-                "keyPoints": ["point1", "point2"],
-                "entities": ["entity1", "entity2"],
-                "sentiment": "positive/negative/neutral"
-            }`;
-
-            const parsedData = await this.llm.makeModelRequest({
-                systemPrompt: systemPrompt,
-                userPrompt: message,
-                context: [],
-                agentType: this.role
-            });
-
-            log.debug('Parsed data in Director.js', { parsedData });
-            log.event.complete(eventId, 'completed', { parsedData });
-            log.perf.measure('parseAndAnalyze', Date.now() - startTime, { messageLength: message.length });
-            return parsedData;
-        } catch (error) {
-            log.event.complete(eventId, 'failed', { error: error.message });
-            log.error('Error in parseAndAnalyze', error);
-            throw error;
-        }
-    }
-
-    async understandProblem(parsedData) {
-        const eventId = log.event.emit('understandProblem', 'Director', { parsedData });
-        try {
-            const startTime = Date.now();
-            log.debug('Understanding the problem from parsed data', { parsedData });
-
-            const systemPrompt = `Identify the main problem or goal from the following parsed data:
-            Key Points: ${parsedData.keyPoints.join(', ')}
-            Entities: ${parsedData.entities.join(', ')}
-            Sentiment: ${parsedData.sentiment}
-            Respond with a concise problem statement.`;
-
-            const response = await this.llm.makeModelRequest({
-                systemPrompt: systemPrompt,
-                userPrompt: '',
-                context: [],
-                agentType: this.role
-            });
-
-            const problem = response.trim();
-            log.debug('Identified problem in Director.js', { problem });
-            log.event.complete(eventId, 'completed', { problem });
-            log.perf.measure('understandProblem', Date.now() - startTime, { parsedData });
-            return problem;
-        } catch (error) {
-            log.event.complete(eventId, 'failed', { error: error.message });
-            log.error('Error in understandProblem', error);
-            throw error;
-        }
-    }
-
-    async decomposeTask(problem) {
-        const eventId = log.event.emit('decomposeTask', 'Director', { problem });
-        try {
-            const startTime = Date.now();
-            log.debug('Decomposing problem into tasks', { problem });
-
-            const systemPrompt = `Break down the following problem into smaller, specific tasks. Limit yourself to 3 tasks:
-            "${problem}"
-            Respond in a strict JSON format like this:
-            {
-                "tasks": ["task1", "task2", "task3"]
-            }`;
-
-            const response = await this.llm.makeModelRequest({
-                systemPrompt: systemPrompt,
-                userPrompt: problem,
-                context: [],
-                agentType: this.role
-            });
-
-            let tasks;
-            try {
-                const decomposed = response;
-                tasks = decomposed.tasks;
-                log.debug('Decomposed tasks in Director.js', { tasks });
-            } catch (e) {
-                log.error('Error parsing LLM response', { error: e.message });
-                throw new Error('Failed to parse LLM response as JSON.');
-            }
-
-            log.event.complete(eventId, 'completed', { tasks });
-            log.perf.measure('decomposeTask', Date.now() - startTime, { problem });
-            return tasks;
-        } catch (error) {
-            log.event.complete(eventId, 'failed', { error: error.message });
-            log.error('Error in decomposeTask', error);
-            throw error;
-        }
     }
 
     async planInitialAgentTasks(message, availableAgents, storedInsights) {
-        const eventId = log.event.emit('planInitialAgentTasks', 'Director');
+        const executionId = `director-pit-${Date.now()}`;
+        const startTime = Date.now();
         
         try {
-            const startTime = Date.now();
             const userPrompt = typeof message === 'object' ? message.content : message;
             
             // Parse and analyze
@@ -157,23 +52,161 @@ export class Director extends BaseAgent {
             };
             
             log.debug('Final processed plan', { plan });
-            log.event.complete(eventId, 'completed', { plan });
-            log.perf.measure('planInitialAgentTasks', Date.now() - startTime, { participantCount: plan.participants.length });
+            log.perf.measure('planInitialAgentTasks', Date.now() - startTime, {
+                executionId,
+                function: 'planInitialAgentTasks',
+                inputLength: userPrompt.length,
+                agentCount: availableAgents.length,
+                insightCount: storedInsights?.length || 0,
+                participantCount: plan.participants.length,
+                inputPreview: userPrompt.substring(0, 100),
+                outputPreview: JSON.stringify(plan).substring(0, 100)
+            });
             return plan;
         } catch (error) {
-            log.event.complete(eventId, 'failed', { error: error.message });
+            log.perf.measure('planInitialAgentTasks', Date.now() - startTime, {
+                executionId,
+                function: 'planInitialAgentTasks',
+                error: error.message,
+                status: 'failed'
+            });
             throw error;
         }
     }
 
-    async planNextAgentInteraction(messages, previousResponses) {
-        const eventId = log.event.emit('planNextAgentInteraction', 'Director', {
-            messageCount: messages.length,
-            previousResponseCount: previousResponses.length
-        });
 
+    async parseAndAnalyze(message, storedInsights) {
+        const executionId = `director-pa-${Date.now()}`;
+        const startTime = Date.now();
+        
+        try {
+            log.debug('Parsing and analyzing user message', { message });
+
+            const systemPrompt = `Extract key points, entities, and sentiment from the following message:
+            "${message}". As well as the following previous messages in this array if there are any: [${ storedInsights ? storedInsights.map(insight => insight.content).join('\n') : '' }].
+
+            Respond in a strict JSON format like this. Use as many key points and entities as you need:
+            {
+                "keyPoints": ["point1", "point2"],
+                "entities": ["entity1", "entity2"],
+                "sentiment": "positive/negative/neutral"
+            }`;
+
+            const parsedData = await this.llm.makeModelRequest({
+                systemPrompt: systemPrompt,
+                userPrompt: message,
+                context: [],
+                agentType: this.role
+            });
+
+            log.debug('Parsed data in Director.js', { parsedData });
+            log.perf.measure('parseAndAnalyze', Date.now() - startTime, {
+                executionId,
+                function: 'parseAndAnalyze',
+                messageLength: message.length,
+                insightCount: storedInsights?.length || 0,
+                inputPreview: message.substring(0, 100),
+                outputPreview: JSON.stringify(parsedData).substring(0, 100)
+            });
+            return parsedData;
+        } catch (error) {
+            log.perf.measure('parseAndAnalyze', Date.now() - startTime, {
+                executionId,
+                function: 'parseAndAnalyze',
+                error: error.message,
+                status: 'failed'
+            });
+            throw error;
+        }
+    }
+
+    async understandProblem(parsedData) {
+        const executionId = `director-up-${Date.now()}`;
+        const startTime = Date.now();
+        
+        try {
+            log.debug('Understanding the problem from parsed data', { parsedData });
+
+            const systemPrompt = `Identify the main problem or goal from the following parsed data:
+            Key Points: ${parsedData.keyPoints.join(', ')}
+            Entities: ${parsedData.entities.join(', ')}
+            Sentiment: ${parsedData.sentiment}
+            Respond with a concise problem statement.`;
+
+            const response = await this.llm.makeModelRequest({
+                systemPrompt: systemPrompt,
+                userPrompt: '',
+                context: [],
+                agentType: this.role
+            });
+
+            const problem = response.trim();
+            log.debug('Identified problem in Director.js', { problem });
+            log.perf.measure('understandProblem', Date.now() - startTime, {
+                executionId,
+                function: 'understandProblem',
+                inputSize: JSON.stringify(parsedData).length,
+                keyPointCount: parsedData.keyPoints.length,
+                entityCount: parsedData.entities.length,
+                outputLength: problem.length,
+                inputPreview: JSON.stringify(parsedData).substring(0, 100),
+                outputPreview: problem.substring(0, 100)
+            });
+            return problem;
+        } catch (error) {
+            log.perf.measure('understandProblem', Date.now() - startTime, {
+                executionId,
+                function: 'understandProblem',
+                error: error.message,
+                status: 'failed'
+            });
+            throw error;
+        }
+    }
+
+    async decomposeTask(problem) {
         try {
             const startTime = Date.now();
+            log.debug('Decomposing problem into tasks', { problem });
+
+            const systemPrompt = `Break down the following problem into smaller, specific tasks. Make sure they are research oriented. Limit yourself to ${config.director.maxTasksAssigned} tasks:
+            "${problem}"
+            Respond in a strict JSON format like this:
+            {
+                "tasks": ["task1", "task2", "task3"]
+            }`;
+
+            const response = await this.llm.makeModelRequest({
+                systemPrompt: systemPrompt,
+                userPrompt: problem,
+                context: [],
+                agentType: this.role
+            });
+
+            let tasks;
+            try {
+                const decomposed = response;
+                tasks = decomposed.tasks;
+                log.debug('Decomposed tasks in Director.js', { tasks });
+            } catch (e) {
+                log.error('Error parsing LLM response', { error: e.message });
+                throw new Error('Failed to parse LLM response as JSON.');
+            }
+
+            log.perf.measure('decomposeTask', Date.now() - startTime, { problem });
+            return tasks;
+        } catch (error) {
+            log.error('Error in decomposeTask', error);
+            throw error;
+        }
+    }
+
+   
+    async planNextAgentInteraction(messages, previousResponses) {
+        const executionId = `director-pnai-${Date.now()}`;
+        const startTime = Date.now();
+        
+        try {
             log.debug('Planning next agent interaction', {
                 messagesCount: messages.length,
                 previousResponsesCount: previousResponses.length
@@ -271,7 +304,7 @@ export class Director extends BaseAgent {
                     
                     // Compare the actual roles, ensuring case-insensitive comparison
                     if (plan['nextAgent'].toLowerCase() === lastResponse?.role?.toLowerCase()) {
-                        log.warn('Invalid plan - agent would speak twice in a row');
+                        log.debug('(Warning) Invalid plan - agent would speak twice in a row');
                         return null;
                     }
                 }
@@ -282,26 +315,35 @@ export class Director extends BaseAgent {
             }
 
             log.debug('Returning final plan', { plan });
-            log.event.complete(eventId, 'completed', { plan });
             log.perf.measure('planNextAgentInteraction', Date.now() - startTime, {
-                success: !!plan
+                executionId,
+                function: 'planNextAgentInteraction',
+                messageCount: messages.length,
+                responseCount: previousResponses.length,
+                success: !!plan,
+                lastSpeaker: formattedResponses[formattedResponses.length - 1]?.role,
+                nextAgent: plan?.nextAgent,
+                inputPreview: JSON.stringify(messages[messages.length - 1]).substring(0, 100),
+                outputPreview: JSON.stringify(plan).substring(0, 100)
             });
 
             return plan;
         } catch (error) {
-            log.event.complete(eventId, 'failed', { error: error.message });
-            log.error('Error in planNextAgentInteraction', error);
+            log.perf.measure('planNextAgentInteraction', Date.now() - startTime, {
+                executionId,
+                function: 'planNextAgentInteraction',
+                error: error.message,
+                status: 'failed'
+            });
             return null;
         }
     }
 
     async synthesizeDiscussion(context) {
-        const eventId = log.event.emit('synthesizeDiscussion', 'Director', {
-            contextLength: context?.length
-        });
-
+        const executionId = `director-sd-${Date.now()}`;
+        const startTime = Date.now();
+        
         try {
-            const startTime = Date.now();
             log.debug('Starting discussion synthesis', {
                 contextLength: context?.length,
                 messages: context
@@ -346,12 +388,14 @@ export class Director extends BaseAgent {
             Keep the summary clear and focused. Prioritize meaningful insights over comprehensive coverage.`;
             
             const llmStartTime = Date.now();
+
             const response = await this.llm.makeModelRequest({
                 systemPrompt: systemPrompt,
                 userPrompt: "Provide a comprehensive synthesis of the discussion.",
                 context: [],
                 agentType: this.role
             });
+
             log.perf.measure('llm-request', Date.now() - llmStartTime, {
                 method: 'synthesizeDiscussion',
                 messageCount: formattedMessages.length
@@ -359,58 +403,26 @@ export class Director extends BaseAgent {
 
             log.debug('Generated summary', { response });
             
-            log.event.complete(eventId, 'completed', { 
-                summaryLength: response.length 
-            });
             log.perf.measure('synthesizeDiscussion', Date.now() - startTime, {
-                messageCount: formattedMessages.length
+                executionId,
+                function: 'synthesizeDiscussion',
+                contextLength: context?.length || 0,
+                relevantMessageCount: relevantMessages.length,
+                outputLength: response.length,
+                inputPreview: JSON.stringify(formattedMessages[0]).substring(0, 100),
+                outputPreview: response.substring(0, 100)
             });
 
             return response;
         } catch (error) {
-            log.event.complete(eventId, 'failed', { error: error.message });
-            log.error('Error in synthesizeDiscussion', error);
+            log.perf.measure('synthesizeDiscussion', Date.now() - startTime, {
+                executionId,
+                function: 'synthesizeDiscussion',
+                error: error.message,
+                status: 'failed'
+            });
             throw error;
         }
     }
 
-}
-
-export class InsightManager {
-    constructor() {
-        this.insights = new Map(); // conversationId -> insights[]
-        log.state.change('InsightManager', 'uninitialized', 'ready');
-    }
-
-    addInsight(conversationId, insight) {
-        const eventId = log.event.emit('addInsight', 'InsightManager', { conversationId });
-        
-        try {
-            if (!this.insights.has(conversationId)) {
-                this.insights.set(conversationId, []);
-            }
-
-            const enhancedInsight = {
-                ...insight,
-                timestamp: Date.now(),
-                id: `${conversationId}-insight-${this.insights.get(conversationId).length}`
-            };
-
-            this.insights.get(conversationId).push(enhancedInsight);
-            log.event.complete(eventId, 'completed', { insightId: enhancedInsight.id });
-            return enhancedInsight;
-        } catch (error) {
-            log.event.complete(eventId, 'failed', { error: error.message });
-            throw error;
-        }
-    }
-
-    getInsights(conversationId) {
-        return this.insights.get(conversationId) || [];
-    }
-
-    getRecentInsights(conversationId, limit = 5) {
-        const insights = this.getInsights(conversationId);
-        return insights.slice(-limit);
-    }
 }

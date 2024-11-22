@@ -6,17 +6,9 @@ export class Critic extends BaseAgent {
     constructor(config, llmService) {
         super({ ...config, role: 'Critic' }, llmService);
         this.critiques = new Map();
-        log.state.change('Critic', 'uninitialized', 'ready', { 
-            agentId: this.id,
-            config 
-        });
     }
 
     async evaluateProposal(context, proposal) {
-        const eventId = log.event.emit('evaluateProposal', 'Critic', {
-            agentId: this.id,
-            contextLength: context?.length
-        });
         const startTime = Date.now();
 
         try {
@@ -25,18 +17,11 @@ export class Critic extends BaseAgent {
                 contextSize: context?.length
             });
             
-            log.state.change('Critic', 'idle', 'evaluating', { agentId: this.id });
-            
-            const llmStartTime = Date.now();
-            const response = await this.llm.makeModelRequest({
+                const response = await this.llm.makeModelRequest({
                 systemPrompt: this.constructSystemPrompt(),
                 userPrompt: proposal,
                 context: this.validateContext(context),
                 agentType: this.role
-            });
-            log.perf.measure('llm-request', Date.now() - llmStartTime, {
-                method: 'evaluateProposal',
-                proposalLength: proposal.length
             });
 
             this.storeCritique(proposal, response);
@@ -46,27 +31,18 @@ export class Critic extends BaseAgent {
                 proposalLength: proposal.length
             });
 
-            log.state.change('Critic', 'evaluating', 'completed', { agentId: this.id });
-            log.event.complete(eventId);
             return response;
 
         } catch (error) {
             log.error('Evaluation failed', error);
-            log.state.change('Critic', 'evaluating', 'failed', { agentId: this.id });
-            log.event.complete(eventId, 'failed');
             throw error;
         }
     }
 
     async provideFeedback(context, target) {
-        const eventId = log.event.emit('provideFeedback', 'Critic', {
-            agentId: this.id,
-            contextLength: context?.length
-        });
         const startTime = Date.now();
 
         try {
-            log.state.change('Critic', 'idle', 'providing-feedback', { agentId: this.id });
             
             const validatedContext = this.validateContext(context);
             const response = await this.llm.makeModelRequest({
@@ -81,23 +57,15 @@ export class Critic extends BaseAgent {
                 targetLength: target.length
             });
 
-            log.state.change('Critic', 'providing-feedback', 'completed', { agentId: this.id });
-            log.event.complete(eventId);
             return response;
 
         } catch (error) {
             log.error('Feedback generation failed', error);
-            log.state.change('Critic', 'providing-feedback', 'failed', { agentId: this.id });
-            log.event.complete(eventId, 'failed');
             throw error;
         }
     }
 
     storeCritique(proposal, response) {
-        const eventId = log.event.emit('storeCritique', 'Critic', { 
-            agentId: this.id 
-        });
-
         try {
             const key = Date.now();
             this.critiques.set(key, {
@@ -112,10 +80,8 @@ export class Critic extends BaseAgent {
                 this.critiques.delete(keys.shift());
             }
 
-            log.event.complete(eventId);
         } catch (error) {
             log.error('Failed to store critique', error);
-            log.event.complete(eventId, 'failed');
         }
     }
 

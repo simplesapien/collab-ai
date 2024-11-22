@@ -69,7 +69,7 @@ class CLI {
                 log.debug('CLI: Response subscription system verified');
                 testUnsubscribe();
             } else {
-                log.warn('CLI: Response subscription system not working properly');
+                log.debug('CLI: Response subscription system not working properly');
             }
 
             console.log(`\n${this.icons['system']} ${this.colors['system']('System initialized successfully')}\n`);

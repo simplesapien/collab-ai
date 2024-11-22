@@ -9,14 +9,10 @@ export class Analyst extends BaseAgent {
     }
 
     async analyzeInformation(message, context = []) {
-        const eventId = log.event.emit('analyzeInformation', 'Analyst', {
-            agentId: this.id,
-            contextLength: context?.length
-        });
+      
         const startTime = Date.now();
 
         try {
-            log.state.change('Analyst', 'idle', 'analyzing', { agentId: this.id });
             
             const validatedContext = this.validateContext(context);
             const userPrompt = typeof message === 'object' 
@@ -37,24 +33,15 @@ export class Analyst extends BaseAgent {
                 messageType: typeof message
             });
 
-            log.state.change('Analyst', 'analyzing', 'completed', { agentId: this.id });
-            log.event.complete(eventId);
             return response;
 
         } catch (error) {
             log.error('Analysis failed', error);
-            log.state.change('Analyst', 'analyzing', 'failed', { agentId: this.id });
-            log.event.complete(eventId, 'failed');
             throw error;
         }
     }
 
     storeAnalysis(prompt, response) {
-        const eventId = log.event.emit('storeAnalysis', 'Analyst', { 
-            agentId: this.id,
-            promptLength: prompt.length,
-            responseLength: response.length
-        });
 
         try {
             log.debug('Storing analysis', { 
@@ -75,10 +62,8 @@ export class Analyst extends BaseAgent {
                 this.analyses.delete(keys.shift());
             }
 
-            log.event.complete(eventId);
         } catch (error) {
             log.error('Failed to store analysis', error);
-            log.event.complete(eventId, 'failed');
         }
     }
 

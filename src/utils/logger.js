@@ -72,18 +72,6 @@ const logger = winston.createLogger({
         logFormat
     ),
     transports: [
-        // Events log
-        // new winston.transports.File({
-        //     filename: path.join(logDir, 'events.log'),
-        //     level: 'event',
-        //     flags: 'w'
-        // }),
-        // // System state log
-        // new winston.transports.File({
-        //     filename: path.join(logDir, 'state.log'),
-        //     level: 'state',
-        //     flags: 'w'
-        // }),
         // Error log
         new winston.transports.File({
             filename: path.join(logDir, 'error.log'),
@@ -98,11 +86,11 @@ const logger = winston.createLogger({
                 logFormat
             )
         }),
-        // new winston.transports.File({
-        //     filename: path.join(logDir, 'performance.log'),
-        //     level: 'perf',
-        //     flags: 'w'
-        // }),
+        new winston.transports.File({
+            filename: path.join(logDir, 'performance.log'),
+            level: 'perf',
+            flags: 'w'
+        }),
         // new winston.transports.File({
         //     filename: path.join(logDir, 'quality.log'),
         //     level: 'quality',

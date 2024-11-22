@@ -42,5 +42,9 @@ export const config = {
     system: {
         defaultAgentType: 'Director', // Default agent type
         logLevel: 'debug'             // Default logging level
+    },
+
+    director: {
+        maxTasksAssigned: 5
     }
 };

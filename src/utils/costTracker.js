@@ -27,12 +27,6 @@ export class CostTracker {
     }
 
     trackRequest(inputTokens, outputTokens) {
-        const eventId = log.event.emit('trackCost', 'CostTracker', {
-            inputTokens,
-            outputTokens
-        });
-
-        const startTime = Date.now();
 
         try {
             this.costs.inputTokens += inputTokens;
@@ -44,25 +38,7 @@ export class CostTracker {
             
             this.costs.totalCost += requestCost;
 
-            log.debug('Request cost tracked', {
-                inputTokens,
-                outputTokens,
-                requestCost: requestCost.toFixed(6),
-                totalCost: this.costs.totalCost.toFixed(6)
-            });
-
             this.notifyListeners();
-
-            log.perf.measure('cost-calculation', Date.now() - startTime, {
-                inputTokens,
-                outputTokens,
-                totalCost: this.costs.totalCost
-            });
-
-            log.event.complete(eventId, 'completed', {
-                requestCost,
-                totalCost: this.costs.totalCost
-            });
 
             return {
                 requestCost,
@@ -70,7 +46,6 @@ export class CostTracker {
             };
         } catch (error) {
             log.error('Cost tracking failed', error);
-            log.event.complete(eventId, 'failed');
             throw error;
         }
     }
@@ -91,6 +66,5 @@ export class CostTracker {
             outputTokens: 0,
             totalCost: 0
         };
-        log.info('[CostTracker] Costs reset to zero');
     }
 } 

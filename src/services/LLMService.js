@@ -24,20 +24,13 @@ export class LLMService {
             this.openai = new OpenAI({
                 apiKey: process.env.OPENAI_API_KEY
             });
-            log.state.change('LLMService', 'uninitialized', 'ready', { config });
-            log.event.complete(eventId);
         } catch (error) {
             log.error('LLMService initialization failed', error);
-            log.event.complete(eventId, 'failed');
             throw error;
         }
     }
 
     async makeModelRequest(params) {
-        const eventId = log.event.emit('makeModelRequest', 'LLMService', {
-            agentType: params.agentType,
-            contextLength: params.context?.length
-        });
         const startTime = Date.now();
 
         let attempts = 0;
@@ -86,15 +79,11 @@ export class LLMService {
                     completionTokens: response.usage?.completion_tokens
                 });
 
-                log.event.complete(eventId, 'completed', {
-                    attempts,
-                    tokens: response.usage
-                });
                 return MessageFormatter.parseResponse(response.choices[0].message.content);
 
             } catch (error) {
                 attempts++;
-                log.warn('LLM request failed', { attempt: attempts, error: error.message });
+                log.error('LLM request failed', { attempt: attempts, error: error.message });
                 if (attempts === this.config.maxRetries) {
                     throw error;
                 }
@@ -116,27 +105,13 @@ export class LLMService {
     }
 
     _getModelForAgent(agentType) {
-        log.debug('[LLMService] Getting model for agent:', {
-            agentType,
-            availableModels: this.config.modelsByAgent,
-            defaultModel: this.config.defaultModel
-        });
-
+  
         if (!agentType) {
             log.debug('[LLMService] No agent type provided, using default model:', this.config.defaultModel);
             return this.config.defaultModel;
         }
-        
         const agentKey = agentType.toLowerCase();
-        log.debug('[LLMService] Looking up model for agent type:', {
-            agentKey,
-            modelMapping: this.config.modelsByAgent,
-            selectedModel: this.config.modelsByAgent?.[agentKey]
-        });
-        
         const model = this.config.modelsByAgent?.[agentKey] || this.config.defaultModel;
-        log.debug(`[LLMService] Final model selection for ${agentKey}:`, model);
-        
         return model;
     }
 }
