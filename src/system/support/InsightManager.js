@@ -4,16 +4,14 @@ export class InsightManager {
     constructor(qualityGate = null) {
         this.insights = new Map(); // conversationId -> insights[]
         this.qualityGate = qualityGate;
-        log.state.change('InsightManager', 'uninitialized', 'ready');
     }
 
     async addInsight(conversationId, insight, source) {
-        const eventId = log.event.emit('addInsight', 'InsightManager', { conversationId });
         
         try {
             // Ensure conversationId exists
             if (!conversationId) {
-                log.warn('No conversationId provided for insight');
+                log.debug('No conversationId provided for insight');
                 return false;
             }
 
@@ -28,7 +26,7 @@ export class InsightManager {
             if (this.qualityGate) {
                 const qualityCheck = await this.qualityGate.validateInsight(insight);
                 if (!qualityCheck.passed) {
-                    log.warn('Insight failed quality check', { 
+                    log.debug('Insight failed quality check', { 
                         conversationId, 
                         source, 
                         reason: qualityCheck.reason 
@@ -53,11 +51,9 @@ export class InsightManager {
                 totalInsights: currentInsights.length 
             });
             
-            log.event.complete(eventId, 'completed', { insightId: enhancedInsight.id });
             return enhancedInsight;
         } catch (error) {
             log.error('Failed to add insight', error);
-            log.event.complete(eventId, 'failed');
             return false;
         }
     }

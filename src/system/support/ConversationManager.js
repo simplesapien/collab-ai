@@ -5,38 +5,19 @@ import { InsightManager } from './InsightManager.js';
 
 export class ConversationManager {
     constructor(config = { maxConversations: 100, maxMessageAge: 24 * 60 * 60 * 1000 }) {
-        const eventId = log.event.emit('init', 'ConversationManager');
-        const startTime = Date.now();
-
         try {
             this.conversations = new Map();
             this.config = config;
             this.metadata = new Map();
             this.currentConversationId = null;
             this.insightManager = new InsightManager();
-
-            log.debug('Conversation manager initialized', {
-                maxConversations: config.maxConversations,
-                maxMessageAge: config.maxMessageAge
-            });
-
-            log.state.change('ConversationManager', 'uninitialized', 'ready');
-            log.perf.measure('conversation-manager-init', Date.now() - startTime);
-            log.event.complete(eventId, 'completed');
         } catch (error) {
             log.error('Conversation manager initialization failed', error);
-            log.event.complete(eventId, 'failed');
             throw error;
         }
     }
 
     logMessage(conversationId, message) {
-        const eventId = log.event.emit('logMessage', 'ConversationManager', {
-            conversationId,
-            messageType: message?.type || 'standard'
-        });
-        const startTime = Date.now();
-
         try {
             log.debug('Logging new message', {
                 conversationId,
@@ -66,30 +47,14 @@ export class ConversationManager {
             this.updateMetadata(conversationId);
             this.cleanup();
 
-            log.perf.measure('message-logging', Date.now() - startTime, {
-                conversationId,
-                messageId: enhancedMessage.id
-            });
-
-            log.event.complete(eventId, 'completed', {
-                messageId: enhancedMessage.id,
-                conversationLength: conversation.messages.length
-            });
-
             return enhancedMessage;
         } catch (error) {
             log.error('Message logging failed', error);
-            log.event.complete(eventId, 'failed');
             throw error;
         }
     }
 
     getConversation(conversationId) {
-        const eventId = log.event.emit('getConversation', 'ConversationManager', {
-            conversationId
-        });
-        const startTime = Date.now();
-
         try {
             const conversation = this.conversations.get(conversationId);
             if (!conversation) {
@@ -97,36 +62,18 @@ export class ConversationManager {
                     conversationId,
                     availableConversations: this.conversations.size
                 });
-                log.event.complete(eventId, 'completed', { found: false });
                 return undefined;
             }
             
             this.updateMetadata(conversationId, { lastAccessed: Date.now() });
-
-            log.perf.measure('conversation-retrieval', Date.now() - startTime, {
-                conversationId,
-                messageCount: conversation.messages.length
-            });
-
-            log.event.complete(eventId, 'completed', {
-                found: true,
-                messageCount: conversation.messages.length
-            });
-
             return conversation;
         } catch (error) {
             log.error('Conversation retrieval failed', error);
-            log.event.complete(eventId, 'failed');
             throw error;
         }
     }
 
     createConversation(conversationData) {
-        const eventId = log.event.emit('createConversation', 'ConversationManager', {
-            conversationId: conversationData.id
-        });
-        const startTime = Date.now();
-
         try {
             log.debug('Creating new conversation', {
                 conversationId: conversationData.id,
@@ -143,33 +90,14 @@ export class ConversationManager {
             this.conversations.set(conversationData.id, conversation);
             this.updateMetadata(conversationData.id);
             this.cleanup();
-
-            log.state.change('Conversation', 'creating', 'active', {
-                conversationId: conversationData.id
-            });
-
-            log.perf.measure('conversation-creation', Date.now() - startTime, {
-                conversationId: conversationData.id
-            });
-
-            log.event.complete(eventId, 'completed', {
-                conversationId: conversationData.id
-            });
-
             return conversation;
         } catch (error) {
             log.error('Conversation creation failed', error);
-            log.event.complete(eventId, 'failed');
             throw error;
         }
     }
 
     updateMetadata(conversationId, additional = {}) {
-        const eventId = log.event.emit('updateMetadata', 'ConversationManager', {
-            conversationId
-        });
-        const startTime = Date.now();
-
         try {
             const conversation = this.conversations.get(conversationId);
             if (!conversation) {
@@ -187,27 +115,14 @@ export class ConversationManager {
             };
 
             this.metadata.set(conversationId, metadata);
-
-            log.perf.measure('metadata-update', Date.now() - startTime, {
-                conversationId,
-                messageCount: metadata.messageCount
-            });
-
-            log.event.complete(eventId, 'completed', {
-                messageCount: metadata.messageCount,
-                participantCount: metadata.participants.length
-            });
         } catch (error) {
             log.error('Metadata update failed', error);
-            log.event.complete(eventId, 'failed');
             throw error;
         }
     }
 
     cleanup() {
-        const eventId = log.event.emit('cleanup', 'ConversationManager');
         const startTime = Date.now();
-
         try {
             const now = Date.now();
             let removedCount = 0;
@@ -249,28 +164,17 @@ export class ConversationManager {
                 remainingCount: this.conversations.size
             });
 
-            log.event.complete(eventId, 'completed', {
-                removedCount,
-                remainingCount: this.conversations.size
-            });
         } catch (error) {
             log.error('Conversation cleanup failed', error);
-            log.event.complete(eventId, 'failed');
             throw error;
         }
     }
 
     getConversationStats(conversationId) {
-        const eventId = log.event.emit('getConversationStats', 'ConversationManager', {
-            conversationId
-        });
-        const startTime = Date.now();
-
         try {
             const conversation = this.conversations.get(conversationId);
             if (!conversation) {
                 log.debug('No conversation found for stats', { conversationId });
-                log.event.complete(eventId, 'completed', { found: false });
                 return null;
             }
 
@@ -282,16 +186,6 @@ export class ConversationManager {
                 averageResponseTime: this._calculateAverageResponseTime(messages),
                 messagesByAgent: this._countMessagesByAgent(messages)
             };
-
-            log.perf.measure('stats-calculation', Date.now() - startTime, {
-                conversationId,
-                messageCount: stats.messageCount
-            });
-
-            log.event.complete(eventId, 'completed', {
-                messageCount: stats.messageCount,
-                participantCount: stats.participantCount
-            });
 
             return stats;
         } catch (error) {
@@ -370,23 +264,14 @@ export class ConversationManager {
     }
 
     getCurrentConversationId() {
-        const eventId = log.event.emit('getCurrentConversationId', 'ConversationManager');
-        const startTime = Date.now();
-
         try {
             log.debug('Getting current conversation ID', {
                 currentId: this.currentConversationId
             });
 
-            log.perf.measure('get-current-conversation-id', Date.now() - startTime);
-            log.event.complete(eventId, 'completed', {
-                hasCurrentId: !!this.currentConversationId
-            });
-
             return this.currentConversationId;
         } catch (error) {
             log.error('Failed to get current conversation ID', error);
-            log.event.complete(eventId, 'failed');
             throw error;
         }
     }

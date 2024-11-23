@@ -3,9 +3,6 @@ import { log } from '../../utils/logger.js';
 
 export class AgentManager {
     constructor(llmService) {
-        const eventId = log.event.emit('init', 'AgentManager');
-        const startTime = Date.now();
-
         try {
             this.agents = new Map();
             this.llmService = llmService;
@@ -16,23 +13,13 @@ export class AgentManager {
                 'expert-1': /^(?:Expert:?\s*)/i,
                 'system': /^(?:System:?\s*)/i
             };
-
-            log.state.change('AgentManager', 'uninitialized', 'ready');
-            log.perf.measure('agent-manager-init', Date.now() - startTime);
-            log.event.complete(eventId, 'completed');
         } catch (error) {
             log.error('Agent manager initialization failed', error);
-            log.event.complete(eventId, 'failed');
             throw error;
         }
     }
 
     async initializeAgents(agentConfigs) {
-        const eventId = log.event.emit('initializeAgents', 'AgentManager', {
-            configCount: Object.keys(agentConfigs).length
-        });
-        const startTime = Date.now();
-
         try {
             log.debug('Starting agent initialization', {
                 agentTypes: Object.keys(agentConfigs)
@@ -46,17 +33,8 @@ export class AgentManager {
                     agentId: agent.id 
                 });
             }
-
-            log.perf.measure('agents-initialization', Date.now() - startTime, {
-                agentCount: this.agents.size
-            });
-
-            log.event.complete(eventId, 'completed', {
-                initializedCount: this.agents.size
-            });
         } catch (error) {
             log.error('Agents initialization failed', error);
-            log.event.complete(eventId, 'failed');
             throw error;
         }
     }
@@ -70,11 +48,7 @@ export class AgentManager {
     }
 
     getAvailableAgents(excludeId = null) {
-        const eventId = log.event.emit('getAvailableAgents', 'AgentManager', {
-            excludeId
-        });
-        const startTime = Date.now();
-
+ 
         try {
             log.debug('Getting available agents', { 
                 excludingId: excludeId,
@@ -91,19 +65,9 @@ export class AgentManager {
                 });
                 throw new Error('No available agents found for discussion');
             }
-
-            log.perf.measure('get-available-agents', Date.now() - startTime, {
-                availableCount: agents.length
-            });
-
-            log.event.complete(eventId, 'completed', {
-                availableCount: agents.length
-            });
-
             return agents;
         } catch (error) {
             log.error('Failed to get available agents', error);
-            log.event.complete(eventId, 'failed');
             throw error;
         }
     }
@@ -143,12 +107,6 @@ export class AgentManager {
     }
 
     async generateAgentResponse(agentId, conversation, task) {
-        const eventId = log.event.emit('generateAgentResponse', 'AgentManager', {
-            agentId,
-            conversationLength: conversation.messages.length
-        });
-        const startTime = Date.now();
-
         try {
             const agent = this.getAgent(agentId);
             if (!agent) {
@@ -165,31 +123,14 @@ export class AgentManager {
                 conversation.messages,
                 task
             );
-
-            log.perf.measure('response-generation', Date.now() - startTime, {
-                agentId,
-                responseLength: response?.length
-            });
-
-            log.event.complete(eventId, 'completed', {
-                responseGenerated: !!response
-            });
-
             return response;
         } catch (error) {
             log.error('Agent response generation failed', error);
-            log.event.complete(eventId, 'failed');
             throw error;
         }
     }
 
     formatAgentResponse(response, agentId, role) {
-        const eventId = log.event.emit('formatAgentResponse', 'AgentManager', {
-            agentId,
-            role
-        });
-        const startTime = Date.now();
-
         try {
             const formattedResponse = {
                 agentId: agentId,
@@ -197,18 +138,10 @@ export class AgentManager {
                 content: this._cleanResponse(response, agentId),
                 timestamp: Date.now()
             };
-
-            log.perf.measure('response-formatting', Date.now() - startTime, {
-                agentId,
-                responseLength: response?.length
-            });
-
-            log.event.complete(eventId, 'completed');
             log.debug('Formatted agent response (AgentManager)', { formattedResponse });
             return formattedResponse;
         } catch (error) {
             log.error('Response formatting failed', error);
-            log.event.complete(eventId, 'failed');
             throw error;
         }
     }
