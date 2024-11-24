@@ -4,10 +4,18 @@ export class InsightManager {
     constructor(qualityGate = null) {
         this.insights = new Map(); // conversationId -> insights[]
         this.qualityGate = qualityGate;
+        
+        // Basic patterns for quick insight detection
+        this.insightPatterns = {
+            comparison: /(?:compared to|versus|similar to|different from)/i,
+            conclusion: /(?:therefore|thus|as a result|consequently)/i,
+            discovery: /(?:discovered|realized|found that|identified)/i,
+            relationship: /(?:relates to|connects with|links to|impacts)/i,
+            recommendation: /(?:recommend|suggest|advise|propose)/i
+        };
     }
 
     async addInsight(conversationId, insight, source) {
-        
         try {
             // Ensure conversationId exists
             if (!conversationId) {
@@ -22,6 +30,23 @@ export class InsightManager {
 
             const currentInsights = this.insights.get(conversationId);
 
+            // Run quick insight detection before storing
+            const quickInsights = await this.detectQuickInsights(insight.content);
+            if (quickInsights.length > 0) {
+                log.debug('Quick insights detected during storage', {
+                    count: quickInsights.length,
+                    source,
+                    contentPreview: insight.content.substring(0, 100)
+                });
+            }
+            else {
+                log.debug('No quick insights detected during storage', {
+                    source,
+                    contentPreview: insight.content.substring(0, 100)
+                });
+                return false;
+            }
+
             // Quality check if gate is available
             if (this.qualityGate) {
                 const qualityCheck = await this.qualityGate.validateInsight(insight);
@@ -31,16 +56,18 @@ export class InsightManager {
                         source, 
                         reason: qualityCheck.reason 
                     });
-                    return false;
+                    return false;  // Return here to prevent storing failed insights
                 }
             }
 
+            // Only create and store insight if it passed quality check (or no check needed)
             const enhancedInsight = {
                 ...insight,
                 timestamp: Date.now(),
                 source,
                 type: insight.type || 'general',
-                id: `${conversationId}-insight-${currentInsights.length}`
+                id: `${conversationId}-insight-${currentInsights.length}`,
+                quickInsights: quickInsights
             };
 
             currentInsights.push(enhancedInsight);
@@ -48,7 +75,9 @@ export class InsightManager {
             log.debug('Added insight', { 
                 conversationId, 
                 insightId: enhancedInsight.id,
-                totalInsights: currentInsights.length 
+                totalInsights: currentInsights.length,
+                quickInsightsCount: quickInsights.length,
+                quickInsights: quickInsights
             });
             
             return enhancedInsight;
@@ -79,7 +108,7 @@ export class InsightManager {
     }
     
     // Store insights every reseponse from the responses in the InsightManager
-    async storeInsights(conversationId, plan, responses, collaboration, summary) {
+    async storeInsights(conversationId, responses, collaboration, summary) {
         for (const response of responses) {
             await this.addInsight(
                 conversationId, 
@@ -116,5 +145,36 @@ export class InsightManager {
 
     getRecentInsights(conversationId, limit = 5) {
         return this.getInsights(conversationId, { limit });
+    }
+
+    async detectQuickInsights(message) {
+        try {
+            const detectedInsights = [];
+            const content = typeof message === 'object' ? message.content : message;
+
+            // Check against each pattern
+            for (const [type, pattern] of Object.entries(this.insightPatterns)) {
+                if (pattern.test(content)) {
+                    const insight = {
+                        type: `quick_${type}`,
+                        content: content,
+                        confidence: 0.7, // Default confidence for pattern matches
+                        source: 'quick_detection',
+                        timestamp: Date.now()
+                    };
+                    detectedInsights.push(insight);
+                }
+            }
+
+            log.debug('Quick insights detected', { 
+                messagePreview: content.substring(0, 100),
+                insightCount: detectedInsights.length 
+            });
+
+            return detectedInsights;
+        } catch (error) {
+            log.error('Quick insight detection failed', error);
+            return [];
+        }
     }
 }

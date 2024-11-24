@@ -10,36 +10,32 @@ collab-ai
 └─ src
    ├─ .DS_Store
    ├─ agents
+   │  ├─ agent
+   │  │  ├─ analyst
+   │  │  │  └─ analyst.js
+   │  │  ├─ critic
+   │  │  │  └─ critic.js
+   │  │  ├─ director
+   │  │  │  └─ director.js
+   │  │  └─ expert
+   │  │     └─ expert.js
    │  ├─ agentFactory.js
    │  ├─ base
    │  │  └─ baseAgent.js
-   │  ├─ interfaces
-   │  │  └─ agent.js
-   │  ├─ types
-   │  │  ├─ analyst.js
-   │  │  ├─ critic.js
-   │  │  ├─ director.js
-   │  │  └─ expert.js
-   │  └─ unused-functions
-   │     └─ functions.js
+   │  └─ interfaces
+   │     └─ agent.js
    ├─ app.js
    ├─ cli.js
    ├─ config
    │  ├─ agentConfigs.js
    │  └─ config.js
-   ├─ scripts
-   │  ├─ logAnalyzer.js
-   │  ├─ logMonitor.js
-   │  └─ reportGenerator.js
    ├─ services
-   │  ├─ costTracker.js
-   │  ├─ llm.js
-   │  ├─ messageFormatter.js
-   │  └─ rateLimiter.js
+   │  └─ LLMService.js
    ├─ system
    │  ├─ coordination
    │  │  ├─ coordinator.js
    │  │  └─ phases
+   │  │     ├─ base.js
    │  │     ├─ collaboration.js
    │  │     ├─ planning.js
    │  │     ├─ response.js
@@ -51,11 +47,15 @@ collab-ai
    │  │  └─ QualityGate.js
    │  ├─ support
    │  │  ├─ AgentManager.js
-   │  │  └─ ConversationManager.js
+   │  │  ├─ ConversationManager.js
+   │  │  └─ InsightManager.js
    │  └─ system.js
    └─ utils
+      ├─ costTracker.js
       ├─ generators.js
-      ├─ validators.js
-      └─ winstonLogger.js
+      ├─ logger.js
+      ├─ messageFormatter.js
+      ├─ rateLimiter.js
+      └─ validators.js
 
 ```

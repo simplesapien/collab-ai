@@ -43,7 +43,11 @@ export class Coordinator {
             const summary = await this.phases.summary.execute(conversation, director);
 
             // Store insights from all phases into the InsightManager
-            await this.insightManager.storeInsights(conversationId, plan, responses, collaboration, summary);
+            try {
+                await this.insightManager.storeInsights(conversationId, responses, collaboration, summary);
+            } catch (error) {
+                log.error('Error storing insights', error);
+            }
 
             return { plan: plan.participants, responses, summary };
         } catch (error) {
