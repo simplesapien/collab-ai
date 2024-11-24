@@ -155,7 +155,16 @@ export class MessageFormatter {
                 return content;
             }
 
-            const trimmedContent = content.trim();
+            let trimmedContent = content.trim();
+            if (trimmedContent.startsWith('```')) {
+                const firstNewline = trimmedContent.indexOf('\n');
+                const lastFence = trimmedContent.lastIndexOf('```');
+                
+                if (firstNewline !== -1 && lastFence !== -1) {
+                    trimmedContent = trimmedContent.substring(firstNewline + 1, lastFence).trim();
+                }
+            }
+
             if (trimmedContent.startsWith('{') || trimmedContent.startsWith('[')) {
                 try {
                     const parsedContent = JSON.parse(trimmedContent);
@@ -164,7 +173,7 @@ export class MessageFormatter {
                 } catch (error) {
                     log.warn('[MessageFormatter] Failed to parse content as JSON:', {
                         error,
-                        content: trimmedContent.substring(0, 100) + '...' // Log first 100 chars
+                        content: trimmedContent.substring(0, 100) + '...'
                     });
                     return content;
                 }
@@ -178,7 +187,7 @@ export class MessageFormatter {
                 error,
                 contentType: typeof content
             });
-            return content; // Return original content on error
+            return content;
         }
     }
 } 

@@ -14,6 +14,9 @@ export class Coordinator {
         this.isProcessing = false;
         this.isCancelled = false;
 
+        // Pass insightManager to AgentManager to be passed to the Director
+        this.agentManager.insightManager = insightManager;
+
         this.phases = {
             planning: new PlanningPhase(this),
             response: new ResponsePhase(this),

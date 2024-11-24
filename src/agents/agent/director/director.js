@@ -4,8 +4,9 @@ import { log } from '../../../utils/logger.js';
 import { config } from '../../../config/config.js';
 
 export class Director extends BaseAgent {
-    constructor(config, llmService) {
+    constructor(config, llmService, insightManager) {
         super(config, llmService);
+        this.insightManager = insightManager;
     }
 
     async planInitialAgentTasks(message, availableAgents, storedInsights) {
@@ -82,15 +83,18 @@ export class Director extends BaseAgent {
         try {
             log.debug('Parsing and analyzing user message', { message });
 
-            const systemPrompt = `Extract key points, entities, and sentiment from the following message:
+            const systemPrompt = `Extract key points, entities, sentiment, and insights from the following message:
             "${message}". As well as the following previous messages in this array if there are any: [${ storedInsights ? storedInsights.map(insight => insight.content).join('\n') : '' }].
 
-            Respond in a strict JSON format like this. Use as many key points and entities as you need:
+            Respond with a JSON object containing meaningful analysis. Include multiple key points, entities, and insights based on the actual content.
             {
-                "keyPoints": ["point1", "point2"],
-                "entities": ["entity1", "entity2"],
-                "sentiment": "positive/negative/neutral"
-            }`;
+                "keyPoints": [array of relevant key points found in the message],
+                "entities": [array of relevant entities mentioned],
+                "sentiment": "positive/negative/neutral",
+                "potentialInsights": [array of meaningful insights derived from the analysis]
+            }
+
+            Focus on quality over quantity. Include only relevant items that add value to the analysis.`;
 
             const parsedData = await this.llm.makeModelRequest({
                 systemPrompt: systemPrompt,
@@ -99,16 +103,35 @@ export class Director extends BaseAgent {
                 agentType: this.role
             });
 
-            log.debug('Parsed data in Director.js', { parsedData });
+            // Store detected insights if we have an insight manager
+            if (this.insightManager && this.currentConversationId && parsedData.potentialInsights) {
+                for (const insightContent of parsedData.potentialInsights) {
+                    await this.insightManager.addInsight(
+                        this.currentConversationId,
+                        {
+                            content: insightContent,
+                            type: 'semantic_analysis',
+                            confidence: 0.8
+                        },
+                        'director-analysis'
+                    );
+                }
+            }
+
+            // Remove potentialInsights before returning to maintain existing data structure
+            const { potentialInsights, ...returnData } = parsedData;
+
+            log.debug('Parsed data in Director.js', { parsedData: returnData });
             log.perf.measure('parseAndAnalyze', Date.now() - startTime, {
                 executionId,
                 function: 'parseAndAnalyze',
                 messageLength: message.length,
                 insightCount: storedInsights?.length || 0,
                 inputPreview: message.substring(0, 100),
-                outputPreview: JSON.stringify(parsedData).substring(0, 100)
+                outputPreview: JSON.stringify(returnData).substring(0, 100)
             });
-            return parsedData;
+            
+            return returnData;
         } catch (error) {
             log.perf.measure('parseAndAnalyze', Date.now() - startTime, {
                 executionId,

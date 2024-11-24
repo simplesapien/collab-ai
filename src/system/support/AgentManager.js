@@ -2,10 +2,11 @@ import { AgentFactory } from '../../agents/agentFactory.js';
 import { log } from '../../utils/logger.js';
 
 export class AgentManager {
-    constructor(llmService) {
+    constructor(llmService, insightManager = null) {
         try {
             this.agents = new Map();
             this.llmService = llmService;
+            this.insightManager = insightManager;
             this.agentPrefixes = {
                 'director-1': /^(?:Director:?\s*)/i,
                 'analyst-1': /^(?:Analyst:?\s*)/i,
@@ -103,6 +104,12 @@ export class AgentManager {
             log.error('[AgentManager] Director agent not found');
             throw new Error('Director agent not found');
         }
+        
+        // Pass insightManager to Director if it exists -- to utilize the Director's parseAndAnalyze to find insights
+        if (this.insightManager) {
+            director.insightManager = this.insightManager;
+        }
+        
         return director;
     }
 
