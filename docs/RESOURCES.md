@@ -12,6 +12,7 @@
 - [AutoGen Swarms Guide](https://microsoft.github.io/autogen/dev/user-guide/agentchat-user-guide/tutorial/swarm.html)
 - [OpenAI Swarm](https://github.com/openai/swarm)
 - [OpenAI Orchestrating Agents](https://cookbook.openai.com/examples/orchestrating_agents)
+- [AWS Labs Multi-Agent Orchestrator](https://github.com/awslabs/multi-agent-orchestrator)
 
 ## 🔬 Research Tools & Examples
 - [Research Assistant with Perplexity AI and Google Sheets](https://buildship.com/blog/research-assistant-perplexity-ai-and-google-sheets)
