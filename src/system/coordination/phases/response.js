@@ -38,7 +38,7 @@ export class ResponsePhase extends Phase {
                             participant.role
                         );
 
-                        log.debug('Formatted agent response:', {
+                        log.debug('Formatted agent response for response phase:', {
                             agentId: agent.id,
                             role: participant.role,
                             content: formattedResponse.content,
@@ -49,7 +49,7 @@ export class ResponsePhase extends Phase {
                         this.coordinator.notifyManager.notifyResponse(formattedResponse);
                         responses.push(formattedResponse);
                     } catch (error) {
-                        log.error(`Error generating response for agent ${agent.id}:`, {
+                        log.error(`Error generating response for response phase for agent ${agent.id}:`, {
                             error: error.message,
                             stack: error.stack,
                             task: participant.task,

@@ -9,7 +9,7 @@ export class SummaryPhase extends Phase {
     async execute(conversation, director) {
         return this.executeWithLogging(
             async () => {
-                log.info('Starting summary phase:', {
+                log.debug('Starting summary phase:', {
                     conversationId: conversation.id,
                     messageCount: conversation.messages.length
                 });
@@ -18,7 +18,7 @@ export class SummaryPhase extends Phase {
                 
                 const finalSummary = await director.synthesizeDiscussion(conversation.messages);
 
-                log.info('Generated summary:', {
+                log.debug('Generated summary:', {
                     content: finalSummary,
                     conversationId: conversation.id,
                     length: finalSummary.length

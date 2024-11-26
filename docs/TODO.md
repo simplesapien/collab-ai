@@ -7,10 +7,6 @@
 * Still want to make sure there is ample separation between conversation manager and insight manager so the conversation manager’s duties are quite siloed  
 * Look into LLM limit that was set in the LLMService file 
 
-Next:  
-Quality, coordination, notification left to go through to clean up logs a bit.  
-(1 hr)
-
 * Update the performance logs to include more identifiable data  
   * Check first if the director one is working well  
 * Update logs in messageFormatter  

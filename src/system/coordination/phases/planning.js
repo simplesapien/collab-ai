@@ -45,9 +45,6 @@ export class PlanningPhase extends Phase {
     }
 
     async _initializeConversation(conversationId, message) {
-        const eventId = log.event.emit('initializeConversation', 'PlanningPhase', {
-            conversationId
-        });
         const startTime = Date.now();
 
         try {
@@ -68,11 +65,9 @@ export class PlanningPhase extends Phase {
                 isNew: !this.coordinator.conversationManager.getConversation(conversationId)
             });
 
-            log.event.complete(eventId);
             return conversation;
         } catch (error) {
             log.error('Conversation initialization failed', error);
-            log.event.complete(eventId, 'failed');
             throw error;
         }
     }

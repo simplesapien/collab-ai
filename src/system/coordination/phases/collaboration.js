@@ -89,7 +89,7 @@ export class CollaborationPhase extends Phase {
 
         try {
             const task = `Respond to ${plan.respondTo.join(' and ')}'s points: ${plan.task}`;
-            log.debug('Generating agent response:', {
+            log.debug('Generating agent response for collaboration:', {
                 agentId: agent.id,
                 task,
                 conversationId: conversation.id
@@ -100,12 +100,6 @@ export class CollaborationPhase extends Phase {
                 conversation, 
                 task
             );
-
-            log.info('Agent response generated:', {
-                agentId: agent.id,
-                content: response,  // Log the raw response
-                conversationId: conversation.id
-            });
 
             const collaborativeResponse = this.coordinator.agentManager.formatAgentResponse(
                 response,

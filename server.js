@@ -1,3 +1,5 @@
+// Ignore this file for now, it's just the server setup incase I need it again
+
 import express from 'express';
 import { Application } from './src/app.js';
 import { Logger } from './src/utils/logger.js';
