@@ -1,9 +1,9 @@
 # Collab AI - Multi-Agent Collaborative AI System
 
 ## Overview
-Collab AI is a sophisticated multi-agent system designed to facilitate intelligent problem-solving through coordinated AI agents. The system orchestrates specialized agents in structured discussions, generating actionable insights through iterative collaboration.
+Collab AI is a multi-agent system designed to facilitate problem-solving through coordinated AI agents. The system orchestrates specialized agents in structured discussions, generating actionable insights through iterative collaboration.
 
-💡 **Active Development**: This project is continuously evolving. Contributions are welcome to enhance its capabilities and refine core components.
+💡 **Active Development**: This project is continuously evolving. Contributions are welcome to enhance its capabilities and refine core components. It's a functional mess right now but I see some potential and I've had a lot of fun building it so far. 
 
 ## 🎯 Key Features
 
@@ -58,22 +58,6 @@ node src/cli.js
 - **Conversation Manager**: Maintains discussion context
 - **Insight Manager**: Processes and stores valuable insights
 
-## 📋️ Current Development Focus
-
-### System Improvements
-- Insight qualification refinement
-- Component modularization
-- Context flow optimization
-- Role separation maintenance
-- Performance logging enhancement
-
-### Optimization Strategies
-- Token usage optimization
-- Request batching
-- Response caching
-- Smart task routing
-- Parallel processing
-
 ## 👥 Contributing
 
 We welcome contributions across all aspects of the project:
@@ -81,14 +65,7 @@ We welcome contributions across all aspects of the project:
 ### Getting Started
 1. Review our [Learning Resources](./docs/RESOURCES.md) for project context
 2. Check the [Development Tasks](./docs/TODO.md) for current priorities
-3. Review our [Proposed Architecture](./docs/PROPOSED-DEV.md)
-
-### Key Contribution Areas
-- Agent role refinement
-- Validation implementation
-- Performance optimization
-- Documentation improvements
-- Testing enhancement
+3. Review our [Proposed Architecture](./docs/PROPOSED-DEV.md) for a (rough) overview of the project's current direction
 
 ## 🙏 Acknowledgments
 
