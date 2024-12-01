@@ -6,14 +6,14 @@ export class PlanningPhase extends Phase {
         super(coordinator, 'PlanningPhase');
     }
 
-    async execute(director, message, availableAgents, storedInsights) {
+    async execute(director, message, availableAgents, conversationId) {
         return this.executeWithLogging(
             async () => {
 
                 this.coordinator.notifyManager.notifyThinking('director-1', 'planning');
-                const plan = await director.planInitialAgentTasks(message.content, availableAgents, storedInsights);
+                const plan = await director.planInitialAgentTasks(message.content, availableAgents, conversationId);
 
-                await this._emitDirectorPlan(plan, this.coordinator.conversationManager.getCurrentConversationId());
+                await this._emitDirectorPlan(plan, conversationId);
                 return plan;
             },
             {

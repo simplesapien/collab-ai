@@ -4,22 +4,19 @@ import { log } from '../../../utils/logger.js';
 import { config } from '../../../config/config.js';
 
 export class Director extends BaseAgent {
-    constructor(config, llmService, insightManager) {
+    constructor(config, llmService) {
         super(config, llmService);
-        this.insightManager = insightManager;
     }
 
-    async planInitialAgentTasks(message, availableAgents, storedInsights) {
-        const executionId = `director-pit-${Date.now()}`;
-        const startTime = Date.now();
+    async planInitialAgentTasks(message, availableAgents, conversationId) {
         
         try {
             const userPrompt = typeof message === 'object' ? message.content : message;
             
             // Parse and analyze
-            const parsedData = await this.parseAndAnalyze(userPrompt, storedInsights);
+            const parsedData = await this.parseAndAnalyze(userPrompt, conversationId);
             const problem = await this.understandProblem(parsedData);
-            const tasks = await this.decomposeTask(problem);
+            const tasks = await this.decomposeTask(problem, conversationId);
             
             // Create a mapping of agent roles to their IDs
             const agentMap = availableAgents.reduce((map, agent) => {
@@ -53,38 +50,32 @@ export class Director extends BaseAgent {
             };
             
             log.debug('Final processed plan', { plan });
-            log.perf.measure('planInitialAgentTasks', Date.now() - startTime, {
-                executionId,
-                function: 'planInitialAgentTasks',
-                inputLength: userPrompt.length,
-                agentCount: availableAgents.length,
-                insightCount: storedInsights?.length || 0,
-                participantCount: plan.participants.length,
-                inputPreview: userPrompt.substring(0, 100),
-                outputPreview: JSON.stringify(plan).substring(0, 100)
-            });
+        
             return plan;
         } catch (error) {
-            log.perf.measure('planInitialAgentTasks', Date.now() - startTime, {
-                executionId,
-                function: 'planInitialAgentTasks',
-                error: error.message,
-                status: 'failed'
-            });
+         
             throw error;
         }
     }
 
 
-    async parseAndAnalyze(message, storedInsights) {
+    async parseAndAnalyze(message, conversationId) {
         const executionId = `director-pa-${Date.now()}`;
         const startTime = Date.now();
         
         try {
             log.debug('Parsing and analyzing user message', { message });
-
+            
+            // Get relevant insights for the current conversation
+            const storedInsights = this.insightManager.getInsights(conversationId);
+            
             const systemPrompt = `Extract key points, entities, sentiment, and insights from the following message:
-            "${message}". As well as the following previous messages in this array if there are any: [${ storedInsights ? storedInsights.map(insight => insight.content).join('\n') : '' }].
+            "${message}"
+            
+            ${storedInsights?.length ? `
+            Consider this conversation context:
+            ${storedInsights.map(insight => `- ${insight.content}`).join('\n')}
+            ` : ''}
 
             Respond with a JSON object containing meaningful analysis. Include multiple key points, entities, and insights based on the actual content.
             {
@@ -96,41 +87,13 @@ export class Director extends BaseAgent {
 
             Focus on quality over quantity. Include only relevant items that add value to the analysis.`;
 
-            const parsedData = await this.llm.makeModelRequest({
+            const returnData = await this.llm.makeModelRequest({
                 systemPrompt: systemPrompt,
                 userPrompt: message,
                 context: [],
                 agentType: this.role
             });
 
-            // Store detected insights if we have an insight manager
-            if (this.insightManager && this.currentConversationId && parsedData.potentialInsights) {
-                for (const insightContent of parsedData.potentialInsights) {
-                    await this.insightManager.addInsight(
-                        this.currentConversationId,
-                        {
-                            content: insightContent,
-                            type: 'semantic_analysis',
-                            confidence: 0.8
-                        },
-                        'director-analysis'
-                    );
-                }
-            }
-
-            // Remove potentialInsights before returning to maintain existing data structure
-            const { potentialInsights, ...returnData } = parsedData;
-
-            log.debug('Parsed data in Director.js', { parsedData: returnData });
-            log.perf.measure('parseAndAnalyze', Date.now() - startTime, {
-                executionId,
-                function: 'parseAndAnalyze',
-                messageLength: message.length,
-                insightCount: storedInsights?.length || 0,
-                inputPreview: message.substring(0, 100),
-                outputPreview: JSON.stringify(returnData).substring(0, 100)
-            });
-            
             return returnData;
         } catch (error) {
             log.perf.measure('parseAndAnalyze', Date.now() - startTime, {
@@ -187,13 +150,38 @@ export class Director extends BaseAgent {
         }
     }
 
-    async decomposeTask(problem) {
+    async decomposeTask(problem, conversationId) {
         try {
             const startTime = Date.now();
             log.debug('Decomposing problem into tasks', { problem });
 
-            const systemPrompt = `Break down the following problem into smaller, specific tasks. Make sure they are research oriented. Limit yourself to ${config.director.maxTasksAssigned} tasks:
-            "${problem}"
+            // Get insights directly from the manager
+            const storedInsights = this.insightManager.getInsights(conversationId);
+
+            const systemPrompt = `Break down the following problem into smaller research and discussion-oriented goals.
+            
+            Problem: "${problem}"
+            
+            ${storedInsights?.length ? `
+            Previous Discussion Context:
+            ${storedInsights.map(insight => `- ${insight.content}`).join('\n')}
+            
+            Ensure tasks:
+            1. Build upon existing insights
+            2. Avoid redundant exploration
+            3. Address any gaps in current understanding
+            ` : ''}
+            
+            Focus ONLY on tasks that involve analysis, evaluation, or theoretical discussion - NO action items or external tasks.
+            
+            Examples of good tasks:
+            - "Analyze the implications of X on Y"
+            - "Evaluate the pros and cons of the proposed approach"
+            - "Research and discuss potential solutions for X"
+            - "Review and critique the assumptions behind X"
+            
+            Limit yourself to ${config.director.maxTasksAssigned} tasks.
+            
             Respond in a strict JSON format like this:
             {
                 "tasks": ["task1", "task2", "task3"]
@@ -397,24 +385,28 @@ export class Director extends BaseAgent {
 
             log.debug('Synthesizing discussion with formatted messages', { formattedMessages });
             
-            const systemPrompt = `As the Director, provide a concise synthesis of this conversation.
+            const systemPrompt = `Analyze this conversation and provide novel insights and strategic implications.
+            Focus on:
+            1. Hidden patterns or connections between different viewpoints
+            2. Potential opportunities or risks not explicitly mentioned
+            3. Critical insights that emerge from combining different perspectives
+            4. Strategic implications or recommendations based on the collective discussion
 
             Conversation messages:
             ${formattedMessages.map(m => `- ${m.agentId}: ${m.content}`).join('\n')}
 
-            Create a brief summary that includes:
-            1. The core discussion topic
-            2. Key insights and notable points raised
-            3. Important patterns or themes that emerged
-            4. Essential conclusions reached
+            Structure your response in this format:
+            - Key Insight: [One sentence highlighting a non-obvious conclusion]
+            - Strategic Implications: [2-3 sentences on what this means for decision-making]
+            - Critical Considerations: [1-2 sentences on important factors or risks to consider]
 
-            Keep the summary clear and focused. Prioritize meaningful insights over comprehensive coverage.`;
+            Be insightful and analytical. Avoid simply restating what was said.`;
             
             const llmStartTime = Date.now();
 
             const response = await this.llm.makeModelRequest({
                 systemPrompt: systemPrompt,
-                userPrompt: "Provide a comprehensive synthesis of the discussion.",
+                userPrompt: "Synthesize the key insights and strategic implications from this discussion.",
                 context: [],
                 agentType: this.role
             });
@@ -445,6 +437,94 @@ export class Director extends BaseAgent {
                 status: 'failed'
             });
             throw error;
+        }
+    }
+
+    async extractAndStoreInsights(conversationId, messages, summary) {
+        const executionId = `director-ei-${Date.now()}`;
+        const startTime = Date.now();
+        
+        try {
+            if (!this.insightManager) {
+                log.debug('No insight manager available, skipping insight extraction');
+                return;
+            }
+
+            log.debug('Extracting insights from conversation', {
+                conversationId,
+                messageCount: messages.length
+            });
+
+            const systemPrompt = `Analyze this conversation and summary to extract key insights that might be valuable for future conversations.
+            Focus on:
+            1. Recurring patterns or themes
+            2. Important conclusions or decisions
+            3. Novel ideas or approaches discussed
+            4. Technical details or specifications mentioned
+            5. Problem-solving strategies used
+
+            Conversation Summary:
+            ${summary}
+
+            Return a JSON array of insights, where each insight has:
+            - content: The actual insight
+            - type: One of [pattern, conclusion, idea, technical_detail, strategy]
+            - confidence: A number between 0 and 1 indicating confidence in this insight
+
+            Example:
+            [
+                {
+                    "content": "Microservice architecture was preferred over monolithic due to scalability requirements",
+                    "type": "conclusion",
+                    "confidence": 0.9
+                }
+            ]`;
+
+            const response = await this.llm.makeModelRequest({
+                systemPrompt: systemPrompt,
+                userPrompt: "Extract key insights from this conversation.",
+                context: messages,
+                agentType: this.role,
+                forceJsonResponse: true
+            });
+
+            const insights = Array.isArray(response) ? response : [response];
+            
+            // Store each insight
+            for (const insight of insights) {
+                await this.insightManager.addInsight(
+                    conversationId,
+                    {
+                        content: insight.content,
+                        type: insight.type,
+                        confidence: insight.confidence
+                    },
+                    'director-summary'
+                );
+            }
+
+            log.debug('Stored insights from conversation', {
+                conversationId,
+                insightCount: insights.length,
+                insights
+            });
+
+            log.perf.measure('extractAndStoreInsights', Date.now() - startTime, {
+                executionId,
+                function: 'extractAndStoreInsights',
+                messageCount: messages.length,
+                insightCount: insights.length,
+                success: true
+            });
+
+        } catch (error) {
+            log.error('Failed to extract insights', error);
+            log.perf.measure('extractAndStoreInsights', Date.now() - startTime, {
+                executionId,
+                function: 'extractAndStoreInsights',
+                error: error.message,
+                status: 'failed'
+            });
         }
     }
 

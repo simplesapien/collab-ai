@@ -58,6 +58,11 @@ export class LLMService {
                     }
                 });
 
+                log.debug('Final messages being sent to OpenAI:', {
+                    systemPrompt: formattedData.messages[0]?.content,
+                    messageCount: formattedData.messages.length
+                });
+
                 // Make direct OpenAI API call
                 const response = await this.openai.chat.completions.create({
                     model: formattedData.model || 'gpt-4o-mini',

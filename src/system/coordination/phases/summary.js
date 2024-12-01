@@ -17,6 +17,12 @@ export class SummaryPhase extends Phase {
                 this.coordinator.notifyManager.notifyThinking('director-1', 'synthesizing');
                 
                 const finalSummary = await director.synthesizeDiscussion(conversation.messages);
+                
+                await director.extractAndStoreInsights(
+                    conversation.id,
+                    conversation.messages,
+                    finalSummary
+                );
 
                 log.debug('Generated summary:', {
                     content: finalSummary,

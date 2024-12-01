@@ -23,12 +23,19 @@ export class System {
     }
 
     async initialize(agentConfigs, notifyManager) {
- 
         try {
             // Initialize services
             this.llmService = new LLMService();
-            this.agentManager = new AgentManager(this.llmService);
-            this.conversationManager = new ConversationManager();
+            
+            // Create insight manager first
+            this.insightManager = new InsightManager(this.qualityGate);
+            
+            // Pass insight manager to other services
+            this.agentManager = new AgentManager(this.llmService, this.insightManager);
+            this.conversationManager = new ConversationManager(
+                undefined, // default config
+                this.insightManager // pass the insight manager
+            );
 
             // Initialize coordinator with notifyManager
             this.coordinator = new Coordinator(

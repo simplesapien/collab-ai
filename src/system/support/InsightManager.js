@@ -4,12 +4,21 @@ export class InsightManager {
     constructor(qualityGate = null) {
         this.insights = new Map(); // conversationId -> insights[]
         this.qualityGate = qualityGate;
+        log.debug('InsightManager initialized', { 
+            hasQualityGate: !!qualityGate 
+        });
     }
 
     async addInsight(conversationId, insight, source) {
+        const startTime = Date.now();
         try {
             if (!conversationId) {
-                log.debug('No conversationId provided for insight');
+                log.error('No conversationId provided for insight');
+                return false;
+            }
+
+            if (!insight?.content) {
+                log.error('Invalid insight format', { insight });
                 return false;
             }
 
@@ -35,7 +44,7 @@ export class InsightManager {
             const enhancedInsight = {
                 ...insight,
                 timestamp: Date.now(),
-                source,
+                source: source || 'unknown',
                 type: insight.type || 'general',
                 id: `${conversationId}-insight-${currentInsights.length}`
             };
@@ -49,68 +58,120 @@ export class InsightManager {
                 type: enhancedInsight.type,
                 source
             });
+
+            log.perf.measure('add-insight', Date.now() - startTime, {
+                conversationId,
+                source,
+                type: enhancedInsight.type
+            });
             
             return enhancedInsight;
         } catch (error) {
             log.error('Failed to add insight', error);
+            log.perf.measure('add-insight', Date.now() - startTime, {
+                error: error.message,
+                status: 'failed'
+            });
             return false;
         }
     }
 
     getInsights(conversationId, options = {}) {
-        const { 
-            limit = null, 
-            type = null, 
-            source = null 
-        } = options;
+        try {
+            if (!conversationId) {
+                log.error('No conversationId provided for getInsights');
+                return [];
+            }
 
-        let insights = this.insights.get(conversationId) || [];
-        
-        if (type || source) {
-            insights = insights.filter(insight => {
-                if (type && insight.type !== type) return false;
-                if (source && insight.source !== source) return false;
-                return true;
-            });
+            const { 
+                limit = null, 
+                type = null, 
+                source = null 
+            } = options;
+
+            let insights = this.insights.get(conversationId) || [];
+            
+            if (type || source) {
+                insights = insights.filter(insight => {
+                    if (type && insight.type !== type) return false;
+                    if (source && insight.source !== source) return false;
+                    return true;
+                });
+            }
+
+            return limit ? insights.slice(-limit) : insights;
+        } catch (error) {
+            log.error('Failed to get insights', error);
+            return [];
         }
-
-        return limit ? insights.slice(-limit) : insights;
     }
     
-    // Store insights every reseponse from the responses in the InsightManager
     async storeInsights(conversationId, responses, collaboration, summary) {
-        for (const response of responses) {
-            await this.addInsight(
-                conversationId, 
-                {
-                    content: response.content,
-                    type: 'response'
-                },
-                'response-phase'
-            );
-        }
+        const startTime = Date.now();
+        try {
+            if (!conversationId) {
+                throw new Error('No conversationId provided for storeInsights');
+            }
 
-        // Store insights from the collaboration in the InsightManager
-        for (const insight of collaboration.collaborativeResponses) {
-            await this.addInsight(
+            const storedInsights = [];
+
+            // Store response insights
+            if (Array.isArray(responses)) {
+                for (const response of responses) {
+                    const insight = await this.addInsight(
+                        conversationId, 
+                        {
+                            content: response.content,
+                            type: 'response'
+                        },
+                        'response-phase'
+                    );
+                    if (insight) storedInsights.push(insight);
+                }
+            }
+
+            // Store collaboration insights
+            if (collaboration?.collaborativeResponses) {
+                for (const insight of collaboration.collaborativeResponses) {
+                    const stored = await this.addInsight(
+                        conversationId,
+                        {
+                            content: insight.content,
+                            type: 'collaboration'
+                        },
+                        'collaboration-phase'
+                    );
+                    if (stored) storedInsights.push(stored);
+                }
+            }
+
+            // Store summary insight
+            if (summary) {
+                const summaryInsight = await this.addInsight(
+                    conversationId, 
+                    {
+                        content: summary,
+                        type: 'summary'
+                    },
+                    'summary-phase'
+                );
+                if (summaryInsight) storedInsights.push(summaryInsight);
+            }
+
+            log.perf.measure('store-insights', Date.now() - startTime, {
                 conversationId,
-                {
-                    content: insight.content,
-                    type: 'collaboration'
-                },
-                'collaboration-phase'
-            );
-        }
+                storedCount: storedInsights.length
+            });
 
-        // Store insights from the summary in the InsightManager
-        await this.addInsight(
-            conversationId, 
-            {
-                content: summary,
-                type: 'summary'
-            },
-            'summary-phase'
-        );
+            return storedInsights;
+        } catch (error) {
+            log.error('Failed to store insights', error);
+            log.perf.measure('store-insights', Date.now() - startTime, {
+                error: error.message,
+                status: 'failed'
+            });
+            return [];
+        }
     }
 
     getRecentInsights(conversationId, limit = 5) {

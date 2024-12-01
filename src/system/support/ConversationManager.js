@@ -1,16 +1,15 @@
 // src/conversation/conversationManager.js
 import { log } from '../../utils/logger.js';
 import { Validators } from '../../utils/validators.js';
-import { InsightManager } from './InsightManager.js';
 
 export class ConversationManager {
-    constructor(config = { maxConversations: 100, maxMessageAge: 24 * 60 * 60 * 1000 }) {
+    constructor(config = { maxConversations: 100, maxMessageAge: 24 * 60 * 60 * 1000 }, insightManager = null) {
         try {
             this.conversations = new Map();
             this.config = config;
             this.metadata = new Map();
             this.currentConversationId = null;
-            this.insightManager = new InsightManager();
+            this.insightManager = insightManager;
         } catch (error) {
             log.error('Conversation manager initialization failed', error);
             throw error;
@@ -136,7 +135,9 @@ export class ConversationManager {
                     });
                     this.conversations.delete(id);
                     this.metadata.delete(id);
-                    this.insightManager.insights.delete(id);
+                    if (this.insightManager) {
+                        this.insightManager.insights.delete(id);
+                    }
                     removedCount++;
                 }
             }
@@ -154,7 +155,9 @@ export class ConversationManager {
                     });
                     this.conversations.delete(oldestId);
                     this.metadata.delete(oldestId);
-                    this.insightManager.insights.delete(oldestId);
+                    if (this.insightManager) {
+                        this.insightManager.insights.delete(oldestId);
+                    }
                     removedCount++;
                 }
             }
@@ -277,10 +280,10 @@ export class ConversationManager {
     }
 
     addInsight(conversationId, insight) {
-        return this.insightManager.addInsight(conversationId, insight);
+        return this.insightManager?.addInsight(conversationId, insight);
     }
 
     getRecentInsights(conversationId, limit) {
-        return this.insightManager.getRecentInsights(conversationId, limit);
+        return this.insightManager?.getRecentInsights(conversationId, limit) || [];
     }
 }

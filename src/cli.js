@@ -333,6 +333,12 @@ class CLI {
             }
             return;
         }
+
+        // Add special formatting for director summaries
+        if (response.agentId === 'director-1' && response.role === 'Summary') {
+            console.log(`\n${icon} ${color('📋 Summary:')} ${content}\n`);
+            return;
+        }
         
         console.log(`\n${icon} ${color(content)}\n`);
     }
