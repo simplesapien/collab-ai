@@ -1,193 +1,42 @@
-# ORGANIZE ME 
+# FUTURE CONSIDERATIONS
 
-* Refine what makes an insight an insight.   
-* Look into making sure similar insights aren’t stored.   
-* The parseAndAnalyze method is going to get pretty huge, maybe look into some ways we can break that up a bit?   
-* There isn’t enough context from previous discussions/the user’s request making it through all of the director’s methods (i.e. wanting to start something in vancouver)  
-* Still want to make sure there is ample separation between conversation manager and insight manager so the conversation manager’s duties are quite siloed  
-* Look into LLM limit that was set in the LLMService file 
+**Open-ended questions**
 
-* Update the performance logs to include more identifiable data  
-  * Check first if the director one is working well  
-* Update logs in messageFormatter  
-* 
+* Will agents get access to the stored insights? Or will that be solely for the director when assigning tasks
+* How do we determine when to move to next iteration?  
+* What triggers a deeper dive vs moving to conclusions?  
+* How do we prevent circular discussions?  
+* How do agent responsibilities shift in each iteration?  
+* When should certain agents step back or become more prominent?  
+* How do we maintain coherent progression between iterations?  
+* What insights do we carry forward?  
+* How do we prevent repetition while building depth?  
+* How do we track the evolution of understanding?
 
-(30 min)
-
-* ADJUST THE phases so that they all use the execute with login properly and pass whatever their important data is to that second parameter, and have it parsed correctly by the basePhase method
-
-(30 min)
-
-Start implementing some quality/validation checks?
-
-New problems arising:
-
-* Director plans are too action focused, these agents can’t really do anything yet.  
-* Look briefly into why the analyst doesn’t seem to be getting selected as often. (only seems to be in the collaboration phase)  
-* The first time the agent’s are being given their initial tasks, they are given the context of the other agents’ tasks as well    
-* do i have getModelForAgent set up in two different places? isn’t really even necessary anymore  
-* Why is the system constructor split into an init function   
-  * Are any of those functions in system even being run?
-
-**Phase 1: Quality Control Enhancement**
-
-* Create new service class with fast and deep check methods.  
-* Implement basic validation checks:  
-  * Response length validation (too short/long)  
-  * Basic formatting checks (JSON structure \+ required fields. Can move some of the checks out from the agent files/llm files themselves)  
-  * Profanity/inappropriate/safety? content detection  
-  * Response time thresholds?   
-  * Basic syntax validation
-
-**QualityCheckService Creation**
-
-* Implement deep validation:  
-  * Semantic relevance  
-  * **Context relevance** — topic drift measurement, context adherence, reference to previous messages, task alignment (comparing response to original task)  
-  * **Coherence** — internal consistency, logical flow, grammar \+ structure quality  
-  * Ensure agent role adherence   
-* Add retry logic and failure handling.  
-* Add cost optimization for LLM calls.
-
-**QualityGate Enhancement**
-
-* Add two-tier validation system.  
-* Implement validation queues for parallel processing.  
-* Add retry management system.  
-* Add validation result caching.  
-* Implement validation metrics tracking.
-
-**Response Validation System**
-
-* Create ResponseValidationQueue class.  
-* Implement parallel validation processing.  
-* Add priority queue for validation requests.  
-* Implement validation result storage.  
-* Add validation performance metrics.
-
-**Phase 2: Topic Management**
-
-**TopicManager Implementation**
-
-* Create TopicManager class.  
-* Implement topic extraction logic.  
-* Add topic relevance scoring.  
-* Implement topic dependency tracking.  
-* Add topic lifecycle management.
-
-**Voting System**
-
-* Create VotingSystem class.  
-* Implement agent voting mechanisms.  
-* Add vote weighting system.  
-* Implement consensus detection.  
-* Add voting round management.
-
-**Priority Queue System**
-
-* Create PriorityQueue class.  
-* Implement topic prioritization logic.  
-* Add dynamic priority adjustment.  
-* Implement topic urgency scoring.  
-* Add priority inheritance system.
-
-**Phase 3: Discussion Flow Enhancement**
-
-**Complexity Analysis**
-
-* Create ComplexityAnalyzer class.  
-* Implement complexity scoring system.  
-* Add stage determination logic.  
-* Implement complexity-based routing.  
-* Add complexity trend analysis.
-
-**Discussion Stage Management**
-
-* Create StageManager class.  
-* Implement stage progression logic.  
-* Add stage completion criteria.  
-* Implement stage rollback capabilities.  
-* Add stage performance metrics.
-
-**Coordinator Enhancement**
-
-* Add parallel response orchestration.  
-* Implement stage-based routing.  
-* Add dynamic agent selection.  
-* Implement progress tracking.  
-* Add performance optimization.
-
-**Integration Updates**
-
-**BaseAgent Updates**
-
-* Add voting capabilities.  
-* Implement topic awareness.  
-* Add stage-specific behaviors.  
-* Implement complexity assessment.  
-* Add performance metrics.
-
-**ConversationManager Updates**
-
-* Add topic tracking.  
-* Implement stage awareness.  
-* Add validation result storage.  
-* Implement conversation branching.  
-* Add conversation metrics.  
-* Response novelty (avoiding repetition)  
-* Constructive addition to discussion  
-* Agent role adherence  
-* Cross-reference with other agent responses
-
-**MessageFormatter Updates**
-
-* Add new message types.  
-* Implement stage-specific formatting.  
-* Add validation result formatting.  
-* Implement topic metadata.  
-* Add metrics formatting.
-
-**System-Wide Updates**
-
-**Logging Enhancements**
-
-* Add validation logging.  
-* Implement topic tracking logs.  
-* Add performance metrics logging.  
-* Implement debug logging.  
-* Add error tracking.
-
-**Configuration Updates**
-
-* Add validation configurations.  
-* Implement topic management settings.  
-* Add stage management configs.  
-* Implement performance thresholds.  
-* Add metric configurations.
-
-**Testing Requirements**
-
-* Unit tests for new components.  
-* Integration tests for workflows.  
-* Performance tests.  
-* Validation accuracy tests.  
-* Error handling tests.
 
 **Hard later**
 
-* Notification shit   
-  * Adding real-time communication capabilities (WebSocket/SSE)  
-  * Creating REST endpoints for state queries  
-  * Adding rate limiting for notifications  
-  * Implementing notification persistence if needed  
-  * Adding notification acknowledgment system  
+* Adding real-time communication capabilities (WebSocket/SSE)   
 * Look into adding a bunch of agents that the director can choose from.   
 * look into giving the Director a function to create an agent   
 * Look into ways to reduce redundant storage (not having same insights over n over)  
 * Look into other multi agent orchestrator repos and see how they’ve done it  
 * Look into other agents taht have been made (templates on langflow)  
 * Check out what other ‘agent frameworks’ or ‘multi-agent-orchestration” systems exist   
-* 
+* Add cost optimization for LLM calls.
+* Implement Voting System Class
+   * Agent voting mechanisms
+   * Add vote weighting system
+   * Implement consensus detection
+   * Add voting round management
+* Implement Priority Queue System
+   * Topic prioritization logic
+   * Add dynamic priority adjustment
+* Topic complexity analysis (to determine how many stages of discussion a topic needs)
+* Use the confidence score of a storedInsight to determine whether that insight should be fact-checked or not
+* Track the topics/problems that the user has asked about over-time, ensure they are all being addressed and solved
+* Explore providing only relevant insights to a particular agent that can inform it's response (i.e. only provide the analyst with insights related to their expertise)
+
 
 **Easier**
 
@@ -195,12 +44,100 @@ New problems arising:
 * Have the cost appear in the CLI.   
 * Make their answers much shorter  
 * Look into how these giant systems (GPT, Claude ,whatever, maintain context of a conversation)
+* Update the performance logs to include more identifiable data  
+  * Check first if the director one is working well  
+* Update logs in messageFormatter  
+* ADJUST THE phases so that they all use the execute with login properly and pass whatever their important data is to that second parameter, and have it parsed correctly by the basePhase method
+
+
+**Problems**
+
+* There isn’t enough context from previous discussions/the user’s request making it through all of the director’s methods (i.e. wanting to start something in vancouver)  
+* Director plans are too action focused, these agents can’t really do anything yet.  
+* Look briefly into why the analyst doesn’t seem to be getting selected as often. (only seems to be in the collaboration phase)  
+* The first time the agent’s are being given their initial tasks, they are given the context of the other agents’ tasks as well    
+* do i have getModelForAgent set up in two different places? isn’t really even necessary anymore  
+* Why is the system constructor split into an init function   
+  * Are any of those functions in system even being run?
+
+
+**Quality Gate Wishlist**
+
+## Fast + Deep Check Implementation
+* Implement parallel processing for validation checks
+
+## Fast Validation Checks
+* Response length validation (too short/long)
+* Basic formatting checks (JSON structure + required fields)
+* Profanity/inappropriate/safety content detection
+* Response time thresholds
+* Basic syntax validation
+* Task complexity assessment for dynamic agent allocation (much later)
+* Agent reputation score verification (much later)
+* Cached response availability check (much later)
+
+## Deep Validation
+* **Context relevance**
+ * Topic drift measurement -- how much has the topic drifted from the original request? (using similarity score)
+ * Reference to previous messages (context adherence)
+ * Task alignment with original request
+* **Coherence**
+ * Internal consistency
+ * Logical flow
+ * Grammar + structure quality
+* Agent role adherence
+   * Agent expertise domain verification
+* Weighted contribution scoring (much later)
+   * Assigns importance scores to different agents' inputs based on their expertise and relevance.
+   * Used to prioritize more reliable/relevant agent responses when synthesizing final output.
+* Knowledge graph fact-checker
+   * Checks if the response is consistent with a pre-built knowledge graph (i.e. DBpedia, Wikidata, ConceptNet, or more domain-specific ones)
+* Semantic relationship mapping check
+   * check semantic coherence within a response itself (i.e. (subject-verb-object))
+* Enhanced confidence scoring
+   * Start with full confidence
+   * Reduce confidence based on uncertainty markers
+   * Reduce confidence if statement lacks specific details
+   * Check for citation patterns like (Smith, 2023) or [1]
+   * Cross-reference against knowledge base 
+   * Get LLM to retrieve claims, then score them, then check internal consistency between claims?
+
+   
+
+
+## Retry Logic & Failure Handling
+* Iterative refinement loops
+* Dynamic role reassignment on consecutive failures?
+* Parallel agent fallback processing
+* Distributed computing failover
+* Log the failed responses and why they failed
+
 
 **Potential agents:**
 
 * Copywriter  
 * Research assistant  
-* 
+* Fact-checker
+
+
+**Much later**
+
+* 6 hats?  
+* Look into feasibility of swapping over to socket for faster notifications to frontend   
+* What data could be cached to reduce load on server/API   
+* Look into session-based embedding storing/searching   
+* Set up better logging system? See if it’s better to have a log per function/class? How to separate them to be more easily viewable/searchable.   
+* Change over to a fetch call to the API to add in the AbortController functionality if a user wants to stop. Save API costs.
+
+
+**Possible optimizations**  
+
+* Track token usage (update logs to keep track of most costly calls)  
+* Trim conversation history intelligently  
+* Use smaller models for simpler tasks
+* Store cumulatively validated insights in a vector db that's well tagged/categorized?
+* Track the quality of agent responses based on their initial prompts, score them, adjust them over-time to see if other prompts perform better
+
 
 **Next tasks in order of flow** 
 
@@ -242,53 +179,3 @@ New problems arising:
 6. Speed \+ cost checks  
    1. Try to drop API costs. Explore alternative LLMs?  
    2. Look below at optimization strategies 
-
-**Much later**
-
-* 6 hats?  
-* Look into feasibility of swapping over to socket for faster notifications to frontend   
-* What data could be cached to reduce load on server/API   
-* Look into session-based embedding storing/searching   
-* Set up better logging system? See if it’s better to have a log per function/class? How to separate them to be more easily viewable/searchable.   
-* Change over to a fetch call to the API to add in the AbortController functionality if a user wants to stop. Save API costs.
-
-**Questions to consider:**
-
-* How do we determine when to move to next iteration?  
-* What triggers a deeper dive vs moving to conclusions?  
-* How do we prevent circular discussions?  
-* How do agent responsibilities shift in each iteration?  
-* When should certain agents step back or become more prominent?  
-* How do we maintain coherent progression between iterations?  
-* What insights do we carry forward?  
-* How do we prevent repetition while building depth?  
-* How do we track the evolution of understanding?
-
-**OPTIMIZATION STRATEGIES:**  
-**Token Management**
-
-* Track token usage  
-* Optimize prompt lengths  
-* Trim conversation history intelligently  
-* Use smaller models for simpler tasks
-
-**Batching Strategy**
-
-* Combine related queries  
-* Group validation checks  
-* Batch similar tasks  
-* Use parallel processing where beneficial
-
-**Caching System**
-
-* Cache common responses  
-* Store validated information  
-* Keep frequently used prompt templates  
-* Maintain embedding cache
-
-**Smart Routing**
-
-* Use cheaper models when possible  
-* Route simple tasks to rule-based systems  
-* Only use expensive models for complex reasoning  
-* 

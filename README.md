@@ -48,27 +48,11 @@ npm install
 node src/cli.js
 ```
 
-## 🏗️ Architecture
-
-### Core Components
-- **Agent System**: Specialized roles with distinct expertise
-- **System Coordinator**: Manages collaboration flow
-- **Quality Gate**: Ensures response standards
-- **LLM Service**: Handles API interactions
-- **Conversation Manager**: Maintains discussion context
-- **Insight Manager**: Processes and stores valuable insights
-
 ## 👥 Contributing
 
-We welcome contributions across all aspects of the project:
+If you see some areas you'd like to contribute to, or if you'd like to work together, I'd love to hear from you!
 
 ### Getting Started
 1. Review our [Learning Resources](./docs/RESOURCES.md) for project context
 2. Check the [Development Tasks](./docs/TODO.md) for current priorities
 3. Review our [Proposed Architecture](./docs/PROPOSED-DEV.md) for a (rough) overview of the project's current direction
-
-## 🙏 Acknowledgments
-
-- OpenAI for API services
-- Open-source community for inspiration and tools
-- All contributors and supporters
