@@ -5,6 +5,19 @@ import * as progressChecks from './checks/progressChecks.js';
 import * as advancedChecks from './checks/advancedChecks.js';
 import * as resilienceChecks from './checks/resilienceChecks.js';
 
+/*
+
+TO-DO (later):
+- Implement parralel processing for checks where it makes sense
+- Add logging for failed checks
+- Add some refinement loops for failed checks (i.e. tell the LLM what went wrong and ask it to try again)
+- Look into dynamic role reassignment on consecutive failures?
+- Agent reputation score verification 
+- Cached response availability check
+- 
+*/
+
+
 export class QualityGate {
     constructor() {
         try {

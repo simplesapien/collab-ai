@@ -11,7 +11,7 @@ export const basicChecks = {
     },
     safetyCheck: (response) => {
         // Basic content moderation
-        // Profanity/inappropriate content detection
+        // Profanity/inappropriate/safety content detection
     },
     responseTime: (startTime, endTime, threshold) => {
         // Monitor response generation time

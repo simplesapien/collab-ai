@@ -22,6 +22,7 @@ export const semanticChecks = {
     },
     semanticRelationships: (response) => {
         // Check subject-verb-object relationships
+        // Checks semantic coherence
         // Validate semantic structure
     }
 }; 

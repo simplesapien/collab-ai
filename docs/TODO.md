@@ -61,57 +61,6 @@
   * Are any of those functions in system even being run?
 
 
-**Quality Gate Wishlist**
-
-## Fast + Deep Check Implementation
-* Implement parallel processing for validation checks
-
-## Fast Validation Checks
-* Response length validation (too short/long)
-* Basic formatting checks (JSON structure + required fields)
-* Profanity/inappropriate/safety content detection
-* Response time thresholds
-* Basic syntax validation
-* Task complexity assessment for dynamic agent allocation (much later)
-* Agent reputation score verification (much later)
-* Cached response availability check (much later)
-
-## Deep Validation
-* **Context relevance**
- * Topic drift measurement -- how much has the topic drifted from the original request? (using similarity score)
- * Reference to previous messages (context adherence)
- * Task alignment with original request
-* **Coherence**
- * Internal consistency
- * Logical flow
- * Grammar + structure quality
-* Agent role adherence
-   * Agent expertise domain verification
-* Weighted contribution scoring (much later)
-   * Assigns importance scores to different agents' inputs based on their expertise and relevance.
-   * Used to prioritize more reliable/relevant agent responses when synthesizing final output.
-* Knowledge graph fact-checker
-   * Checks if the response is consistent with a pre-built knowledge graph (i.e. DBpedia, Wikidata, ConceptNet, or more domain-specific ones)
-* Semantic relationship mapping check
-   * check semantic coherence within a response itself (i.e. (subject-verb-object))
-* Enhanced confidence scoring
-   * Start with full confidence
-   * Reduce confidence based on uncertainty markers
-   * Reduce confidence if statement lacks specific details
-   * Check for citation patterns like (Smith, 2023) or [1]
-   * Cross-reference against knowledge base 
-   * Get LLM to retrieve claims, then score them, then check internal consistency between claims?
-
-   
-
-
-## Retry Logic & Failure Handling
-* Iterative refinement loops
-* Dynamic role reassignment on consecutive failures?
-* Parallel agent fallback processing
-* Distributed computing failover
-* Log the failed responses and why they failed
-
 
 **Potential agents:**
 
