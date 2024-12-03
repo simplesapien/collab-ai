@@ -16,28 +16,42 @@ export class SummaryPhase extends Phase {
 
                 this.coordinator.notifyManager.notifyThinking('director-1', 'synthesizing');
                 
-                const finalSummary = await director.synthesizeDiscussion(conversation.messages);
-                
-                await director.extractAndStoreInsights(
-                    conversation.id,
-                    conversation.messages,
-                    finalSummary
-                );
-
-                log.debug('Generated summary:', {
-                    content: finalSummary,
-                    conversationId: conversation.id,
-                    length: finalSummary.length
+                const finalSummary = await this.executeWithRetry({
+                    operation: async () => {
+                        return director.synthesizeDiscussion(conversation.messages);
+                    },
+                    qualityCheck: async (summary) => {
+                        // Custom quality check for summaries
+                        return this.coordinator.qualityGate.checkSummaryQuality(
+                            summary,
+                            conversation.messages
+                        );
+                    },
+                    agentId: 'director-1',
+                    task: 'synthesizing discussion',
+                    metadata: { 
+                        conversationId: conversation.id,
+                        messageCount: conversation.messages.length
+                    }
                 });
 
-                const summaryResponse = {
-                    agentId: 'director-1',
-                    role: 'Summary',
-                    content: finalSummary,
-                    timestamp: Date.now()
-                };
-                
-                this.coordinator.notifyManager.notifyResponse(summaryResponse);
+                if (finalSummary) {
+                    await director.extractAndStoreInsights(
+                        conversation.id,
+                        conversation.messages,
+                        finalSummary
+                    );
+
+                    const summaryResponse = {
+                        agentId: 'director-1',
+                        role: 'Summary',
+                        content: finalSummary,
+                        timestamp: Date.now()
+                    };
+                    
+                    this.coordinator.notifyManager.notifyResponse(summaryResponse);
+                }
+
                 return finalSummary;
             },
             {

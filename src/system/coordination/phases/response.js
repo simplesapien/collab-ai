@@ -23,61 +23,35 @@ export class ResponsePhase extends Phase {
                         continue;
                     }
 
-                    try {
-                        let attempts = 0;
-                        const maxAttempts = 3;
-                        let qualityPassed = false;
-                        let formattedResponse;
-
-                        while (!qualityPassed && attempts < maxAttempts) {
-                            this.coordinator.notifyManager.notifyThinking(agent.id, 'thinking');
-                            
+                    const formattedResponse = await this.executeWithRetry({
+                        operation: async () => {
                             const response = await this.coordinator.agentManager.generateAgentResponse(
                                 agent.id,
                                 conversation,
                                 participant.task
                             );
 
-                            formattedResponse = this.coordinator.agentManager.formatAgentResponse(
+                            return this.coordinator.agentManager.formatAgentResponse(
                                 response,
                                 agent.id,
                                 participant.role
                             );
-
-                            const qualityCheck = await this.coordinator.qualityGate.checkQuality(
-                                formattedResponse.content,
+                        },
+                        qualityCheck: async (response) => {
+                            return this.coordinator.qualityGate.checkResponseQuality(
+                                response.content,
                                 participant.task
                             );
+                        },
+                        agentId: agent.id,
+                        task: participant.task,
+                        metadata: { conversationId: conversation.id }
+                    });
 
-                            if (qualityCheck.shouldContinue) {
-                                qualityPassed = true;
-                            } else {
-                                attempts++;
-                                log.debug(`Quality check failed for ${agent.id}`, {
-                                    attempt: attempts,
-                                    reason: qualityCheck.reason,
-                                    task: participant.task
-                                });
-                            }
-                        }
-
-                        if (qualityPassed) {
-                            this.coordinator.conversationManager.logMessage(conversation.id, formattedResponse);
-                            this.coordinator.notifyManager.notifyResponse(formattedResponse);
-                            responses.push(formattedResponse);
-                        } else {
-                            log.warn(`Failed quality check after ${maxAttempts} attempts`, {
-                                agentId: agent.id,
-                                task: participant.task
-                            });
-                        }
-                    } catch (error) {
-                        log.error(`Error generating response for response phase for agent ${agent.id}:`, {
-                            error: error.message,
-                            stack: error.stack,
-                            task: participant.task,
-                            conversationId: conversation.id
-                        });
+                    if (formattedResponse) {
+                        this.coordinator.conversationManager.logMessage(conversation.id, formattedResponse);
+                        this.coordinator.notifyManager.notifyResponse(formattedResponse);
+                        responses.push(formattedResponse);
                     }
                 }
                 

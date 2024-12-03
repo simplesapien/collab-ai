@@ -35,4 +35,66 @@ export class Phase {
             throw error;
         }
     }
+
+    async executeWithRetry({
+        operation,
+        qualityCheck,
+        maxAttempts = 3,
+        agentId = null,
+        task = null,
+        metadata = {}
+    }) {
+        let attempts = 0;
+        let qualityPassed = false;
+        let result;
+
+        while (!qualityPassed && attempts < maxAttempts) {
+            if (this.coordinator.isCancelled) {
+                return null;
+            }
+
+            if (agentId) {
+                this.coordinator.notifyManager.notifyThinking(agentId, 'thinking');
+            }
+
+            try {
+                result = await operation();
+                
+                const qualityResult = await qualityCheck(result);
+                
+                if (qualityResult.shouldContinue) {
+                    qualityPassed = true;
+                } else {
+                    attempts++;
+                    log.debug(`Quality check failed in ${this.phaseName}`, {
+                        attempt: attempts,
+                        reason: qualityResult.reason,
+                        task,
+                        agentId,
+                        ...metadata
+                    });
+                }
+            } catch (error) {
+                attempts++;
+                log.error(`Attempt ${attempts} failed in ${this.phaseName}`, {
+                    error: error.message,
+                    stack: error.stack,
+                    task,
+                    agentId,
+                    ...metadata
+                });
+            }
+        }
+
+        if (!qualityPassed) {
+            log.warn(`Failed quality check after ${maxAttempts} attempts in ${this.phaseName}`, {
+                agentId,
+                task,
+                ...metadata
+            });
+            return null;
+        }
+
+        return result;
+    }
 } 

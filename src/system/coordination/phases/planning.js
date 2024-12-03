@@ -9,11 +9,31 @@ export class PlanningPhase extends Phase {
     async execute(director, message, availableAgents, conversationId) {
         return this.executeWithLogging(
             async () => {
-
                 this.coordinator.notifyManager.notifyThinking('director-1', 'planning');
-                const plan = await director.planInitialAgentTasks(message.content, availableAgents, conversationId);
+                
+                const plan = await this.executeWithRetry({
+                    operation: async () => {
+                        return director.planInitialAgentTasks(
+                            message.content, 
+                            availableAgents, 
+                            conversationId
+                        );
+                    },
+                    qualityCheck: async (plan) => {
+                        // Custom quality check for plans
+                        return this.coordinator.qualityGate.checkPlanQuality(
+                            plan,
+                            availableAgents
+                        );
+                    },
+                    agentId: 'director-1',
+                    task: 'planning initial tasks',
+                    metadata: { conversationId }
+                });
 
-                await this._emitDirectorPlan(plan, conversationId);
+                if (plan) {
+                    await this._emitDirectorPlan(plan, conversationId);
+                }
                 return plan;
             },
             {

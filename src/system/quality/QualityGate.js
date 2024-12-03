@@ -27,19 +27,35 @@ export class QualityGate {
         }
     }
 
-    async checkQuality(message) {
-        let relevanceScore = 0.7 + Math.random() * 0.1;
-
-        if (relevanceScore < this.thresholds.relevanceScore) {
-            return {
-                shouldContinue: false,
-                reason: 'RELEVANCE_SCORE'
-            };
-        }
-        
+    async checkResponseQuality(message) {
+ 
         return {
             shouldContinue: true,
-            qualityMetrics: { relevanceScore }
+            reason: 'RESPONSE_QUALITY_GOOD'
+        };
+    }
+
+    async checkPlanQuality(plan, availableAgents) {
+        // Implementation coming in Phase 1
+        return {
+            shouldContinue: true,
+            reason: 'PLAN_QUALITY_GOOD'
+        };
+    }
+
+    async checkCollaborativeResponse(agentResponses) {
+        // Implementation coming in Phase 1
+        return {
+            shouldContinue: true,
+            reason: 'COLLABORATIVE_RESPONSE_QUALITY_GOOD'
+        };
+    }
+
+    async checkSummaryQuality(summary, messages) {
+        // Implementation coming in Phase 1
+        return {
+            shouldContinue: true,
+            reason: 'SUMMARY_QUALITY_GOOD'
         };
     }
 
@@ -72,11 +88,6 @@ export class QualityGate {
                 consensusReached: false,
                 responseCoherence: 0.9
             });
-
-            // log.perf.measure('quality-check', Date.now() - startTime, {
-            //     round: this.thresholds.currentRound,
-            //     metrics
-            // });
 
             return result;
         } catch (error) {

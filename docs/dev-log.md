@@ -1,0 +1,15 @@
+2024-12-02
+- Implement relevance score in qualitycheck + retry logic if relevance score not above a certain #  
+- Enhance the insight storage insight the director’s method 
+- Find a better way of determining (with the LLM) what might constitute an insight over something else 
+- Create an insight scoring system
+- Domain alignment 
+- Task similarity (check to see if the task assigned was accomplished by an agent)
+- Implement the similarity check insight that same method that checks the proposed additions to the insights array and only adds them if they are below  a certain score (let’s say .6)
+- Implement retry logic 
+- Implement quickValidation gate
+- Take out hte LLM service from eahc individual agent. It should be getting passed through to the base-agent 
+- When the phases are being instiated, they are being given access to everything that the coordinator has.
+- If the program hits the max retry, it seems to fritz out (at least the notifications do). See if there is some fallback you can use? Or something you can change to send to the CLI. 
+- insights are being returned in broken formats sometims . with ```json``` being inside of the key “insights” INSIDE of the returned object. FUCK!
+- ADD THESE: Topic relevance, topic drift, consensus reached?, coherence, 
