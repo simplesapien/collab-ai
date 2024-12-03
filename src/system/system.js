@@ -34,7 +34,6 @@ export class System {
             this.agentManager = new AgentManager(this.llmService, this.insightManager);
             this.conversationManager = new ConversationManager(
                 undefined, // default config
-                this.insightManager // pass the insight manager
             );
 
             // Initialize coordinator with notifyManager

@@ -1,5 +1,6 @@
 import { log } from '../../../utils/logger.js';
 import { Phase } from './base.js';
+import { inspectObject, getMethods, getProperties } from '../../../utils/inspector.js';
 
 export class PlanningPhase extends Phase {
     constructor(coordinator) {
@@ -10,6 +11,9 @@ export class PlanningPhase extends Phase {
         return this.executeWithLogging(
             async () => {
                 this.coordinator.notifyManager.notifyThinking('director-1', 'planning');
+
+                const coordinatorStructure = inspectObject(this.coordinator, 0, 4);
+                log.debug('[PLANNING PHASE] Coordinator structure:', coordinatorStructure);
                 
                 const plan = await this.executeWithRetry({
                     operation: async () => {

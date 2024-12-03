@@ -252,11 +252,4 @@ export class ConversationManager {
         }
     }
 
-    addInsight(conversationId, insight) {
-        return this.insightManager?.addInsight(conversationId, insight);
-    }
-
-    getRecentInsights(conversationId, limit) {
-        return this.insightManager?.getRecentInsights(conversationId, limit) || [];
-    }
 }

@@ -1,6 +1,5 @@
 import { log } from '../../../utils/logger.js';
 import { Phase } from './base.js';
-import { inspectObject, getMethods, getProperties } from '../../../utils/inspector.js';
 
 export class ResponsePhase extends Phase {
     constructor(coordinator) {
