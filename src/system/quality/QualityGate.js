@@ -1,25 +1,25 @@
 import { log } from '../../utils/logger.js';
+import * as basicChecks from './checks/basicChecks.js';
+import * as semanticChecks from './checks/semanticChecks.js';
+import * as progressChecks from './checks/progressChecks.js';
+import * as advancedChecks from './checks/advancedChecks.js';
+import * as resilienceChecks from './checks/resilienceChecks.js';
 
 export class QualityGate {
     constructor() {
         try {
             this.thresholds = {
-                minLength: 50,
-                maxLength: 2000,
-                coherenceScore: 0.7,
-                relevanceScore: 0.75,
-                topicDriftThreshold: 0.3,
-                responseTimeMs: 10000,
+                // minLength: 50,
+                // maxLength: 2000,
+                // coherenceScore: 0.7,
+                // relevanceScore: 0.75,
+                // topicDriftThreshold: 0.3,
+                // responseTimeMs: 10000,
                 currentRound: 0,
                 maxRounds: 3,
-                fastCheckTimeoutMs: 1000,
-                deepCheckTimeoutMs: 10000,
+                // fastCheckTimeoutMs: 1000,
+                // deepCheckTimeoutMs: 10000,
             };
-
-            log.debug('Quality gate initialized', {
-                maxRounds: this.thresholds.maxRounds,
-                thresholds: this.thresholds
-            });
 
         } catch (error) {
             log.error('Quality gate initialization failed', error);
@@ -27,14 +27,7 @@ export class QualityGate {
         }
     }
 
-    async checkResponseQuality(message) {
- 
-        return {
-            shouldContinue: true,
-            reason: 'RESPONSE_QUALITY_GOOD'
-        };
-    }
-
+    // Checks the quality of the plan before it is sent to the agents
     async checkPlanQuality(plan, availableAgents) {
         // Implementation coming in Phase 1
         return {
@@ -43,6 +36,16 @@ export class QualityGate {
         };
     }
 
+    // Checks the quality of each of the agent's responses after being assigned a task
+    async checkResponseQuality(message) {
+ 
+        return {
+            shouldContinue: true,
+            reason: 'RESPONSE_QUALITY_GOOD'
+        };
+    }
+
+    // Checks the quality of each of the agent's responses in the collaboration phase
     async checkCollaborativeResponse(agentResponses) {
         // Implementation coming in Phase 1
         return {
@@ -51,6 +54,7 @@ export class QualityGate {
         };
     }
 
+    // Ensure the Director is summarizing the conversation well
     async checkSummaryQuality(summary, messages) {
         // Implementation coming in Phase 1
         return {
@@ -59,136 +63,41 @@ export class QualityGate {
         };
     }
 
+    // Check that the agents stay within the configured max round limit
     async checkCollaborationRound(conversation, agentResponses) {
-        const startTime = Date.now();
-
-        try {
-            log.debug('Starting quality check', {
-                round: this.thresholds.currentRound,
-                maxRounds: this.thresholds.maxRounds,
-                responseCount: agentResponses.length
-            });
-
+       
             if (this.thresholds.currentRound > this.thresholds.maxRounds) {
                 log.debug('Max rounds reached', {
                     currentRound: this.thresholds.currentRound,
                     maxRounds: this.thresholds.maxRounds
                 });
 
-                return {
-                    shouldContinue: false,
-                    reason: 'MAX_ROUNDS_REACHED'
-                };
-            }
-
-            // Dummy values for now
-            const result = this._validateMetrics({
-                topicRelevance: 0.8,
-                topicDrift: 0.1,
-                consensusReached: false,
-                responseCoherence: 0.9
-            });
-
-            return result;
-        } catch (error) {
-            log.error('Quality check failed', error);
-            throw error;
-        }
-    }
-
-    _validateMetrics(metrics) {
-        if (metrics.topicDrift > 0.3) {
-            log.debug('[QualityGate] Stopping due to topic drift');
             return {
                 shouldContinue: false,
-                reason: 'TOPIC_DRIFT'
-            };
-        }
-
-        if (metrics.consensusReached) {
-            log.debug('[QualityGate] Stopping due to consensus reached');
-            return {
-                shouldContinue: false,
-                reason: 'CONSENSUS_REACHED'
+                reason: 'MAX_ROUNDS_REACHED'
             };
         }
 
         return {
             shouldContinue: true,
-            qualityMetrics: metrics
+            reason: 'COLLABORATION_ROUND_QUALITY_GOOD'
         };
     }
 
-    async performFastChecks(agentResponses) {
-        const startTime = Date.now();
-
-        try {
-            log.debug('Starting fast checks', {
-                responseCount: agentResponses.length
-            });
-
-            const result = {
-                passed: true,
-                reason: null,
-                metrics: {
-                    length: this._validateResponseLength(agentResponses),
-                    format: this._validateResponseFormat(agentResponses),
-                    safety: this._performSafetyCheck(agentResponses)
-                }
-            };
-
-            log.perf.measure('fast-checks', Date.now() - startTime, {
-                metrics: result.metrics
-            });
-            
-
-            return result;
-        } catch (error) {
-            log.error('Fast checks failed', error);
-            throw error;
-        }
-    }
-
-    async performDeepChecks(conversation, agentResponses) {
-        return {
-            topicRelevance: await this._analyzeTopicRelevance(conversation, agentResponses),
-            topicDrift: await this._measureTopicDrift(conversation, agentResponses),
-            consensusStatus: await this._checkConsensusStatus(agentResponses),
-            responseCoherence: await this._analyzeCoherence(agentResponses)
-        };
-    }
-
+    // TODO: Implement this. Figure out how to pass this qualitygate to the Director
     async validateInsight(insight) {
         // Implementation coming Later
         return { passed: true };
     }
 
-    _validateResponseLength(responses) {
-        // Implementation coming in Phase 1
-        return { passed: true };
-    }
-
-    _validateResponseFormat(responses) {
-        // Implementation coming in Phase 1
-        return { passed: true };
-    }
-
-    _performSafetyCheck(responses) {
-        // Implementation coming in Phase 1
-        return { passed: true };
-    }
-
-    _getFailureReason(checks) {
-        // Implementation coming in Phase 1
-        return null;
-    }
-
+    // Reset the round counter
     resetRoundCounter() {
         const oldValue = this.thresholds.currentRound;
         this.thresholds.currentRound = 0;
         log.debug(`[QualityGate] Round counter reset from ${oldValue} to ${this.thresholds.currentRound}`);
     }
 
+    // Increment the round counter
     incrementRound() {
         const oldValue = this.thresholds.currentRound;
         this.thresholds.currentRound++;
@@ -196,23 +105,4 @@ export class QualityGate {
         return this.thresholds.currentRound;
     }
 
-    async _analyzeTopicRelevance(conversation, responses) {
-        // Implementation coming in Phase 1
-        return { score: 1.0 };
-    }
-
-    async _measureTopicDrift(conversation, responses) {
-        // Implementation coming in Phase 1
-        return { drift: 0.0 };
-    }
-
-    async _checkConsensusStatus(responses) {
-        // Implementation coming in Phase 1
-        return { hasConsensus: true };
-    }
-
-    async _analyzeCoherence(responses) {
-        // Implementation coming in Phase 1
-        return { coherenceScore: 1.0 };
-    }
 } 

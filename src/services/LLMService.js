@@ -10,7 +10,6 @@ dotenv.config();
 
 export class LLMService {
     constructor(config = { maxRetries: 3, timeout: 10000 }) {
-        const eventId = log.event.emit('init', 'LLMService', { config });
         try {
             this.config = config;
             this.requestQueue = [];

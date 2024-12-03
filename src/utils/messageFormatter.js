@@ -2,20 +2,9 @@ import { log } from './logger.js';
 
 export class MessageFormatter {
     static formatMessages(params) {
-        const eventId = log.event.emit('formatMessages', 'MessageFormatter', {
-            hasSystemPrompt: !!params.systemPrompt,
-            contextLength: params.context?.length
-        });
-        const startTime = Date.now();
 
         try {
-            log.debug('Starting message formatting', {
-                hasSystemPrompt: !!params.systemPrompt,
-                hasUserPrompt: !!params.userPrompt,
-                contextLength: params.context?.length,
-                agentType: params.agentType
-            });
-
+        
             const { 
                 systemPrompt, 
                 userPrompt, 
@@ -80,14 +69,6 @@ export class MessageFormatter {
 
                 log.debug('[MessageFormatter] Final formatted message count:', messages.length);
 
-                log.perf.measure('message-formatting', Date.now() - startTime, {
-                    messageCount: messages.length,
-                    contextSize: sanitizedContext.length
-                });
-
-                log.event.complete(eventId, 'completed', {
-                    messageCount: messages.length
-                });
                 return {
                     messages,
                     sanitizedContext,
@@ -171,7 +152,7 @@ export class MessageFormatter {
                     log.debug('[MessageFormatter] Successfully parsed JSON content');
                     return parsedContent;
                 } catch (error) {
-                    log.warn('[MessageFormatter] Failed to parse content as JSON:', {
+                    log.error('[MessageFormatter] Failed to parse content as JSON:', {
                         error,
                         content: trimmedContent.substring(0, 100) + '...'
                     });

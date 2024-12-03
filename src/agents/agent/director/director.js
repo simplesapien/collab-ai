@@ -456,29 +456,30 @@ export class Director extends BaseAgent {
             });
 
             const systemPrompt = `Analyze this conversation and summary to extract key insights that might be valuable for future conversations.
-            Focus on:
-            1. Recurring patterns or themes
-            2. Important conclusions or decisions
-            3. Novel ideas or approaches discussed
-            4. Technical details or specifications mentioned
-            5. Problem-solving strategies used
+                For each insight, identify which specific message(s) contributed to forming it.
+                
+                Focus on:
+                1. Recurring patterns or themes
+                2. Important conclusions or decisions
+                3. Novel ideas or approaches discussed
+                4. Technical details or specifications mentioned
+                5. Problem-solving strategies used
 
-            Conversation Summary:
-            ${summary}
+                Return a JSON array of insights, where each insight has:
+                - content: The actual insight
+                - type: One of [pattern, conclusion, idea, technical_detail, strategy]
+                - confidence: A number between 0 and 1 indicating confidence in this insight
+                - sourceMessageIndices: Array of indices pointing to the relevant messages that contributed to this insight
 
-            Return a JSON array of insights, where each insight has:
-            - content: The actual insight
-            - type: One of [pattern, conclusion, idea, technical_detail, strategy]
-            - confidence: A number between 0 and 1 indicating confidence in this insight
-
-            Example:
-            [
-                {
-                    "content": "Microservice architecture was preferred over monolithic due to scalability requirements",
-                    "type": "conclusion",
-                    "confidence": 0.9
-                }
-            ]`;
+                Example:
+                [
+                    {
+                        "content": "The system requires high availability and fault tolerance",
+                        "type": "conclusion",
+                        "confidence": 0.9,
+                        "sourceMessageIndices": [0, 3]  // This insight was derived from messages at index 0 and 3
+                    }
+                ]`;
 
             const response = await this.llm.makeModelRequest({
                 systemPrompt: systemPrompt,
@@ -500,6 +501,22 @@ export class Director extends BaseAgent {
                         confidence: insight.confidence
                     },
                     'director-summary'
+                );
+
+                // Get the source messages that contributed to this insight
+                const sourceMessages = (insight.sourceMessageIndices || [])
+                    .map(index => messages[index])
+                    .filter(msg => msg); // Filter out any undefined messages
+
+                // Log the insight with its contributing messages
+                log.insight.store(
+                    conversationId,
+                    {
+                        content: insight.content,
+                        type: insight.type,
+                        confidence: insight.confidence
+                    },
+                    sourceMessages.length > 0 ? sourceMessages : 'Derived from overall conversation analysis'
                 );
             }
 

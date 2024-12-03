@@ -69,7 +69,6 @@ export class NotifyManager {
             this.subscriptions.set('error', errorListener);
 
             return () => {
-                const cleanupEventId = log.event.emit('cleanup', 'NotifyManager');
                 this.notificationService.removeListener('response', responseListener);
                 this.notificationService.removeListener('agentStateChange', thinkingListener);
                 this.notificationService.removeListener('error', errorListener);

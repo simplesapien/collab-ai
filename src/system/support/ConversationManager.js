@@ -193,23 +193,17 @@ export class ConversationManager {
             return stats;
         } catch (error) {
             log.error('Stats calculation failed', error);
-            log.event.complete(eventId, 'failed');
             throw error;
         }
     }
 
     _calculateAverageResponseTime(messages) {
-        const eventId = log.event.emit('calculateAverageResponseTime', 'ConversationManager', {
-            messageCount: messages.length
-        });
-        const startTime = Date.now();
-
+     
         try {
             if (messages.length < 2) {
                 log.debug('Not enough messages for average calculation', {
                     messageCount: messages.length
                 });
-                log.event.complete(eventId, 'completed', { average: 0 });
                 return 0;
             }
             
@@ -223,45 +217,24 @@ export class ConversationManager {
             
             const average = totalTime / count;
 
-            log.perf.measure('response-time-calculation', Date.now() - startTime, {
-                messageCount: messages.length,
-                average
-            });
-
-            log.event.complete(eventId, 'completed', { average });
             return average;
         } catch (error) {
             log.error('Average response time calculation failed', error);
-            log.event.complete(eventId, 'failed');
             throw error;
         }
     }
 
     _countMessagesByAgent(messages) {
-        const eventId = log.event.emit('countMessagesByAgent', 'ConversationManager', {
-            messageCount: messages.length
-        });
-        const startTime = Date.now();
-
+  
         try {
             const counts = messages.reduce((acc, msg) => {
                 acc[msg.agentId] = (acc[msg.agentId] || 0) + 1;
                 return acc;
             }, {});
 
-            log.perf.measure('message-count-by-agent', Date.now() - startTime, {
-                agentCount: Object.keys(counts).length
-            });
-
-            log.event.complete(eventId, 'completed', {
-                agentCount: Object.keys(counts).length,
-                totalMessages: messages.length
-            });
-
             return counts;
         } catch (error) {
             log.error('Message counting by agent failed', error);
-            log.event.complete(eventId, 'failed');
             throw error;
         }
     }

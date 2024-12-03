@@ -24,7 +24,6 @@ export class AgentFactory {
             }
 
             const agent = new AgentClass(config, llmService);
-            log.perf.measure('agentCreation', Date.now() - startTime, { agentType: config.type });
 
             return agent;
 

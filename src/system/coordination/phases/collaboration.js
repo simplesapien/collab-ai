@@ -83,57 +83,42 @@ export class CollaborationPhase extends Phase {
     }
 
     async _handleCollaborativeResponse(agent, conversation, plan, responses) {
-        const startTime = Date.now();
+        const task = `Respond to ${plan.respondTo.join(' and ')}'s points: ${plan.task}`;
         
         this.coordinator.notifyManager.notifyThinking(agent.id, 'thinking');
 
-        try {
-            const task = `Respond to ${plan.respondTo.join(' and ')}'s points: ${plan.task}`;
-            log.debug('Generating agent response for collaboration:', {
-                agentId: agent.id,
-                task,
-                conversationId: conversation.id
-            });
+        const collaborativeResponse = await this.executeWithRetry({
+            operation: async () => {
+                const response = await this.coordinator.agentManager.generateAgentResponse(
+                    agent.id, 
+                    conversation, 
+                    task
+                );
 
-            const response = await this.coordinator.agentManager.generateAgentResponse(
-                agent.id, 
-                conversation, 
-                task
-            );
+                return this.coordinator.agentManager.formatAgentResponse(
+                    response,
+                    agent.id,
+                    plan.nextAgent
+                );
+            },
+            qualityCheck: async (response) => {
+                return this.coordinator.qualityGate.checkCollaborativeResponse(
+                    response.content,
+                    task
+                );
+            },
+            agentId: agent.id,
+            task: task,
+            metadata: { conversationId: conversation.id }
+        });
 
-            const collaborativeResponse = this.coordinator.agentManager.formatAgentResponse(
-                response,
-                agent.id,
-                plan.nextAgent
-            );
-
-            log.debug('Formatted collaborative response:', {
-                agentId: agent.id,
-                role: plan.nextAgent,
-                content: collaborativeResponse.content,
-                conversationId: conversation.id
-            });
-
+        if (collaborativeResponse) {
             this.coordinator.conversationManager.logMessage(conversation.id, collaborativeResponse);
             this.coordinator.notifyManager.notifyResponse(collaborativeResponse);
             responses.push(collaborativeResponse);
-
-            log.perf.measure('agent-response-generation', Date.now() - startTime, {
-                agentId: agent.id,
-                taskLength: task.length
-            });
-
-            return collaborativeResponse;
-        } catch (error) {
-            log.error('Failed to generate collaborative response:', {
-                agentId: agent.id,
-                task: plan.task,
-                conversationId: conversation.id,
-                error: error.message,
-                stack: error.stack
-            });
-            throw error;
         }
+
+        return collaborativeResponse;
     }
 
     _isValidCollaborationPlan(plan) {
