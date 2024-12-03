@@ -44,7 +44,6 @@ export class ConversationManager {
             conversation.messages.push(enhancedMessage);
             this.conversations.set(conversationId, conversation);
             this.updateMetadata(conversationId);
-            this.cleanup();
 
             return enhancedMessage;
         } catch (error) {
@@ -88,7 +87,6 @@ export class ConversationManager {
             
             this.conversations.set(conversationData.id, conversation);
             this.updateMetadata(conversationData.id);
-            this.cleanup();
             return conversation;
         } catch (error) {
             log.error('Conversation creation failed', error);
@@ -116,59 +114,6 @@ export class ConversationManager {
             this.metadata.set(conversationId, metadata);
         } catch (error) {
             log.error('Metadata update failed', error);
-            throw error;
-        }
-    }
-
-    cleanup() {
-        const startTime = Date.now();
-        try {
-            const now = Date.now();
-            let removedCount = 0;
-            
-            // Remove old conversations and their insights
-            for (const [id, meta] of this.metadata.entries()) {
-                if (now - meta.lastUpdated > this.config.maxMessageAge) {
-                    log.debug('Removing expired conversation', {
-                        conversationId: id,
-                        age: now - meta.lastUpdated
-                    });
-                    this.conversations.delete(id);
-                    this.metadata.delete(id);
-                    if (this.insightManager) {
-                        this.insightManager.insights.delete(id);
-                    }
-                    removedCount++;
-                }
-            }
-
-            // Handle conversation limit
-            if (this.conversations.size > this.config.maxConversations) {
-                const sortedConversations = Array.from(this.metadata.entries())
-                    .sort(([, a], [, b]) => a.lastUpdated - b.lastUpdated);
-                    
-                while (this.conversations.size > this.config.maxConversations) {
-                    const [oldestId] = sortedConversations.shift();
-                    log.debug('Removing oldest conversation', {
-                        conversationId: oldestId,
-                        reason: 'LIMIT_EXCEEDED'
-                    });
-                    this.conversations.delete(oldestId);
-                    this.metadata.delete(oldestId);
-                    if (this.insightManager) {
-                        this.insightManager.insights.delete(oldestId);
-                    }
-                    removedCount++;
-                }
-            }
-
-            log.perf.measure('conversation-cleanup', Date.now() - startTime, {
-                removedCount,
-                remainingCount: this.conversations.size
-            });
-
-        } catch (error) {
-            log.error('Conversation cleanup failed', error);
             throw error;
         }
     }

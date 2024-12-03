@@ -117,13 +117,4 @@ export class System {
     getLLMService() {
         return this.llmService;
     }
-
-    cleanup() {
-        try {
-            return this.notifyManager.cleanup();
-        } catch (error) {
-            log.error('System cleanup failed', error);
-            throw error;
-        }
-    }
 }
