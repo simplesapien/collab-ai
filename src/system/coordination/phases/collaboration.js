@@ -22,7 +22,7 @@ export class CollaborationPhase extends Phase {
 
                     this.coordinator.qualityGate.incrementRound();
                     
-                    const qualityCheck = await this.coordinator.qualityGate.performQualityCheck(
+                    const qualityCheck = await this.coordinator.qualityGate.checkCollaborationRound(
                         conversation,
                         initialResponses
                     )

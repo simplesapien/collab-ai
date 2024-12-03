@@ -9,7 +9,6 @@ export class Phase {
     }
 
     async executeWithLogging(operation, metadata = {}) {
-        const startTime = Date.now();
 
         try {
             if (this.coordinator.isCancelled) {

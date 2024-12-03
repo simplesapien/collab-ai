@@ -27,7 +27,23 @@ export class QualityGate {
         }
     }
 
-    async performQualityCheck(conversation, agentResponses) {
+    async checkQuality(message) {
+        let relevanceScore = 0.7 + Math.random() * 0.1;
+
+        if (relevanceScore < this.thresholds.relevanceScore) {
+            return {
+                shouldContinue: false,
+                reason: 'RELEVANCE_SCORE'
+            };
+        }
+        
+        return {
+            shouldContinue: true,
+            qualityMetrics: { relevanceScore }
+        };
+    }
+
+    async checkCollaborationRound(conversation, agentResponses) {
         const startTime = Date.now();
 
         try {
@@ -49,30 +65,24 @@ export class QualityGate {
                 };
             }
 
-            const metrics = await this._analyzeResponseQuality(conversation, agentResponses);
-            const result = this._validateMetrics(metrics);
-
-            log.perf.measure('quality-check', Date.now() - startTime, {
-                round: this.thresholds.currentRound,
-                metrics
+            // Dummy values for now
+            const result = this._validateMetrics({
+                topicRelevance: 0.8,
+                topicDrift: 0.1,
+                consensusReached: false,
+                responseCoherence: 0.9
             });
+
+            // log.perf.measure('quality-check', Date.now() - startTime, {
+            //     round: this.thresholds.currentRound,
+            //     metrics
+            // });
 
             return result;
         } catch (error) {
             log.error('Quality check failed', error);
             throw error;
         }
-    }
-
-    async _analyzeResponseQuality(conversation, agentResponses) {
-        // This would integrate with your LLM service to analyze responses
-        // Placeholder for now
-        return {
-            topicRelevance: 0.8,
-            topicDrift: 0.1,
-            consensusReached: false,
-            responseCoherence: 0.9
-        };
     }
 
     _validateMetrics(metrics) {
