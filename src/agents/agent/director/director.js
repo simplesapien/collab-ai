@@ -13,7 +13,6 @@ export class Director extends BaseAgent {
         try {
             const userPrompt = typeof message === 'object' ? message.content : message;
             
-            // Parse and analyze
             const parsedData = await this.parseAndAnalyze(userPrompt, conversationId);
             const problem = await this.understandProblem(parsedData);
             const tasks = await this.decomposeTask(problem, conversationId);

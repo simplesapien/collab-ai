@@ -1,5 +1,6 @@
 import { log } from '../../../utils/logger.js';
 import { Phase } from './base.js';
+import { inspectObject, getMethods, getProperties } from '../../../utils/inspector.js';
 
 export class ResponsePhase extends Phase {
     constructor(coordinator) {
@@ -52,6 +53,18 @@ export class ResponsePhase extends Phase {
                         this.coordinator.conversationManager.logMessage(conversation.id, formattedResponse);
                         this.coordinator.notifyManager.notifyResponse(formattedResponse);
                         responses.push(formattedResponse);
+                         
+
+
+                        // TODO: Take these out later. Just using them to check the state of the coordinator class at this point.
+
+                        // Log everything inside the coordinator class
+                        // const coordinatorStructure = inspectObject(this.coordinator, 0, 4);
+                        // log.debug('[RESPONSE PHASE] Coordinator structure:', coordinatorStructure);
+                        
+                        // Or use the specific helpers
+                        // log.debug('[RESPONSE PHASE] Coordinator methods:', getMethods(this.coordinator));
+                        // log.debug('[RESPONSE PHASE] Coordinator properties:', getProperties(this.coordinator));
                     }
                 }
                 
