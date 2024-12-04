@@ -8,6 +8,8 @@ const application = new Application();
 
 // Basic middleware
 app.use(express.json());
+
+// CORS middleware
 app.use((req, res, next) => {
     const allowedOrigins = [
         'https://collab-ai-frontend.vercel.app',
@@ -16,10 +18,10 @@ app.use((req, res, next) => {
     
     const origin = req.headers.origin;
     if (allowedOrigins.includes(origin)) {
-        res.header('Access-Control-Allow-Origin', origin);
-        res.header('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
-        res.header('Access-Control-Allow-Headers', 'Content-Type, Accept');
-        res.header('Access-Control-Allow-Credentials', 'true');
+        res.setHeader('Access-Control-Allow-Origin', origin);
+        res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
+        res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Accept');
+        res.setHeader('Access-Control-Allow-Credentials', 'true');
     }
 
     if (req.method === 'OPTIONS') {
@@ -50,7 +52,6 @@ app.post('/api/message', async (req, res) => {
         res.setHeader('Content-Type', 'text/event-stream');
         res.setHeader('Cache-Control', 'no-cache');
         res.setHeader('Connection', 'keep-alive');
-        res.setHeader('Access-Control-Allow-Origin', '*');
 
         console.log('Headers set, setting up response handler...');
 
