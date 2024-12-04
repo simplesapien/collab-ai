@@ -15,7 +15,7 @@ export class System {
             this.conversationManager = null;
             this.llmService = null;
             this.qualityGate = new QualityGate();
-            this.insightManager = new InsightManager(this.qualityGate);
+            // this.insightManager = new InsightManager(this.qualityGate);
         } catch (error) {
             log.error('System initialization failed', error);
             throw error;
@@ -28,7 +28,7 @@ export class System {
             this.llmService = new LLMService();
             
             // Create insight manager first
-            this.insightManager = new InsightManager(this.qualityGate);
+            this.insightManager = new InsightManager(this.qualityGate, this.llmService);
             
             // Pass insight manager to other services
             this.agentManager = new AgentManager(this.llmService, this.insightManager);

@@ -11,7 +11,6 @@ export class CollaborationPhase extends Phase {
         return this.executeWithLogging(
             async () => {
                 const collaborativeResponses = [];
-                log.debug('Starting collaboration phase...');
                 this.coordinator.qualityGate.resetRoundCounter();
                 
                 while (true) {

@@ -9,16 +9,13 @@ export class Phase {
     }
 
     async executeWithLogging(operation, metadata = {}) {
-
         try {
             if (this.coordinator.isCancelled) {
-                log.debug(`Process cancelled during ${this.phaseName}`);
                 return null;
             }
 
             const result = await operation();
 
-            // Get final metadata including operation results
             const finalMetadata = {
                 ...metadata,
                 ...(typeof result === 'object' ? {
@@ -26,9 +23,7 @@ export class Phase {
                     totalResponses: result.allResponses?.length || 0
                 } : {})
             };
-
-            // log.perf.measure(`${this.phaseName}-execution`, Date.now() - startTime, finalMetadata);
-            log.debug(`${this.phaseName} execution completed`, finalMetadata);            
+            
             return result;
         } catch (error) {
             log.error(`${this.phaseName} execution failed`, error);
@@ -66,13 +61,6 @@ export class Phase {
                     qualityPassed = true;
                 } else {
                     attempts++;
-                    log.debug(`Quality check failed in ${this.phaseName}`, {
-                        attempt: attempts,
-                        reason: qualityResult.reason,
-                        task,
-                        agentId,
-                        ...metadata
-                    });
                 }
             } catch (error) {
                 attempts++;

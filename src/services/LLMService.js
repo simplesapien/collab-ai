@@ -31,11 +31,11 @@ export class LLMService {
 
     async makeModelRequest(params) {
         const startTime = Date.now();
+        const requestId = Date.now().toString(36) + Math.random().toString(36).substr(2); // Generate unique ID
 
         let attempts = 0;
         while (attempts < this.config.maxRetries) {
             try {
-                log.debug('Starting LLM request', { params });
                 await this.rateLimiter.checkLimit();
 
                 // Get recent context in a more conversational format
@@ -57,16 +57,21 @@ export class LLMService {
                     }
                 });
 
-                log.debug('Final messages being sent to OpenAI:', {
-                    systemPrompt: formattedData.messages[0]?.content,
-                    messageCount: formattedData.messages.length
-                });
-
                 // Make direct OpenAI API call
                 const response = await this.openai.chat.completions.create({
                     model: formattedData.model || 'gpt-4o-mini',
                     messages: formattedData.messages,
                     temperature: this.config.temperature || 0.7,
+                });
+
+                 // Log the request
+                 log.debug(`LLM Request + Response -- ${requestId}`, {
+                    request: {
+                        messages: formattedData.messages,
+                    },
+                    response: {
+                        content: response.choices[0].message.content,
+                    }
                 });
 
                 // Track costs
@@ -76,12 +81,6 @@ export class LLMService {
                         response.usage.completion_tokens
                     );
                 }
-
-                log.perf.measure('llm-api-call', Date.now() - startTime, {
-                    model: formattedData.model,
-                    promptTokens: response.usage?.prompt_tokens,
-                    completionTokens: response.usage?.completion_tokens
-                });
 
                 return MessageFormatter.parseResponse(response.choices[0].message.content);
 
@@ -109,9 +108,7 @@ export class LLMService {
     }
 
     _getModelForAgent(agentType) {
-  
         if (!agentType) {
-            log.debug('[LLMService] No agent type provided, using default model:', this.config.defaultModel);
             return this.config.defaultModel;
         }
         const agentKey = agentType.toLowerCase();

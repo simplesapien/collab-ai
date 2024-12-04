@@ -9,11 +9,7 @@ export class SummaryPhase extends Phase {
     async execute(conversation, director) {
         return this.executeWithLogging(
             async () => {
-                log.debug('Starting summary phase:', {
-                    conversationId: conversation.id,
-                    messageCount: conversation.messages.length
-                });
-
+                
                 this.coordinator.notifyManager.notifyThinking('director-1', 'synthesizing');
                 
                 const finalSummary = await this.executeWithRetry({
@@ -36,12 +32,6 @@ export class SummaryPhase extends Phase {
                 });
 
                 if (finalSummary) {
-                    await director.extractAndStoreInsights(
-                        conversation.id,
-                        conversation.messages,
-                        finalSummary
-                    );
-
                     const summaryResponse = {
                         agentId: 'director-1',
                         role: 'Summary',

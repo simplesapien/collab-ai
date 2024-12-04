@@ -60,17 +60,13 @@ class CLI {
             console.log(chalk.dim('3. Press') + chalk.red(' Ctrl+C ') + chalk.dim('at any time to stop the current process\n'));
 
             // Add debug logging for app initialization
-            log.debug('CLI: Initializing application');
             await this.app.initialize();
             
             // Verify response subscription is working
             const testUnsubscribe = this.app.onResponse(() => {});
             if (typeof testUnsubscribe === 'function') {
-                log.debug('CLI: Response subscription system verified');
                 testUnsubscribe();
-            } else {
-                log.debug('CLI: Response subscription system not working properly');
-            }
+            } 
 
             console.log(`\n${this.icons['system']} ${this.colors['system']('System initialized successfully')}\n`);
 
@@ -83,7 +79,6 @@ class CLI {
             
             // Set up thinking indicators for each agent
             this.app.onAgentThinking((agentId, phase) => {
-                log.debug('CLI: Agent thinking update:', { agentId, phase });
                 
                 // Stop existing spinner for this agent if it exists
                 if (this.agentSpinners[agentId]) {
@@ -134,7 +129,6 @@ class CLI {
 
             // Set up the single response handler
             this.responseHandler = (response) => {
-                log.debug('CLI: Received response:', response);
                 
                 // Clear spinner BEFORE handling the response
                 if (this.agentSpinners[response.agentId]) {
@@ -295,8 +289,6 @@ class CLI {
         if (this.app.isCancelling) {
             return;
         }
-
-        log.debug('CLI: Displaying agent response:', response);
         
         // Special handling for system cancellation messages
         if (response.type === 'cancellation' || 
@@ -359,7 +351,6 @@ class CLI {
     // Add new method to handle agent state updates
     updateAgentState(stateUpdate) {
         const { agentId, state } = stateUpdate;
-        log.debug('[CLI] Agent state update:', stateUpdate);
         
         // Update display or handle state change as needed
         if (this.agentSpinners[agentId]) {

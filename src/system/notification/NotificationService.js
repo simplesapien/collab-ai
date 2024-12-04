@@ -26,13 +26,6 @@ export class NotificationService extends EventEmitter {
     updateAgentState(agentId, state, metadata = {}) {
         const startTime = Date.now();
         try {
-            log.debug('Updating agent state', {
-                agentId,
-                state,
-                metadata,
-                processId: this.currentProcessId
-            });
-
             const stateUpdate = {
                 agentId,
                 state,
@@ -64,7 +57,6 @@ export class NotificationService extends EventEmitter {
     }
 
     sendError(error, agentId = null) {
-        
         const errorNotification = {
             type: 'error',
             error,
@@ -78,7 +70,6 @@ export class NotificationService extends EventEmitter {
         if (agentId) {
             this.clearAgentState(agentId);
         }
-        
     }
 
     clearAgentState(agentId) {

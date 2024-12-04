@@ -2,9 +2,7 @@ import { log } from './logger.js';
 
 export class MessageFormatter {
     static formatMessages(params) {
-
         try {
-        
             const { 
                 systemPrompt, 
                 userPrompt, 
@@ -22,7 +20,6 @@ export class MessageFormatter {
             
             try {
                 const model = this._getModelForAgent(agentType, modelConfig);
-                log.debug('[MessageFormatter] Selected model:', model);
                 
                 const sanitizedContext = context.map(msg => {
                     try {
@@ -42,8 +39,6 @@ export class MessageFormatter {
                         };
                     }
                 });
-
-                log.debug('[MessageFormatter] Sanitized context length:', sanitizedContext.length);
 
                 const messages = [
                     { role: "system", content: systemPrompt },
@@ -67,8 +62,6 @@ export class MessageFormatter {
                     { role: "user", content: sanitizedUserPrompt }
                 ].filter(msg => msg.content && msg.content.trim() !== '');
 
-                log.debug('[MessageFormatter] Final formatted message count:', messages.length);
-
                 return {
                     messages,
                     sanitizedContext,
@@ -90,27 +83,14 @@ export class MessageFormatter {
 
     static _getModelForAgent(agentType, modelConfig) {
         try {
-            log.debug('Getting model for agent', {
-                agentType,
-                hasModelConfig: !!modelConfig,
-                availableModels: modelConfig?.modelsByAgent
-            });
-
             const { modelsByAgent, defaultModel } = modelConfig;
             
             if (!agentType) {
-                log.debug('[MessageFormatter] No agent type, using default model:', defaultModel);
                 return defaultModel;
             }
             
             const agentKey = agentType.toLowerCase();
             const selectedModel = modelsByAgent?.[agentKey] || defaultModel;
-            
-            log.debug('[MessageFormatter] Selected model for agent:', {
-                agentType,
-                agentKey,
-                selectedModel
-            });
 
             return selectedModel;
 
@@ -126,13 +106,7 @@ export class MessageFormatter {
 
     static parseResponse(content) {
         try {
-            log.debug('[MessageFormatter] Parsing response:', {
-                contentType: typeof content,
-                contentLength: content?.length
-            });
-
             if (typeof content !== 'string') {
-                log.debug('[MessageFormatter] Content is not a string, returning as-is');
                 return content;
             }
 
@@ -149,7 +123,6 @@ export class MessageFormatter {
             if (trimmedContent.startsWith('{') || trimmedContent.startsWith('[')) {
                 try {
                     const parsedContent = JSON.parse(trimmedContent);
-                    log.debug('[MessageFormatter] Successfully parsed JSON content');
                     return parsedContent;
                 } catch (error) {
                     log.error('[MessageFormatter] Failed to parse content as JSON:', {
@@ -160,7 +133,6 @@ export class MessageFormatter {
                 }
             }
             
-            log.debug('[MessageFormatter] Content is not JSON, returning as-is');
             return content;
 
         } catch (error) {

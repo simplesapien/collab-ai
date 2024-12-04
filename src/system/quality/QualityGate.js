@@ -100,21 +100,20 @@ export class QualityGate {
     // TODO: Implement this. Figure out how to pass this qualitygate to the Director
     async validateInsight(insight) {
         // Implementation coming Later
-        return { passed: true };
+        // return true half the time, false half the time
+        return Math.random() < 0.5;
     }
 
     // Reset the round counter
     resetRoundCounter() {
         const oldValue = this.thresholds.currentRound;
         this.thresholds.currentRound = 0;
-        log.debug(`[QualityGate] Round counter reset from ${oldValue} to ${this.thresholds.currentRound}`);
     }
 
     // Increment the round counter
     incrementRound() {
         const oldValue = this.thresholds.currentRound;
         this.thresholds.currentRound++;
-        log.debug(`[QualityGate] Round counter incremented from ${oldValue} to ${this.thresholds.currentRound}`);
         return this.thresholds.currentRound;
     }
 

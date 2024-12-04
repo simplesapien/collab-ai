@@ -10,10 +10,7 @@ export class PlanningPhase extends Phase {
     async execute(director, message, availableAgents, conversationId) {
         return this.executeWithLogging(
             async () => {
-                this.coordinator.notifyManager.notifyThinking('director-1', 'planning');
-
-                const coordinatorStructure = inspectObject(this.coordinator, 0, 4);
-                log.debug('[PLANNING PHASE] Coordinator structure:', coordinatorStructure);
+                this.coordinator.notifyManager.notifyThinking('director-1', 'planning');                
                 
                 const plan = await this.executeWithRetry({
                     operation: async () => {

@@ -47,9 +47,7 @@ export class Director extends BaseAgent {
                 participants: participants,
                 analysis: parsedData
             };
-            
-            log.debug('Final processed plan', { plan });
-        
+                    
             return plan;
         } catch (error) {
          
@@ -63,7 +61,6 @@ export class Director extends BaseAgent {
         const startTime = Date.now();
         
         try {
-            log.debug('Parsing and analyzing user message', { message });
             
             // Get relevant insights for the current conversation
             const storedInsights = this.insightManager.getInsights(conversationId);
@@ -110,8 +107,6 @@ export class Director extends BaseAgent {
         const startTime = Date.now();
         
         try {
-            log.debug('Understanding the problem from parsed data', { parsedData });
-
             const systemPrompt = `Identify the main problem or goal from the following parsed data:
             Key Points: ${parsedData.keyPoints.join(', ')}
             Entities: ${parsedData.entities.join(', ')}
@@ -126,17 +121,6 @@ export class Director extends BaseAgent {
             });
 
             const problem = response.trim();
-            log.debug('Identified problem in Director.js', { problem });
-            log.perf.measure('understandProblem', Date.now() - startTime, {
-                executionId,
-                function: 'understandProblem',
-                inputSize: JSON.stringify(parsedData).length,
-                keyPointCount: parsedData.keyPoints.length,
-                entityCount: parsedData.entities.length,
-                outputLength: problem.length,
-                inputPreview: JSON.stringify(parsedData).substring(0, 100),
-                outputPreview: problem.substring(0, 100)
-            });
             return problem;
         } catch (error) {
             log.perf.measure('understandProblem', Date.now() - startTime, {
@@ -152,7 +136,6 @@ export class Director extends BaseAgent {
     async decomposeTask(problem, conversationId) {
         try {
             const startTime = Date.now();
-            log.debug('Decomposing problem into tasks', { problem });
 
             // Get insights directly from the manager
             const storedInsights = this.insightManager.getInsights(conversationId);
@@ -197,7 +180,6 @@ export class Director extends BaseAgent {
             try {
                 const decomposed = response;
                 tasks = decomposed.tasks;
-                log.debug('Decomposed tasks in Director.js', { tasks });
             } catch (e) {
                 log.error('Error parsing LLM response', { error: e.message });
                 throw new Error('Failed to parse LLM response as JSON.');
@@ -217,11 +199,6 @@ export class Director extends BaseAgent {
         const startTime = Date.now();
         
         try {
-            log.debug('Planning next agent interaction', {
-                messagesCount: messages.length,
-                previousResponsesCount: previousResponses.length
-            });
-
             // Format previous responses for the prompt
             const formattedResponses = previousResponses.map(r => ({
                 role: r.role || r.agentId.split('-')[0].charAt(0).toUpperCase() + r.agentId.split('-')[0].slice(1), // Properly capitalize role
@@ -254,8 +231,6 @@ export class Director extends BaseAgent {
 
             const userPrompt = `Return a JSON object selecting the next agent from [${availableRoles.join(', ')}] and their task.`;
 
-            log.debug('Making LLM request');
-            const llmStartTime = Date.now();
             const response = await this.llm.makeModelRequest({
                 systemPrompt: systemPrompt,
                 userPrompt: userPrompt,
@@ -263,14 +238,9 @@ export class Director extends BaseAgent {
                 agentType: this.role,
                 forceJsonResponse: true  // Add this flag if your LLM service supports it
             });
-            log.perf.measure('llm-request', Date.now() - llmStartTime, {
-                method: 'planNextAgentInteraction',
-                contextLength: messages.length
-            });
 
             let plan;
             try {
-                log.debug('Attempting to parse LLM response into JSON');
                 let jsonStr = response;
                 
                 // Handle various markdown code block formats
@@ -282,39 +252,27 @@ export class Director extends BaseAgent {
                 }
                 
                 plan = typeof jsonStr === 'string' ? JSON.parse(jsonStr) : jsonStr;
-                
-                log.debug('Parsed plan', { plan });
-                
+                                
                 // Validate nextAgent
                 const validRoles = ['Analyst', 'Critic', 'Expert'];
-                log.debug('Validating nextAgent', { nextAgent: plan['nextAgent'] });
                 if (!validRoles.includes(plan['nextAgent'])) {
                     log.error('Invalid agent role received from LLM', { nextAgent: plan['nextAgent'] });
                     return null;
                 }
 
                 // Validate respondTo
-                log.debug('Validating respondTo', { respondTo: plan['respondTo'] });
                 if (!plan['respondTo'].every(role => formattedResponses.map(r => r.role).includes(role))) {
                     log.error('Invalid respondTo role received from LLM', { respondTo: plan['respondTo'] });
                     return null;
                 }
-                log.debug('Validation successful');
 
                 // Add additional validation before returning the plan
                 if (plan['nextAgent'] && plan['respondTo']) {
                     const lastResponse = formattedResponses[formattedResponses.length - 1];
                     
-                    // Debug the comparison
-                    log.debug('Comparing roles', {
-                        nextAgent: plan['nextAgent'],
-                        lastResponseRole: lastResponse?.role,
-                        lastResponseAgentId: lastResponse?.agentId
-                    });
-                    
                     // Compare the actual roles, ensuring case-insensitive comparison
                     if (plan['nextAgent'].toLowerCase() === lastResponse?.role?.toLowerCase()) {
-                        log.debug('(Warning) Invalid plan - agent would speak twice in a row');
+                        log.error('(Warning) Invalid plan - agent would speak twice in a row');
                         return null;
                     }
                 }
@@ -323,20 +281,7 @@ export class Director extends BaseAgent {
                 log.error('Error parsing plan', { error: e });
                 return null;
             }
-
-            log.debug('Returning final plan', { plan });
-            log.perf.measure('planNextAgentInteraction', Date.now() - startTime, {
-                executionId,
-                function: 'planNextAgentInteraction',
-                messageCount: messages.length,
-                responseCount: previousResponses.length,
-                success: !!plan,
-                lastSpeaker: formattedResponses[formattedResponses.length - 1]?.role,
-                nextAgent: plan?.nextAgent,
-                inputPreview: JSON.stringify(messages[messages.length - 1]).substring(0, 100),
-                outputPreview: JSON.stringify(plan).substring(0, 100)
-            });
-
+            
             return plan;
         } catch (error) {
             log.perf.measure('planNextAgentInteraction', Date.now() - startTime, {
@@ -354,11 +299,6 @@ export class Director extends BaseAgent {
         const startTime = Date.now();
         
         try {
-            log.debug('Starting discussion synthesis', {
-                contextLength: context?.length,
-                messages: context
-            });
-
             // Ensure context is valid and has the expected structure
             const validatedContext = Array.isArray(context) ? context : [];
             
@@ -381,8 +321,6 @@ export class Director extends BaseAgent {
                     content: content
                 };
             });
-
-            log.debug('Synthesizing discussion with formatted messages', { formattedMessages });
             
             const systemPrompt = `Analyze this conversation and provide novel insights and strategic implications.
             Focus on:
@@ -401,30 +339,11 @@ export class Director extends BaseAgent {
 
             Be insightful and analytical. Avoid simply restating what was said.`;
             
-            const llmStartTime = Date.now();
-
             const response = await this.llm.makeModelRequest({
                 systemPrompt: systemPrompt,
                 userPrompt: "Synthesize the key insights and strategic implications from this discussion.",
                 context: [],
                 agentType: this.role
-            });
-
-            log.perf.measure('llm-request', Date.now() - llmStartTime, {
-                method: 'synthesizeDiscussion',
-                messageCount: formattedMessages.length
-            });
-
-            log.debug('Generated summary', { response });
-            
-            log.perf.measure('synthesizeDiscussion', Date.now() - startTime, {
-                executionId,
-                function: 'synthesizeDiscussion',
-                contextLength: context?.length || 0,
-                relevantMessageCount: relevantMessages.length,
-                outputLength: response.length,
-                inputPreview: JSON.stringify(formattedMessages[0]).substring(0, 100),
-                outputPreview: response.substring(0, 100)
             });
 
             return response;
@@ -439,109 +358,112 @@ export class Director extends BaseAgent {
         }
     }
 
-    async extractAndStoreInsights(conversationId, messages, summary) {
-        const executionId = `director-ei-${Date.now()}`;
-        const startTime = Date.now();
+    // Keeping this just in case I want to switch to bulk insight extraction to save on costs. The current extraction is setup as 
+    // a method in the insight manager. 
+
+    // async extractInsights(conversationId, messages) {
+    //     const executionId = `director-ei-${Date.now()}`;
+    //     const startTime = Date.now();
         
-        try {
-            if (!this.insightManager) {
-                log.debug('No insight manager available, skipping insight extraction');
-                return;
-            }
+    //     try {
+    //         if (!this.insightManager) {
+    //             log.debug('No insight manager available, skipping insight extraction');
+    //             return;
+    //         }
 
-            log.debug('Extracting insights from conversation', {
-                conversationId,
-                messageCount: messages.length
-            });
+    //         log.debug('Extracting insights from conversation', {
+    //             conversationId,
+    //             messageCount: messages.length
+    //         });
 
-            const systemPrompt = `Analyze this conversation and summary to extract key insights that might be valuable for future conversations.
-                For each insight, identify which specific message(s) contributed to forming it.
+    //         const systemPrompt = `Analyze this conversation and summary to extract key insights that might be valuable for future conversations.
+    //             For each insight, identify which specific message(s) contributed to forming it.
                 
-                Focus on:
-                1. Recurring patterns or themes
-                2. Important conclusions or decisions
-                3. Novel ideas or approaches discussed
-                4. Technical details or specifications mentioned
-                5. Problem-solving strategies used
+    //             Focus on:
+    //             1. Recurring patterns or themes
+    //             2. Important conclusions or decisions
+    //             3. Novel ideas or approaches discussed
+    //             4. Technical details or specifications mentioned
+    //             5. Problem-solving strategies used
 
-                Return a JSON array of insights, where each insight has:
-                - content: The actual insight
-                - type: One of [pattern, conclusion, idea, technical_detail, strategy]
-                - confidence: A number between 0 and 1 indicating confidence in this insight
-                - sourceMessageIndices: Array of indices pointing to the relevant messages that contributed to this insight
+    //             Return a JSON array of insights, where each insight has:
+    //             - content: The actual insight
+    //             - type: One of [pattern, conclusion, idea, technical_detail, strategy]
+    //             - confidence: A number between 0 and 1 indicating confidence in this insight
+    //             - sourceMessageIndices: Array of indices pointing to the relevant messages that contributed to this insight
 
-                Example:
-                [
-                    {
-                        "content": "The system requires high availability and fault tolerance",
-                        "type": "conclusion",
-                        "confidence": 0.9,
-                        "sourceMessageIndices": [0, 3]  // This insight was derived from messages at index 0 and 3
-                    }
-                ]`;
+    //             Example:
+    //             [
+    //                 {
+    //                     "content": "The system requires high availability and fault tolerance",
+    //                     "type": "conclusion",
+    //                     "confidence": 0.9,
+    //                     "sourceMessageIndices": [0, 3]  // This insight was derived from messages at index 0 and 3
+    //                 }
+    //             ]`;
 
-            const response = await this.llm.makeModelRequest({
-                systemPrompt: systemPrompt,
-                userPrompt: "Extract key insights from this conversation.",
-                context: messages,
-                agentType: this.role,
-                forceJsonResponse: true
-            });
+    //         const response = await this.llm.makeModelRequest({
+    //             systemPrompt: systemPrompt,
+    //             userPrompt: "Extract key insights from this conversation.",
+    //             context: messages,
+    //             agentType: this.role,
+    //             forceJsonResponse: true
+    //         });
 
-            const insights = Array.isArray(response) ? response : [response];
+    //         const insights = Array.isArray(response) ? response : [response];
             
-            // Store each insight
-            for (const insight of insights) {
-                await this.insightManager.addInsight(
-                    conversationId,
-                    {
-                        content: insight.content,
-                        type: insight.type,
-                        confidence: insight.confidence
-                    },
-                    'director-summary'
-                );
+    //         // Store each insight
+    //         for (const insight of insights) {
+    //             await this.insightManager.addInsight(
+    //                 conversationId,
+    //                 {
+    //                     content: insight.content,
+    //                     type: insight.type,
+    //                     confidence: insight.confidence
+    //                 },
+    //                 'director-summary'
+    //             );
 
-                // Get the source messages that contributed to this insight
-                const sourceMessages = (insight.sourceMessageIndices || [])
-                    .map(index => messages[index])
-                    .filter(msg => msg); // Filter out any undefined messages
+    //             // Get the source messages that contributed to this insight
+    //             const sourceMessages = (insight.sourceMessageIndices || [])
+    //                 .map(index => messages[index])
+    //                 .filter(msg => msg); // Filter out any undefined messages
 
-                // Log the insight with its contributing messages
-                log.insight.store(
-                    conversationId,
-                    {
-                        content: insight.content,
-                        type: insight.type,
-                        confidence: insight.confidence
-                    },
-                    sourceMessages.length > 0 ? sourceMessages : 'Derived from overall conversation analysis'
-                );
-            }
+    //             // Log the insight with its contributing messages
+    //             log.insight.store(
+    //                 conversationId,
+    //                 {
+    //                     content: insight.content,
+    //                     type: insight.type,
+    //                     confidence: insight.confidence
+    //                 },
+    //                 sourceMessages.length > 0 ? sourceMessages : 'Derived from overall conversation analysis'
+    //             );
+    //         }
 
-            log.debug('Stored insights from conversation', {
-                conversationId,
-                insightCount: insights.length,
-                insights
-            });
+    //         log.debug('Stored insights from conversation', {
+    //             conversationId,
+    //             insightCount: insights.length,
+    //             insights
+    //         });
 
-            log.perf.measure('extractAndStoreInsights', Date.now() - startTime, {
-                executionId,
-                function: 'extractAndStoreInsights',
-                messageCount: messages.length,
-                insightCount: insights.length,
-                success: true
-            });
+    //         log.perf.measure('extractAndStoreInsights', Date.now() - startTime, {
+    //             executionId,
+    //             function: 'extractAndStoreInsights',
+    //             messageCount: messages.length,
+    //             insightCount: insights.length,
+    //             success: true
+    //         });
 
-        } catch (error) {
-            log.error('Failed to extract insights', error);
-            log.perf.measure('extractAndStoreInsights', Date.now() - startTime, {
-                executionId,
-                function: 'extractAndStoreInsights',
-                error: error.message,
-                status: 'failed'
-            });
-        }
-    }
+    //     } catch (error) {
+    //         log.error('Failed to extract insights', error);
+    //         log.perf.measure('extractAndStoreInsights', Date.now() - startTime, {
+    //             executionId,
+    //             function: 'extractAndStoreInsights',
+    //             error: error.message,
+    //             status: 'failed'
+    //         });
+    //     }
+    // }
 
 }

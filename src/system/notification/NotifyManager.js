@@ -30,11 +30,6 @@ export class NotifyManager {
             const errorListener = (error) => {
                 if (!responseCallback) return;
 
-                log.debug('Processing error notification', {
-                    errorType: error?.type,
-                    agentId: error?.agentId
-                });
-
                 if (error?.type === 'cancellation' || error?.message?.includes('cancelled')) {
                     responseCallback({
                         agentId: 'system',
@@ -91,11 +86,6 @@ export class NotifyManager {
 
     notifyThinking(agentId, phase = 'thinking') {
         try {
-            log.debug('Updating agent thinking state', {
-                agentId,
-                phase
-            });
-
             this.notificationService.updateAgentState(agentId, phase);
         } catch (error) {
             log.error('Error updating agent state', error);

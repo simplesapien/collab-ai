@@ -15,10 +15,6 @@ export class Application {
             this.thinkingCallback = null;
             this.isCancelling = false;
 
-            log.debug('Application initialized', {
-                hasNotifyManager: !!this.notifyManager
-            });
-
         } catch (error) {
             log.error('Application initialization failed', error);
             throw error;
@@ -52,7 +48,6 @@ export class Application {
                 agentConfigs,
                 this.notifyManager
             );            
-            log.perf.measure('application-initialization', Date.now() - startTime);
         } catch (error) {
             log.error('Application initialization failed', error);
             throw error;
@@ -65,11 +60,6 @@ export class Application {
 
         try {
             this.notifyManager.startNewProcess();
-
-            log.debug('Processing user message', {
-                messagePreview: message?.content?.substring(0, 50),
-                conversationId
-            });
 
             if (!conversationId) {
                 conversationId = generateId('conv-');
@@ -95,11 +85,6 @@ export class Application {
             if (conversation) {
                 conversation.messageCount++;
             }
-
-            log.perf.measure('message-processing', Date.now() - startTime, {
-                conversationId,
-                responseCount: discussionResults.responses?.length
-            });
 
             return {
                 conversationId,
@@ -154,10 +139,8 @@ export class Application {
     }
 
     async resetCosts() {
-        const startTime = Date.now();
         try {
             this.system.getLLMService().resetCosts();            
-            log.perf.measure('cost-reset', Date.now() - startTime);
         } catch (error) {
             log.error('Cost reset failed', error);
             throw error;

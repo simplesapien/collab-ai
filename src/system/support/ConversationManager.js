@@ -18,12 +18,6 @@ export class ConversationManager {
 
     logMessage(conversationId, message) {
         try {
-            log.debug('Logging new message', {
-                conversationId,
-                agentId: message?.agentId,
-                messageType: message?.type
-            });
-            
             if (!Validators.isValidMessage(message)) {
                 log.error('Invalid message format', { message });
                 throw new Error('Invalid message format');
@@ -56,10 +50,6 @@ export class ConversationManager {
         try {
             const conversation = this.conversations.get(conversationId);
             if (!conversation) {
-                log.debug('Conversation not found', {
-                    conversationId,
-                    availableConversations: this.conversations.size
-                });
                 return undefined;
             }
             
@@ -73,11 +63,6 @@ export class ConversationManager {
 
     createConversation(conversationData) {
         try {
-            log.debug('Creating new conversation', {
-                conversationId: conversationData.id,
-                initialData: !!conversationData
-            });
-
             this.currentConversationId = conversationData.id;
             const conversation = {
                 id: conversationData.id,
@@ -98,9 +83,6 @@ export class ConversationManager {
         try {
             const conversation = this.conversations.get(conversationId);
             if (!conversation) {
-                log.debug('No conversation found for metadata update', {
-                    conversationId
-                });
                 return;
             }
 
@@ -122,7 +104,6 @@ export class ConversationManager {
         try {
             const conversation = this.conversations.get(conversationId);
             if (!conversation) {
-                log.debug('No conversation found for stats', { conversationId });
                 return null;
             }
 
@@ -143,12 +124,8 @@ export class ConversationManager {
     }
 
     _calculateAverageResponseTime(messages) {
-     
         try {
             if (messages.length < 2) {
-                log.debug('Not enough messages for average calculation', {
-                    messageCount: messages.length
-                });
                 return 0;
             }
             
@@ -170,7 +147,6 @@ export class ConversationManager {
     }
 
     _countMessagesByAgent(messages) {
-  
         try {
             const counts = messages.reduce((acc, msg) => {
                 acc[msg.agentId] = (acc[msg.agentId] || 0) + 1;
@@ -186,10 +162,6 @@ export class ConversationManager {
 
     getCurrentConversationId() {
         try {
-            log.debug('Getting current conversation ID', {
-                currentId: this.currentConversationId
-            });
-
             return this.currentConversationId;
         } catch (error) {
             log.error('Failed to get current conversation ID', error);

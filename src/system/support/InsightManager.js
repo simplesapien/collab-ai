@@ -1,15 +1,13 @@
 import { log } from '../../utils/logger.js';
 
 export class InsightManager {
-    constructor(qualityGate = null) {
-        this.insights = new Map(); // conversationId -> insights[]
+    constructor(qualityGate = null, llmService = null) {
+        this.insights = new Map();
         this.qualityGate = qualityGate;
-        log.debug('InsightManager initialized', { 
-            hasQualityGate: !!qualityGate 
-        });
+        this.llmService = llmService;
     }
 
-    async addInsight(conversationId, insight, source) {
+    async addInsight(conversationId, insight) {
         const startTime = Date.now();
         try {
             if (!conversationId) {
@@ -28,50 +26,18 @@ export class InsightManager {
 
             const currentInsights = this.insights.get(conversationId);
 
-            // Quality check if gate is available
-            if (this.qualityGate) {
-                const qualityCheck = await this.qualityGate.validateInsight(insight);
-                if (!qualityCheck.passed) {
-                    log.debug('Insight failed quality check', { 
-                        conversationId, 
-                        source, 
-                        reason: qualityCheck.reason 
-                    });
-                    return false;
-                }
-            }
-
             const enhancedInsight = {
                 ...insight,
                 timestamp: Date.now(),
-                source: source || 'unknown',
                 type: insight.type || 'general',
                 id: `${conversationId}-insight-${currentInsights.length}`
             };
 
             currentInsights.push(enhancedInsight);
-            
-            log.debug('Added insight', { 
-                conversationId, 
-                insightId: enhancedInsight.id,
-                totalInsights: currentInsights.length,
-                type: enhancedInsight.type,
-                source
-            });
 
-            log.perf.measure('add-insight', Date.now() - startTime, {
-                conversationId,
-                source,
-                type: enhancedInsight.type
-            });
-            
             return enhancedInsight;
         } catch (error) {
             log.error('Failed to add insight', error);
-            log.perf.measure('add-insight', Date.now() - startTime, {
-                error: error.message,
-                status: 'failed'
-            });
             return false;
         }
     }
@@ -107,7 +73,6 @@ export class InsightManager {
     }
     
     async storeInsights(conversationId, responses, collaboration, summary) {
-        const startTime = Date.now();
         try {
             if (!conversationId) {
                 throw new Error('No conversationId provided for storeInsights');
@@ -158,18 +123,83 @@ export class InsightManager {
                 if (summaryInsight) storedInsights.push(summaryInsight);
             }
 
-            log.perf.measure('store-insights', Date.now() - startTime, {
-                conversationId,
-                storedCount: storedInsights.length
-            });
-
             return storedInsights;
         } catch (error) {
             log.error('Failed to store insights', error);
-            log.perf.measure('store-insights', Date.now() - startTime, {
-                error: error.message,
-                status: 'failed'
+            return [];
+        }
+    }
+
+    async extractAndStoreInsight(conversationId, message) {
+        try {
+            if (!message?.content) {
+                log.error('No message content provided for insight extraction');
+                return [];
+            }
+
+            const systemPrompt = `
+                You are an expert at extracting key insights from messages.
+
+                An insight should be:
+                - A specific, meaningful piece of information
+                - Potentially useful for future conversations
+                - Clear and self-contained
+
+                Categories of insights:
+                - USER_NEED: Specific requirements or problems stated
+                - TECHNICAL: Technical details or constraints
+                - CONTEXT: Important background or domain information
+                - PREFERENCE: User preferences or priorities
+
+                Return a JSON array where each insight has:
+                {
+                    "content": "Clear statement of the insight",
+                    "type": "One of: USER_NEED, TECHNICAL, CONTEXT, PREFERENCE",
+                    "confidence": 0-1 score of certainty
+                }`;
+
+            const response = await this.llmService.makeModelRequest({
+                systemPrompt: systemPrompt,
+                userPrompt: `Extract key insights from this message. /n Message: ${message.content}`,
+                context: [message.content],
+                agentType: this.role,
+                forceJsonResponse: true
             });
+
+            const insights = Array.isArray(response) ? response : [response];
+            const validInsights = [];
+            
+            for (const insight of insights) {
+
+                // Check quality of insight
+                const qualityCheck = await this.qualityGate.validateInsight(insight);
+
+                // Store insight if it passes quality gate
+                if (qualityCheck) {
+                const stored = await this.addInsight(
+                    conversationId,
+                    {
+                        content: insight.content,
+                        type: insight.type.toLowerCase(),
+                        confidence: insight.confidence
+                    },
+                        'message-insight'
+                    );
+
+                    if (stored) {
+                        validInsights.push(stored);
+                        log.insight.store(conversationId, stored);
+                    }
+                } 
+                else {
+                    log.debug('Quality check failed', { qualityCheck }, { insightContent: insight.content });
+                }
+            }
+
+            return validInsights;
+
+        } catch (error) {
+            log.error('Failed to extract insights', error);
             return [];
         }
     }

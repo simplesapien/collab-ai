@@ -53,7 +53,7 @@ export class ResponsePhase extends Phase {
                         this.coordinator.notifyManager.notifyResponse(formattedResponse);
                         responses.push(formattedResponse);
                          
-
+                        this.coordinator.insightManager.extractAndStoreInsight(conversation.id, formattedResponse);
 
                         // TODO: Take these out later. Just using them to check the state of the coordinator class at this point.
 

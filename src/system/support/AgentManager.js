@@ -22,17 +22,9 @@ export class AgentManager {
 
     async initializeAgents(agentConfigs) {
         try {
-            log.debug('Starting agent initialization', {
-                agentTypes: Object.keys(agentConfigs)
-            });
-
             for (const [type, config] of Object.entries(agentConfigs)) {
                 const agent = this.initializeAgent(config);
                 this.agents.set(agent.id, agent);
-                log.debug('Agent initialized', { 
-                    type, 
-                    agentId: agent.id 
-                });
             }
         } catch (error) {
             log.error('Agents initialization failed', error);
@@ -49,13 +41,7 @@ export class AgentManager {
     }
 
     getAvailableAgents(excludeId = null) {
- 
         try {
-            log.debug('Getting available agents', { 
-                excludingId: excludeId,
-                totalAgents: this.agents.size
-            });
-
             const agents = Array.from(this.agents.values())
                 .filter(agent => !excludeId || agent.id !== excludeId);
 
@@ -98,7 +84,6 @@ export class AgentManager {
     }
 
     async getDirector() {
-        log.debug('[AgentManager] Getting director agent');
         const director = this.getAgent('director-1');
         if (!director) {
             log.error('[AgentManager] Director agent not found');
@@ -120,12 +105,6 @@ export class AgentManager {
                 throw new Error(`Agent not found: ${agentId}`);
             }
 
-            log.debug('Generating agent response', { 
-                agentId: agent.id,
-                task,
-                messageCount: conversation.messages.length
-            });
-
             const response = await agent.generateResponse(
                 conversation.messages,
                 task
@@ -145,7 +124,6 @@ export class AgentManager {
                 content: this._cleanResponse(response, agentId),
                 timestamp: Date.now()
             };
-            log.debug('Formatted agent response (AgentManager)', { formattedResponse });
             return formattedResponse;
         } catch (error) {
             log.error('Response formatting failed', error);
