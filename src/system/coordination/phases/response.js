@@ -50,7 +50,9 @@ export class ResponsePhase extends Phase {
 
                     if (formattedResponse) {
                         this.coordinator.conversationManager.logMessage(conversation.id, formattedResponse);
+                        console.log('ResponsePhase - About to notify response:', formattedResponse);
                         this.coordinator.notifyManager.notifyResponse(formattedResponse);
+                        console.log('ResponsePhase - Notification sent');
                         responses.push(formattedResponse);
                          
                         this.coordinator.insightManager.extractAndStoreInsight(conversation.id, formattedResponse);

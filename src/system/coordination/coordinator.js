@@ -29,18 +29,27 @@ export class Coordinator {
         try {
             // Initialize
             const conversation = await this.phases.planning._initializeConversation(conversationId, message);
+
+
             const director = await this.phases.planning._getDirector();
             const availableAgents = this.phases.planning._getAvailableAgents(director.id);
 
             // Execute phases
             const plan = await this.phases.planning.execute(director, message, availableAgents, conversationId);
+            
+            if (!plan) {
+                throw new Error('Planning phase returned null plan');
+            }
+
             const responses = await this.phases.response.execute(conversation, plan);
+
             const collaboration = await this.phases.collaboration.execute(conversation, director, responses);
             const summary = await this.phases.summary.execute(conversation, director);
 
             return { plan: plan.participants, responses, summary };
         } catch (error) {
-            log.error('Error in coordinateDiscussion', { error });
+            console.error('Error in coordinateDiscussion:', error);
+            console.error('Stack trace:', error.stack);
             return this.isCancelled ? { responses: [], summary: null, cancelled: true } : null;
         } finally {
             this.isProcessing = false;

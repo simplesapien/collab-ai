@@ -1,0 +1,408 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>API Test Page</title>
+    <style>
+        body { font-family: Arial, sans-serif; max-width: 800px; margin: 20px auto; padding: 0 20px; }
+        .response { 
+            background: #f5f5f5; 
+            padding: 10px; 
+            margin: 10px 0; 
+            border-radius: 4px;
+            white-space: pre-wrap;
+        }
+        .error { color: red; }
+        textarea {
+            width: 100%;
+            height: 100px;
+            margin: 10px 0;
+            padding: 8px;
+        }
+        button { 
+            margin: 5px;
+            padding: 8px 15px;
+            background: #007bff;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        #responseArea {
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        .cancel-button {
+            background: #dc3545;
+            color: white;
+            margin: 5px;
+            padding: 8px 15px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        .cancel-button:disabled {
+            background: #6c757d;
+            cursor: not-allowed;
+        }
+        .info-panel {
+            background: #f8f9fa;
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 4px;
+        }
+        .status-button {
+            background: #17a2b8;
+            color: white;
+            margin: 5px;
+            padding: 8px 15px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        .thinking-indicators {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin: 10px 0;
+        }
+        .agent-status {
+            padding: 5px 10px;
+            border-radius: 4px;
+            display: none;
+            align-items: center;
+            gap: 5px;
+            font-size: 0.9em;
+        }
+        .agent-status.active {
+            display: flex;
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+        }
+        .agent-status[data-agent="director-1"] { color: #0d6efd; }
+        .agent-status[data-agent="analyst-1"] { color: #198754; }
+        .agent-status[data-agent="critic-1"] { color: #ffc107; }
+        .agent-status[data-agent="expert-1"] { color: #d63384; }
+        .agent-status[data-agent="quality-gate"] { color: #0dcaf0; }
+        .spinner {
+            display: inline-block;
+            width: 10px;
+            height: 10px;
+            border: 2px solid currentColor;
+            border-right-color: transparent;
+            border-radius: 50%;
+            animation: spin 0.75s linear infinite;
+        }
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <h1>Simple Chat Test</h1>
+
+    <div class="info-panel">
+        <button onclick="getStatus()" class="status-button">System Status</button>
+        <button onclick="getCosts()" class="status-button">Show Costs</button>
+        <button onclick="resetCosts()" class="status-button">Reset Costs</button>
+    </div>
+
+    <div class="thinking-indicators">
+        <div class="agent-status" data-agent="director-1">
+            <div class="spinner"></div>
+            <span>👨‍💼 Director: <span class="status-text">thinking...</span></span>
+        </div>
+        <div class="agent-status" data-agent="analyst-1">
+            <div class="spinner"></div>
+            <span>📊 Analyst: <span class="status-text">thinking...</span></span>
+        </div>
+        <div class="agent-status" data-agent="critic-1">
+            <div class="spinner"></div>
+            <span>🔍 Critic: <span class="status-text">thinking...</span></span>
+        </div>
+        <div class="agent-status" data-agent="expert-1">
+            <div class="spinner"></div>
+            <span>👨‍🔬 Expert: <span class="status-text">thinking...</span></span>
+        </div>
+        <div class="agent-status" data-agent="quality-gate">
+            <div class="spinner"></div>
+            <span>🔎 Quality Gate: <span class="status-text">reviewing...</span></span>
+        </div>
+    </div>
+
+    <textarea id="messageInput" placeholder="Enter your message here..."></textarea>
+    <button onclick="sendMessage()">Send Message</button>
+    <button onclick="clearResponses()">Clear Responses</button>
+    <button id="cancelButton" onclick="cancelProcess()" class="cancel-button" disabled>Stop Process</button>
+
+    <div id="responseArea"></div>
+
+    <script>
+        let currentConversationId = null;
+        let isProcessing = false;
+
+        function addResponse(message, isError = false) {
+            const responseArea = document.getElementById('responseArea');
+            const responseDiv = document.createElement('div');
+            responseDiv.className = `response ${isError ? 'error' : ''}`;
+            
+            let content = '';
+            if (typeof message === 'string') {
+                content = message;
+            } else if (message.type === 'system') {
+                content = `System: ${message.content}`;
+                responseDiv.style.color = '#17a2b8'; // Match the status button color
+            } else {
+                content = typeof message === 'object' ? 
+                    JSON.stringify(message, null, 2) : message;
+            }
+            
+            responseDiv.textContent = content;
+            responseArea.insertBefore(responseDiv, responseArea.firstChild);
+        }
+
+        function clearResponses() {
+            document.getElementById('responseArea').innerHTML = '';
+        }
+
+        async function cancelProcess() {
+            try {
+                console.log('Cancelling current process');
+                const response = await fetch('http://localhost:3000/api/cancel', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ conversationId: currentConversationId })
+                });
+
+                if (!response.ok) {
+                    throw new Error(`Server responded with ${response.status}`);
+                }
+
+                addResponse({ 
+                    type: 'system', 
+                    content: 'Process cancelled. Ready for new input.',
+                    role: 'System'
+                });
+                
+                // Enable input and send button
+                document.getElementById('messageInput').disabled = false;
+                document.getElementById('cancelButton').disabled = true;
+                isProcessing = false;
+
+            } catch (error) {
+                addResponse(`Error cancelling: ${error.message}`, true);
+            }
+        }
+
+        async function sendMessage() {
+            const message = document.getElementById('messageInput').value;
+            if (!message) {
+                addResponse('Please enter a message', true);
+                return;
+            }
+
+            try {
+                // Disable input and enable cancel button while processing
+                document.getElementById('messageInput').disabled = true;
+                document.getElementById('cancelButton').disabled = false;
+                isProcessing = true;
+
+                console.log('Sending message:', { message, conversationId: currentConversationId });
+                const response = await fetch('http://localhost:3000/api/message', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'text/event-stream'
+                    },
+                    body: JSON.stringify({ 
+                        message,
+                        conversationId: currentConversationId 
+                    })
+                });
+
+                if (!response.ok) {
+                    throw new Error(`Server responded with ${response.status}`);
+                }
+
+                // Clear input after sending
+                document.getElementById('messageInput').value = '';
+
+                // Read the stream
+                const reader = response.body.getReader();
+                const decoder = new TextDecoder();
+
+                // Clear previous agent statuses
+                clearAllAgentStatuses();
+
+                while (true) {
+                    const { done, value } = await reader.read();
+                    if (done) break;
+
+                    const chunk = decoder.decode(value);
+                    const lines = chunk.split('\n');
+                    
+                    for (const line of lines) {
+                        if (line.startsWith('data: ')) {
+                            try {
+                                const data = JSON.parse(line.slice(6));
+                                
+                                if (data.type === 'conversation') {
+                                    currentConversationId = data.conversationId;
+                                    console.log('Updated conversation ID:', currentConversationId);
+                                    continue;
+                                }
+                                
+                                // Handle agent state updates
+                                if (data.type === 'state-update') {
+                                    updateAgentStatus(data.agentId, data.state);
+                                    continue;
+                                }
+                                
+                                // Clear agent status when we get a response
+                                if (data.agentId) {
+                                    updateAgentStatus(data.agentId, null);
+                                }
+                                
+                                addResponse(data);
+                            } catch (e) {
+                                console.error('Error parsing response:', e);
+                            }
+                        }
+                    }
+                }
+            } catch (error) {
+                addResponse(`Error: ${error.message}`, true);
+            } finally {
+                // Clear all agent statuses when done
+                clearAllAgentStatuses();
+                // Re-enable input and disable cancel button
+                document.getElementById('messageInput').disabled = false;
+                document.getElementById('cancelButton').disabled = true;
+                isProcessing = false;
+            }
+        }
+
+        // Allow Enter key to send message
+        document.getElementById('messageInput').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                sendMessage();
+            }
+        });
+
+        async function getStatus() {
+            try {
+                const response = await fetch('http://localhost:3000/api/status');
+                if (!response.ok) throw new Error(`Server responded with ${response.status}`);
+                
+                const status = await response.json();
+                const statusMessage = `System Status:
+                    Active Conversations: ${status.activeConversations}
+                    Uptime: ${Math.floor(status.uptime / 60)} minutes
+                    Active Agents: ${status.agents.map(a => `${a.name} (${a.status})`).join(', ')}`;
+                
+                addResponse({
+                    type: 'system',
+                    role: 'System',
+                    content: statusMessage
+                });
+            } catch (error) {
+                addResponse(`Error getting status: ${error.message}`, true);
+            }
+        }
+
+        async function getCosts() {
+            try {
+                const response = await fetch('http://localhost:3000/api/costs');
+                if (!response.ok) throw new Error(`Server responded with ${response.status}`);
+                
+                const costs = await response.json();
+                const costsMessage = `Cost Summary:
+                    Total Cost: $${Number(costs.totalCost).toFixed(4)}
+                    Total Tokens: ${costs.outputTokens + costs.inputTokens}`;
+                
+                addResponse({
+                    type: 'system',
+                    role: 'System',
+                    content: costsMessage
+                });
+            } catch (error) {
+                addResponse(`Error getting costs: ${error.message}`, true);
+            }
+        }
+
+        async function resetCosts() {
+            try {
+                const response = await fetch('http://localhost:3000/api/costs/reset', {
+                    method: 'POST'
+                });
+                if (!response.ok) throw new Error(`Server responded with ${response.status}`);
+                
+                addResponse({
+                    type: 'system',
+                    role: 'System',
+                    content: 'Cost tracking reset successfully'
+                });
+            } catch (error) {
+                addResponse(`Error resetting costs: ${error.message}`, true);
+            }
+        }
+
+        // Add these new functions for agent status handling
+        function updateAgentStatus(agentId, phase) {
+            const statusElement = document.querySelector(`.agent-status[data-agent="${agentId}"]`);
+            if (statusElement) {
+                const textElement = statusElement.querySelector('.status-text');
+                
+                // Get appropriate message based on agent and phase
+                const message = getAgentStatusMessage(agentId, phase);
+                
+                if (phase) {
+                    statusElement.classList.add('active');
+                    if (textElement) {
+                        textElement.textContent = message;
+                    }
+                } else {
+                    statusElement.classList.remove('active');
+                }
+            }
+        }
+
+        function getAgentStatusMessage(agentId, phase) {
+            const messages = {
+                'director-1': {
+                    thinking: 'analyzing...',
+                    planning: 'planning...',
+                    synthesizing: 'synthesizing...',
+                    reviewing: 'reviewing responses...'
+                },
+                'analyst-1': {
+                    thinking: 'processing...',
+                    analyzing: 'analyzing data...'
+                },
+                'critic-1': {
+                    thinking: 'evaluating...',
+                    reviewing: 'reviewing...'
+                },
+                'expert-1': {
+                    thinking: 'formulating...',
+                    analyzing: 'analyzing...'
+                },
+                'quality-gate': {
+                    reviewing: 'reviewing responses...',
+                    evaluating: 'evaluating quality...'
+                }
+            };
+
+            return messages[agentId]?.[phase] || `${phase}...`;
+        }
+
+        function clearAllAgentStatuses() {
+            document.querySelectorAll('.agent-status').forEach(element => {
+                element.classList.remove('active');
+            });
+        }
+    </script>
+</body>
+</html>

@@ -72,10 +72,11 @@ export class Phase {
                     ...metadata
                 });
             }
+
         }
 
         if (!qualityPassed) {
-            log.warn(`Failed quality check after ${maxAttempts} attempts in ${this.phaseName}`, {
+            log.debug(`Failed quality check after ${maxAttempts} attempts in ${this.phaseName}`, {
                 agentId,
                 task,
                 ...metadata

@@ -41,7 +41,6 @@ export class Application {
     }
 
     async initialize() {
-        const startTime = Date.now();
 
         try {
             await this.system.initialize(
@@ -56,8 +55,6 @@ export class Application {
 
     async processUserMessage(message, conversationId = null) {
   
-        const startTime = Date.now();
-
         try {
             this.notifyManager.startNewProcess();
 

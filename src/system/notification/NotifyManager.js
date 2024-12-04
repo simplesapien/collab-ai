@@ -14,8 +14,10 @@ export class NotifyManager {
     }
 
     initialize(responseCallback, thinkingCallback) {
+        console.log('NotifyManager - Starting initialize');
         try {
             const responseListener = (response) => {
+                console.log('NotifyManager - Response listener called with:', response);
                 if (responseCallback) {
                     responseCallback(response);
                 }
@@ -76,10 +78,12 @@ export class NotifyManager {
     }
 
     notifyResponse(response) {
+        console.log('NotifyManager - Starting notifyResponse:', response);
         try {
             this.notificationService.sendResponse(response);
+            console.log('NotifyManager - Response sent successfully');
         } catch (error) {
-            log.error('Error sending response', error);
+            console.error('NotifyManager - Error sending response:', error);
             this.notificationService.sendError(error, response?.agentId);
         }
     }

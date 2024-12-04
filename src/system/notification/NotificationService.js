@@ -47,12 +47,15 @@ export class NotificationService extends EventEmitter {
     }
 
     sendResponse(response) {
+        console.log('NotificationService - Starting sendResponse');
         const enhancedResponse = {
             ...response,
-            timestamp: response.timestamp || startTime
+            timestamp: response.timestamp || Date.now()
         };
         
+        console.log('NotificationService - About to emit response:', enhancedResponse);
         this.emit('response', enhancedResponse);
+        console.log('NotificationService - Response emitted');
         this.clearAgentState(response.agentId);
     }
 

@@ -8,10 +8,10 @@ export class PlanningPhase extends Phase {
     }
 
     async execute(director, message, availableAgents, conversationId) {
+    
         return this.executeWithLogging(
             async () => {
                 this.coordinator.notifyManager.notifyThinking('director-1', 'planning');                
-                
                 const plan = await this.executeWithRetry({
                     operation: async () => {
                         return director.planInitialAgentTasks(
@@ -34,6 +34,8 @@ export class PlanningPhase extends Phase {
 
                 if (plan) {
                     await this._emitDirectorPlan(plan, conversationId);
+                } else {
+                    console.log('PlanningPhase - No plan received');
                 }
                 return plan;
             },
@@ -66,8 +68,6 @@ export class PlanningPhase extends Phase {
     }
 
     async _initializeConversation(conversationId, message) {
-        const startTime = Date.now();
-
         try {
             const conversation = this.coordinator.conversationManager.getConversation(conversationId) || 
                 this.coordinator.conversationManager.createConversation({
@@ -81,23 +81,20 @@ export class PlanningPhase extends Phase {
                 timestamp: Date.now()
             });
 
-            log.perf.measure('conversation-initialization', Date.now() - startTime, {
-                conversationId,
-                isNew: !this.coordinator.conversationManager.getConversation(conversationId)
-            });
-
             return conversation;
         } catch (error) {
-            log.error('Conversation initialization failed', error);
+            console.error('PlanningPhase - Conversation initialization failed:', error);
             throw error;
         }
     }
 
     async _getDirector() {
-        return await this.coordinator.agentManager.getDirector();
+        const director = await this.coordinator.agentManager.getDirector();
+        return director;
     }
 
     _getAvailableAgents(directorId) {
-        return this.coordinator.agentManager.getAvailableAgents(directorId);
+        const agents = this.coordinator.agentManager.getAvailableAgents(directorId);
+        return agents;
     }
 }
