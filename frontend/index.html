@@ -137,6 +137,8 @@
     <div id="responseArea"></div>
 
     <script>
+        const API_BASE_URL = 'https://collab-ai-backend.onrender.com';
+
         let currentConversationId = null;
         let isProcessing = false;
 
@@ -167,7 +169,7 @@
         async function cancelProcess() {
             try {
                 console.log('Cancelling current process');
-                const response = await fetch('http://localhost:3000/api/cancel', {
+                const response = await fetch(`${API_BASE_URL}/api/cancel`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json'
@@ -209,7 +211,7 @@
                 isProcessing = true;
 
                 console.log('Sending message:', { message, conversationId: currentConversationId });
-                const response = await fetch('http://localhost:3000/api/message', {
+                const response = await fetch(`${API_BASE_URL}/api/message`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
@@ -293,7 +295,7 @@
 
         async function getStatus() {
             try {
-                const response = await fetch('http://localhost:3000/api/status');
+                const response = await fetch(`${API_BASE_URL}/api/status`);
                 if (!response.ok) throw new Error(`Server responded with ${response.status}`);
                 
                 const status = await response.json();
@@ -314,7 +316,7 @@
 
         async function getCosts() {
             try {
-                const response = await fetch('http://localhost:3000/api/costs');
+                const response = await fetch(`${API_BASE_URL}/api/costs`);
                 if (!response.ok) throw new Error(`Server responded with ${response.status}`);
                 
                 const costs = await response.json();
@@ -334,7 +336,7 @@
 
         async function resetCosts() {
             try {
-                const response = await fetch('http://localhost:3000/api/costs/reset', {
+                const response = await fetch(`${API_BASE_URL}/api/costs/reset`, {
                     method: 'POST'
                 });
                 if (!response.ok) throw new Error(`Server responded with ${response.status}`);
