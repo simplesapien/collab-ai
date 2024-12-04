@@ -2,164 +2,538 @@
 <html>
 <head>
     <title>API Test Page</title>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600&family=JetBrains+Mono&family=Work+Sans:wght@400;500;600&display=swap" rel="stylesheet">
     <style>
-        body { font-family: Arial, sans-serif; max-width: 800px; margin: 20px auto; padding: 0 20px; }
-        .response { 
-            background: #f5f5f5; 
-            padding: 10px; 
-            margin: 10px 0; 
-            border-radius: 4px;
-            white-space: pre-wrap;
+        :root {
+            --coral: rgba(255, 118, 97, 0.1);
+            --purple: rgba(157, 122, 255, 0.1);
+            --green: rgba(74, 222, 128, 0.1);
+            --text-dark: #2C2C2C;
+            --text-light: #6E6E6E;
+            --shadow: rgba(0, 0, 0, 0.08);
         }
-        .error { color: red; }
-        textarea {
-            width: 100%;
-            height: 100px;
-            margin: 10px 0;
-            padding: 8px;
+
+        body { 
+            font-family: 'Work Sans', system-ui, sans-serif;
+            background: white;
+            color: var(--text-dark);
+            margin: 0;
+            padding: 0;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            max-width: 100vw;
+            overflow-x: hidden;
         }
-        button { 
-            margin: 5px;
-            padding: 8px 15px;
-            background: #007bff;
-            color: white;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-        }
+
         #responseArea {
-            max-height: 400px;
+            flex: 1;
             overflow-y: auto;
+            padding: 20px;
+            display: flex;
+            flex-direction: column-reverse; /* Shows newest messages at bottom */
+            gap: 15px;
+            background: white;
+            width: 100%;
+            max-width: 100vw;
+            box-sizing: border-box;
         }
-        .cancel-button {
-            background: #dc3545;
-            color: white;
-            margin: 5px;
-            padding: 8px 15px;
+
+        /* Input section */
+        .input-section {
+            background: white;
+            border-top: 1px solid rgba(0, 0, 0, 0.05);
+            padding: 20px;
+            position: sticky;
+            bottom: 0;
+            width: 100%;
+            box-sizing: border-box;
+            box-shadow: 0 -4px 12px var(--shadow);
+        }
+
+        .input-container {
+            background: white;
+            border: 1px solid rgba(0, 0, 0, 0.1);
+            border-radius: 2px;
+            padding: 12px 20px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            box-shadow: 0 2px 8px var(--shadow);
+            max-width: 100%;
+        }
+
+        textarea {
+            flex: 1;
+            padding: 8px 0;
             border: none;
-            border-radius: 4px;
-            cursor: pointer;
+            background: transparent;
+            resize: none;
+            outline: none;
+            font-size: 1rem;
+            min-height: 24px;
+            max-height: 120px;
+            width: 100%;
+            box-sizing: border-box;
+            color: var(--text-dark);
+            font-family: 'Work Sans', system-ui, sans-serif;
         }
-        .cancel-button:disabled {
-            background: #6c757d;
+        textarea::placeholder {
+            color: var(--text-light);
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+        }
+
+        .icon-button {
+            background: none;
+            border: none;
+            cursor: pointer;
+            padding: 6px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background-color 0.2s;
+        }
+
+        .icon-button:hover {
+            background-color: #e1e1e1;
+        }
+
+        .icon-button:disabled {
+            opacity: 0.5;
             cursor: not-allowed;
         }
-        .info-panel {
-            background: #f8f9fa;
+
+        /* Utility buttons container */
+        .utility-buttons {
+            position: fixed;
+            right: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            z-index: 100;
+        }
+
+        .utility-button {
+            background: white;
+            border: 1px solid rgba(0, 0, 0, 0.1);
+            border-radius: 2px;
+            padding: 8px;
+            font-size: 1.2rem;
+            transition: all 0.2s ease;
+            box-shadow: 0 2px 8px var(--shadow);
+        }
+
+        .utility-button:hover {
+            background: rgba(0, 0, 0, 0.02);
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px var(--shadow);
+        }
+
+        /* Mobile-specific adjustments */
+        @media (max-width: 768px) {
+            .chat-bubble {
+                max-width: 95%;
+                padding: 12px 15px;
+                margin: 4px 0;
+            }
+
+            .chat-bubble .content {
+                font-size: 0.95rem;
+                line-height: 1.4;
+            }
+
+            .chat-bubble .meta {
+                font-size: 0.7rem;
+            }
+
+            /* Adjust task grid for mobile */
+            .task-grid {
+                gap: 8px;
+                margin: 5px 0;
+                padding-bottom: 8px;
+            }
+
+            .task-item {
+                min-width: 160px;
+                padding: 10px;
+                font-size: 0.85rem;
+                line-height: 1.3;
+            }
+
+            /* Adjust input section for mobile */
+            .input-section {
+                padding: 10px;
+            }
+
+            .input-container {
+                padding: 8px 12px;
+            }
+
+            textarea {
+                font-size: 0.95rem;
+                padding: 4px 0;
+            }
+
+            .send-button {
+                padding: 6px;
+            }
+
+            /* Adjust utility buttons for mobile */
+            .utility-buttons {
+                right: 8px;
+                transform: scale(0.9);
+            }
+
+            .utility-button {
+                padding: 6px;
+                font-size: 0.9rem;
+            }
+        }
+
+        /* Extra small devices */
+        @media (max-width: 480px) {
+            #responseArea {
+                padding: 12px;
+            }
+
+            .chat-bubble {
+                max-width: 98%;
+                padding: 10px 12px;
+            }
+
+            .task-item {
+                min-width: 140px;
+            }
+
+            .utility-buttons {
+                transform: scale(0.8);
+                right: 5px;
+            }
+        }
+
+        /* Ensure proper height on mobile */
+        @supports (-webkit-touch-callout: none) {
+            .input-section {
+                padding-bottom: max(10px, env(safe-area-inset-bottom));
+            }
+        }
+
+        /* Prevent horizontal scroll on main container */
+        #responseArea {
+            overflow-x: hidden;
+        }
+
+        /* Allow horizontal scroll only within task grid */
+        .task-grid {
+            -webkit-overflow-scrolling: touch;
+            scrollbar-width: none; /* Firefox */
+        }
+
+        .task-grid::-webkit-scrollbar {
+            display: none; /* Safari and Chrome */
+        }
+
+        /* Update chat bubble styles */
+        .chat-bubble {
+            max-width: 85%;
+            padding: 15px 20px;
+            margin: 5px 0;
+            border-radius: 2px;
+            background: white;
+            border: 1px solid rgba(0, 0, 0, 0.05);
+            box-shadow: 0 2px 8px var(--shadow);
+            position: relative;
+            word-wrap: break-word;
+            box-sizing: border-box;
+        }
+
+        .chat-bubble .meta {
+            font-size: 0.75rem;
+            color: var(--text-light);
+            margin-bottom: 6px;
+            font-family: 'Work Sans', monospace;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .chat-bubble .content {
+            font-size: 1.1rem;
+            line-height: 1.5;
+            font-weight: 400;
+            color: var(--text-dark);
+        }
+
+        /* User messages */
+        .chat-bubble.user {
+            align-self: flex-end;
+            margin-left: auto;
+            background: var(--coral);
+            border: 1px solid rgba(255, 118, 97, 0.2);
+        }
+        .chat-bubble.user .meta,
+        .chat-bubble.user .content {
+            color: rgba(0, 0, 0, 0.6);
+        }
+
+        /* Different colors for each agent */
+        .chat-bubble.agent[data-agent="Director"] {
+            background: var(--purple);
+            border: 1px solid rgba(157, 122, 255, 0.2);
+        }
+
+        .chat-bubble.agent[data-agent="Analyst"] {
+            background: var(--green);
+            border: 1px solid rgba(74, 222, 128, 0.2);
+        }
+        .chat-bubble.agent[data-agent="Analyst"] .meta {
+            color: rgba(0, 0, 0, 0.6);
+        }
+
+        .chat-bubble.agent[data-agent="Critic"] {
+            background: var(--coral);
+            border: 1px solid rgba(255, 118, 97, 0.2);
+        }
+        .chat-bubble.agent[data-agent="Critic"] .meta {
+            color: rgba(0, 0, 0, 0.6);
+        }
+
+        .chat-bubble.agent[data-agent="Expert"] {
+            background: var(--purple);
+            border: 1px solid rgba(157, 122, 255, 0.2);
+        }
+
+        .chat-bubble.agent[data-agent="System"] {
+            background: rgba(0, 0, 0, 0.02);
+            border: 1px solid rgba(0, 0, 0, 0.05);
+        }
+
+        /* Agent thinking indicators */
+        .thinking-indicator {
+            background: white;
+            border: 1px solid rgba(0, 0, 0, 0.05);
+            border-radius: 2px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
             padding: 15px;
             margin: 10px 0;
-            border-radius: 4px;
+            max-width: 100px;
+            box-shadow: 0 2px 8px var(--shadow);
         }
-        .status-button {
-            background: #17a2b8;
-            color: white;
-            margin: 5px;
-            padding: 8px 15px;
+
+        .agent-icon {
+            font-size: 1.2em;
+        }
+
+        .typing-dots {
+            background: rgba(0, 0, 0, 0.02);
+            border-radius: 2px;
+            display: flex;
+            gap: 4px;
+            padding: 6px 12px;
+        }
+
+        .typing-dots::after {
+            content: '...';
+            animation: typing 1.4s infinite;
+            font-size: 20px;
+            line-height: 10px;
+        }
+
+        @keyframes typing {
+            0%, 20% { content: '.'; }
+            40% { content: '..'; }
+            60%, 100% { content: '...'; }
+        }
+
+        /* Add styles for the send button */
+        .send-button {
+            background: none;
             border: none;
-            border-radius: 4px;
+            color: var(--text-light);
             cursor: pointer;
-        }
-        .thinking-indicators {
+            padding: 8px;
+            transition: color 0.2s ease;
+            font-family: 'Work Sans', system-ui, sans-serif;
             display: flex;
-            flex-wrap: wrap;
-            gap: 10px;
-            margin: 10px 0;
-        }
-        .agent-status {
-            padding: 5px 10px;
-            border-radius: 4px;
-            display: none;
             align-items: center;
-            gap: 5px;
-            font-size: 0.9em;
+            gap: 4px;
         }
-        .agent-status.active {
+
+        .send-button:hover {
+            color: var(--text-dark);
+        }
+
+        /* Add styles for the task grid */
+        .task-grid {
             display: flex;
-            background: #f8f9fa;
-            border: 1px solid #dee2e6;
+            gap: 10px;
+            overflow-x: auto;
+            padding-bottom: 10px;
+            margin: 10px 0;
+            scrollbar-width: thin;
         }
-        .agent-status[data-agent="director-1"] { color: #0d6efd; }
-        .agent-status[data-agent="analyst-1"] { color: #198754; }
-        .agent-status[data-agent="critic-1"] { color: #ffc107; }
-        .agent-status[data-agent="expert-1"] { color: #d63384; }
-        .agent-status[data-agent="quality-gate"] { color: #0dcaf0; }
-        .spinner {
-            display: inline-block;
-            width: 10px;
-            height: 10px;
-            border: 2px solid currentColor;
-            border-right-color: transparent;
-            border-radius: 50%;
-            animation: spin 0.75s linear infinite;
+
+        .task-item {
+            flex: 1;
+            min-width: 200px;
+            max-width: 300px;
+            padding: 12px;
+            background: rgba(157, 122, 255, 0.1);
+            border: 1px solid rgba(157, 122, 255, 0.2);
+            border-radius: 2px;
+            box-shadow: 0 2px 8px var(--shadow);
+            font-size: 0.9rem;
+            line-height: 1.4;
         }
-        @keyframes spin {
-            to { transform: rotate(360deg); }
+
+        /* Ensure task grid scrollbar is visible but subtle */
+        .task-grid::-webkit-scrollbar {
+            height: 6px;
+        }
+
+        .task-grid::-webkit-scrollbar-track {
+            background: rgba(0, 0, 0, 0.02);
+        }
+
+        .task-grid::-webkit-scrollbar-thumb {
+            background: rgba(0, 0, 0, 0.1);
+            border-radius: 3px;
+        }
+
+        /* Ensure the chat bubble containing tasks can expand */
+        .chat-bubble .content {
+            width: 100%;
+            overflow-x: auto;
         }
     </style>
 </head>
 <body>
-    <h1>Simple Chat Test</h1>
-
-    <div class="info-panel">
-        <button onclick="getStatus()" class="status-button">System Status</button>
-        <button onclick="getCosts()" class="status-button">Show Costs</button>
-        <button onclick="resetCosts()" class="status-button">Reset Costs</button>
+    <div id="responseArea">
+        <div class="thinking-indicator">
+            <span class="agent-icon">🤔</span>
+            <div class="typing-dots"></div>
+        </div>
+        <!-- Chat messages will appear here -->
     </div>
 
-    <div class="thinking-indicators">
-        <div class="agent-status" data-agent="director-1">
-            <div class="spinner"></div>
-            <span>👨‍💼 Director: <span class="status-text">thinking...</span></span>
-        </div>
-        <div class="agent-status" data-agent="analyst-1">
-            <div class="spinner"></div>
-            <span>📊 Analyst: <span class="status-text">thinking...</span></span>
-        </div>
-        <div class="agent-status" data-agent="critic-1">
-            <div class="spinner"></div>
-            <span>🔍 Critic: <span class="status-text">thinking...</span></span>
-        </div>
-        <div class="agent-status" data-agent="expert-1">
-            <div class="spinner"></div>
-            <span>👨‍🔬 Expert: <span class="status-text">thinking...</span></span>
-        </div>
-        <div class="agent-status" data-agent="quality-gate">
-            <div class="spinner"></div>
-            <span>🔎 Quality Gate: <span class="status-text">reviewing...</span></span>
+    <div class="input-section">
+        <div class="input-container">
+            <textarea 
+                id="messageInput" 
+                placeholder="Send a message..."
+                rows="1"
+                onInput="this.rows = this.value.split('\n').length"></textarea>
+            <button onclick="sendMessage()" class="send-button" title="Send">
+                →
+            </button>
         </div>
     </div>
 
-    <textarea id="messageInput" placeholder="Enter your message here..."></textarea>
-    <button onclick="sendMessage()">Send Message</button>
-    <button onclick="clearResponses()">Clear Responses</button>
-    <button id="cancelButton" onclick="cancelProcess()" class="cancel-button" disabled>Stop Process</button>
-
-    <div id="responseArea"></div>
+    <div class="utility-buttons">
+        <button onclick="getStatus()" class="utility-button" title="System Status">ℹ️</button>
+        <button onclick="getCosts()" class="utility-button" title="Show Costs">💰</button>
+        <button onclick="resetCosts()" class="utility-button" title="Reset Costs">🔄</button>
+        <button onclick="clearResponses()" class="utility-button" title="Clear">🗑️</button>
+        <button id="cancelButton" onclick="cancelProcess()" class="utility-button" title="Stop" disabled>⏹️</button>
+    </div>
 
     <script>
+        // Production URL
         const API_BASE_URL = 'https://collab-ai-backend.onrender.com';
+
+        // Development URL
+        // const API_BASE_URL = 'http://localhost:3000';
 
         let currentConversationId = null;
         let isProcessing = false;
 
+        function scrollToBottom() {
+            const responseArea = document.getElementById('responseArea');
+            responseArea.scrollTop = responseArea.scrollHeight;
+        }
+
         function addResponse(message, isError = false) {
+            // Skip connection messages
+            if (typeof message === 'object' && message.type === 'connected') {
+                return;
+            }
+
             const responseArea = document.getElementById('responseArea');
             const responseDiv = document.createElement('div');
-            responseDiv.className = `response ${isError ? 'error' : ''}`;
-            
+            responseDiv.className = `chat-bubble ${isError ? 'system' : 'agent'}`;
+
             let content = '';
+            let meta = '';
+            
             if (typeof message === 'string') {
                 content = message;
-            } else if (message.type === 'system') {
-                content = `System: ${message.content}`;
-                responseDiv.style.color = '#17a2b8'; // Match the status button color
+                meta = `User • ${new Date().toLocaleTimeString()}`;
+                responseDiv.className = 'chat-bubble user';
             } else {
-                content = typeof message === 'object' ? 
-                    JSON.stringify(message, null, 2) : message;
+                const timestamp = message.timestamp ? new Date(message.timestamp) : new Date();
+                const timeString = timestamp instanceof Date && !isNaN(timestamp) 
+                    ? timestamp.toLocaleTimeString()
+                    : new Date().toLocaleTimeString();
+
+                let agentName = 'System';
+                if (message.agentId) {
+                    agentName = message.agentId.split('-')[0];
+                    agentName = agentName.charAt(0).toUpperCase() + agentName.slice(1);
+                }
+                
+                responseDiv.setAttribute('data-agent', agentName);
+                meta = `${agentName} • ${timeString}`;
+
+                // Handle Director's task assignments
+                if (agentName === 'Director' && message.content && 
+                    (message.content.includes('Analyst:') || 
+                     message.content.includes('Critic:') || 
+                     message.content.includes('Expert:'))) {
+                    
+                    // Look for existing task grid with same timestamp
+                    const existingGrid = responseArea.querySelector(
+                        `.chat-bubble[data-timestamp="${timeString}"]`
+                    );
+
+                    if (existingGrid) {
+                        const taskGrid = existingGrid.querySelector('.task-grid');
+                        if (taskGrid) {
+                            const taskItem = document.createElement('div');
+                            taskItem.className = 'task-item';
+                            taskItem.textContent = message.content;
+                            taskGrid.appendChild(taskItem);
+                            return;
+                        }
+                    }
+
+                    // If no existing grid, create new one
+                    responseDiv.setAttribute('data-timestamp', timeString);
+                    content = `
+                        <div class="task-grid">
+                            <div class="task-item">${message.content}</div>
+                        </div>
+                    `;
+                } else {
+                    content = message.content || JSON.stringify(message, null, 2);
+                }
             }
+
+            responseDiv.innerHTML = `
+                <div class="meta">${meta}</div>
+                <div class="content">${content}</div>
+            `;
             
-            responseDiv.textContent = content;
             responseArea.insertBefore(responseDiv, responseArea.firstChild);
+            scrollToBottom();
         }
 
         function clearResponses() {
@@ -198,15 +572,24 @@
         }
 
         async function sendMessage() {
-            const message = document.getElementById('messageInput').value;
+            const messageInput = document.getElementById('messageInput');
+            const message = messageInput.value;
             if (!message) {
                 addResponse('Please enter a message', true);
                 return;
             }
 
             try {
+                // Show user's message immediately
+                addResponse({
+                    content: message,
+                    timestamp: Date.now(),
+                    role: 'User',
+                    agentId: 'user'
+                });
+
                 // Disable input and enable cancel button while processing
-                document.getElementById('messageInput').disabled = true;
+                messageInput.disabled = true;
                 document.getElementById('cancelButton').disabled = false;
                 isProcessing = true;
 
@@ -229,7 +612,7 @@
                 }
 
                 // Clear input after sending
-                document.getElementById('messageInput').value = '';
+                messageInput.value = '';
 
                 // Read the stream
                 const reader = response.body.getReader();
@@ -280,7 +663,7 @@
                 // Clear all agent statuses when done
                 clearAllAgentStatuses();
                 // Re-enable input and disable cancel button
-                document.getElementById('messageInput').disabled = false;
+                messageInput.disabled = false;
                 document.getElementById('cancelButton').disabled = true;
                 isProcessing = false;
             }
@@ -354,58 +737,49 @@
 
         // Add these new functions for agent status handling
         function updateAgentStatus(agentId, phase) {
-            const statusElement = document.querySelector(`.agent-status[data-agent="${agentId}"]`);
-            if (statusElement) {
-                const textElement = statusElement.querySelector('.status-text');
+            // Remove any existing thinking indicators
+            const existingIndicators = document.querySelectorAll('.thinking-indicator');
+            existingIndicators.forEach(el => el.remove());
+
+            if (agentId && phase) {
+                const responseArea = document.getElementById('responseArea');
+                const thinkingDiv = document.createElement('div');
+                thinkingDiv.className = 'thinking-indicator active';
                 
-                // Get appropriate message based on agent and phase
-                const message = getAgentStatusMessage(agentId, phase);
+                // Get the appropriate icon for the agent
+                const agentIcon = getAgentIcon(agentId);
                 
-                if (phase) {
-                    statusElement.classList.add('active');
-                    if (textElement) {
-                        textElement.textContent = message;
-                    }
-                } else {
-                    statusElement.classList.remove('active');
-                }
+                thinkingDiv.innerHTML = `
+                    <span class="agent-icon">${agentIcon}</span>
+                    <div class="typing-dots"></div>
+                `;
+                
+                // Insert at the beginning (will appear at bottom due to flex-direction: column-reverse)
+                responseArea.insertBefore(thinkingDiv, responseArea.firstChild);
             }
         }
 
-        function getAgentStatusMessage(agentId, phase) {
-            const messages = {
-                'director-1': {
-                    thinking: 'analyzing...',
-                    planning: 'planning...',
-                    synthesizing: 'synthesizing...',
-                    reviewing: 'reviewing responses...'
-                },
-                'analyst-1': {
-                    thinking: 'processing...',
-                    analyzing: 'analyzing data...'
-                },
-                'critic-1': {
-                    thinking: 'evaluating...',
-                    reviewing: 'reviewing...'
-                },
-                'expert-1': {
-                    thinking: 'formulating...',
-                    analyzing: 'analyzing...'
-                },
-                'quality-gate': {
-                    reviewing: 'reviewing responses...',
-                    evaluating: 'evaluating quality...'
-                }
+        function getAgentIcon(agentId) {
+            const icons = {
+                'director-1': '👨‍💼',
+                'analyst-1': '📊',
+                'critic-1': '🔍',
+                'expert-1': '👨‍🔬',
+                'quality-gate': '🔎',
+                'default': '🤔'
             };
-
-            return messages[agentId]?.[phase] || `${phase}...`;
+            return icons[agentId] || icons.default;
         }
 
         function clearAllAgentStatuses() {
-            document.querySelectorAll('.agent-status').forEach(element => {
-                element.classList.remove('active');
-            });
+            const indicators = document.querySelectorAll('.thinking-indicator');
+            indicators.forEach(el => el.remove());
         }
+
+        // Update the clearAllAgentStatuses function to run on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            clearAllAgentStatuses();
+        });
     </script>
 </body>
 </html>
