@@ -217,6 +217,7 @@
                         'Content-Type': 'application/json',
                         'Accept': 'text/event-stream'
                     },
+                    credentials: 'include',
                     body: JSON.stringify({ 
                         message,
                         conversationId: currentConversationId 

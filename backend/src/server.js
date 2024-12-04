@@ -9,18 +9,23 @@ const application = new Application();
 // Basic middleware
 app.use(express.json());
 app.use((req, res, next) => {
-    // Replace with your actual Vercel frontend URL in production
     const allowedOrigins = [
-        'collab-ai-frontend.vercel.app'
+        'https://collab-ai-frontend.vercel.app',
+        'http://localhost:3000'
     ];
     
     const origin = req.headers.origin;
     if (allowedOrigins.includes(origin)) {
         res.header('Access-Control-Allow-Origin', origin);
+        res.header('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
+        res.header('Access-Control-Allow-Headers', 'Content-Type, Accept');
+        res.header('Access-Control-Allow-Credentials', 'true');
+    }
+
+    if (req.method === 'OPTIONS') {
+        return res.status(200).end();
     }
     
-    res.header('Access-Control-Allow-Headers', 'Content-Type');
-    res.header('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
     next();
 });
 
