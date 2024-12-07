@@ -53,6 +53,7 @@ node src/cli.js
 If you see some areas you'd like to contribute to, or if you'd like to work together, I'd love to hear from you!
 
 ### Getting Started
-1. Review our [Learning Resources](./docs/RESOURCES.md) for project context
-2. Check the [Development Tasks](./docs/TODO.md) for current priorities
-3. Review our [Proposed Architecture](./docs/PROPOSED-DEV.md) for a (rough) overview of the project's current direction
+1. Review our [Learning Resources](./notes/resources.md) for project context
+2. Check the [Development Tasks](./notes/roadmap.md) for current priorities
+3. Review our [Proposed Architecture](./notes/proposed.md) for a (rough) overview of the project's current direction
+4. Check the [Journal](./notes/journal.md) for a scattered log of the project's development
