@@ -13,7 +13,8 @@ app.use(express.json());
 app.use((req, res, next) => {
     const allowedOrigins = [
         'https://collab-ai-frontend.vercel.app',
-        // 'null' // take this out for production
+        'http://localhost:3001', // for local testing
+        'null' // also for local testing
     ];
     
     const origin = req.headers.origin;

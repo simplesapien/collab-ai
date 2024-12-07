@@ -41,45 +41,44 @@
 
         /* Input section */
         .input-section {
-            background: white;
-            border-top: 1px solid rgba(0, 0, 0, 0.05);
-            padding: 20px;
+            background: #f8f9fa;
+            border-top: none;
+            padding: 10px 15px;
             position: sticky;
             bottom: 0;
             width: 100%;
             box-sizing: border-box;
-            box-shadow: 0 -4px 12px var(--shadow);
+            box-shadow: none;
         }
 
         .input-container {
             background: white;
-            border: 1px solid rgba(0, 0, 0, 0.1);
-            border-radius: 2px;
-            padding: 12px 20px;
+            border: none;
+            border-radius: 25px;
+            padding: 12px 18px;
             display: flex;
             align-items: center;
-            gap: 8px;
-            box-shadow: 0 2px 8px var(--shadow);
-            max-width: 100%;
+            gap: 12px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
         }
 
         textarea {
             flex: 1;
-            padding: 8px 0;
+            padding: 8px;
             border: none;
             background: transparent;
             resize: none;
             outline: none;
-            font-size: 1rem;
-            min-height: 24px;
+            font-size: 16px;
+            min-height: 28px;
             max-height: 120px;
             width: 100%;
             box-sizing: border-box;
-            color: var(--text-dark);
-            font-family: 'Work Sans', system-ui, sans-serif;
+            color: #333;
+            font-family: system-ui, -apple-system, sans-serif;
         }
         textarea::placeholder {
-            color: var(--text-light);
+            color: #666;
         }
 
         .action-buttons {
@@ -112,7 +111,7 @@
         /* Utility buttons container */
         .utility-buttons {
             position: fixed;
-            right: 10px;
+            right: 15px;
             top: 50%;
             transform: translateY(-50%);
             display: flex;
@@ -125,8 +124,8 @@
             background: white;
             border: 1px solid rgba(0, 0, 0, 0.1);
             border-radius: 2px;
-            padding: 8px;
-            font-size: 1.2rem;
+            padding: 12px;
+            font-size: 1.5rem;
             transition: all 0.2s ease;
             box-shadow: 0 2px 8px var(--shadow);
         }
@@ -141,17 +140,17 @@
         @media (max-width: 768px) {
             .chat-bubble {
                 max-width: 95%;
-                padding: 12px 15px;
+                padding: 12px 25px;
                 margin: 4px 0;
             }
 
             .chat-bubble .content {
-                font-size: 0.95rem;
-                line-height: 1.4;
+                font-size: 1.4rem !important;
+                line-height: 1.5;
             }
 
             .chat-bubble .meta {
-                font-size: 0.7rem;
+                font-size: 0.9rem;
             }
 
             /* Adjust task grid for mobile */
@@ -170,7 +169,7 @@
 
             /* Adjust input section for mobile */
             .input-section {
-                padding: 10px;
+                padding: 12px 15px;
             }
 
             .input-container {
@@ -178,23 +177,51 @@
             }
 
             textarea {
-                font-size: 0.95rem;
-                padding: 4px 0;
-            }
-
-            .send-button {
-                padding: 6px;
+                font-size: 1.4rem !important;
             }
 
             /* Adjust utility buttons for mobile */
             .utility-buttons {
-                right: 8px;
-                transform: scale(0.9);
+                right: 12px;
+                transform: none;
             }
 
             .utility-button {
-                padding: 6px;
-                font-size: 0.9rem;
+                padding: 10px;
+                font-size: 1.4rem;
+            }
+
+            /* Larger input container */
+            .input-container {
+                padding: 15px 20px;
+                border-radius: 15px;
+            }
+
+            /* Larger input text and placeholder */
+            textarea {
+                font-size: 1.8rem !important;
+                min-height: 40px;
+            }
+            textarea::placeholder {
+                font-size: 1.8rem;
+            }
+
+            /* Larger send button */
+            .send-button {
+                width: 50px;
+                height: 50px;
+                font-size: 28px;
+            }
+
+            /* Hide utility buttons on mobile */
+            .utility-buttons {
+                display: none;
+            }
+
+            /* Even larger chat text */
+            .chat-bubble .content {
+                font-size: 1.8rem !important;
+                line-height: 1.6;
             }
         }
 
@@ -214,8 +241,24 @@
             }
 
             .utility-buttons {
-                transform: scale(0.8);
-                right: 5px;
+                transform: none;
+                right: 8px;
+            }
+
+            .chat-bubble .content {
+                font-size: 3rem !important;
+                line-height: 1.6;
+            }
+
+            /* Adjust input section padding */
+            .input-section {
+                padding: 15px;
+            }
+
+            /* Make chat text even larger */
+            .chat-bubble .content {
+                font-size: 2rem !important;
+                line-height: 1.6;
             }
         }
 
@@ -358,18 +401,23 @@
         .send-button {
             background: none;
             border: none;
-            color: var(--text-light);
+            color: #666;
             cursor: pointer;
             padding: 8px;
             transition: color 0.2s ease;
-            font-family: 'Work Sans', system-ui, sans-serif;
+            font-family: system-ui, -apple-system, sans-serif;
             display: flex;
             align-items: center;
-            gap: 4px;
+            justify-content: center;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            font-size: 20px;
         }
 
         .send-button:hover {
-            color: var(--text-dark);
+            background-color: #f0f0f0;
+            color: #333;
         }
 
         /* Add styles for the task grid */
@@ -448,10 +496,10 @@
 
     <script>
         // Production URL
-        const API_BASE_URL = 'https://collab-ai-backend.onrender.com';
+        // const API_BASE_URL = 'https://collab-ai-backend.onrender.com';
 
         // Development URL
-        // const API_BASE_URL = 'http://localhost:3000';
+        const API_BASE_URL = 'http://localhost:3000';
 
         let currentConversationId = null;
         let isProcessing = false;
