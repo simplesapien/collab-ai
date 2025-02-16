@@ -1,6 +1,6 @@
 # Collab AI - Multi-Agent Collaborative AI System
 
-(https://github.com/simplesapien/collab-ai/blob/main/compressed-2.mov)
+<video src='(https://github.com/simplesapien/collab-ai/blob/main/compressed-2.mov)' width=180/>
 
 ## Overview
 Collab AI is a multi-agent system designed to facilitate problem-solving through coordinated AI agents. The system orchestrates specialized agents in structured discussions, generating actionable insights through iterative collaboration.
