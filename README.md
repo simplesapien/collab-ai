@@ -32,7 +32,7 @@ Collab AI is a multi-agent system designed to facilitate problem-solving through
 
 1. Clone the repository:
 ```bash
-git clone https://github.com/yourusername/collab-ai.git
+git clone https://github.com/simplesapien/collab-ai.git
 cd collab-ai
 ```
 
